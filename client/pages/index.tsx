@@ -22,6 +22,7 @@ const Inner = styled.div`
   ${({ theme }) => theme.mediaQuery.desktop} {
     max-width: 1200px;
     margin: 0 auto;
+    padding: 0 ${({ theme }) => theme.spacing(1.25)};
   }
 `;
 const TradingViewContainer = styled.div`

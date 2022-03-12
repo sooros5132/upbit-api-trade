@@ -29,7 +29,6 @@ import { NextSeo } from "next-seo";
 const TableContainer = styled.div`
   margin: 0 auto;
   max-width: 1280px;
-  padding: ${({ theme }) => theme.spacing(1.25)};
 `;
 const Table = styled.table`
   width: 100%;
