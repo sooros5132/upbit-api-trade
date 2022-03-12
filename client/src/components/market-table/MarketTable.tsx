@@ -129,7 +129,7 @@ const MarketTable: React.FC<MarketTableProps> = ({
 }) => {
   const [sortColumnName, setSortColumnName] =
     React.useState<keyof IMarketTableItem>("atp24h");
-  const [sortType, setSortType] = React.useState<"asc" | "desc">("asc");
+  const [sortType, setSortType] = React.useState<"asc" | "desc">("desc");
 
   const handleClickThead = (columnName: keyof IMarketTableItem) => () => {
     if (columnName === sortColumnName) {
