@@ -17,7 +17,11 @@ const Container = styled.footer`
   background-color: ${({ theme }) => theme.palette.mainDeepDrakBackground};
 `;
 const Inner = styled(FlexJustifyContentCenterBox)`
-  min-height: 100px;
+  ${({ theme }) => theme.mediaQuery.mobile} {
+    padding: ${({ theme }) => theme.spacing(3)} 0;
+    flex-wrap: wrap;
+    flex-direction: column-reverse;
+  }
   ${({ theme }) => theme.mediaQuery.desktop} {
     max-width: 1200px;
     margin: 0 auto;
@@ -35,10 +39,14 @@ const ContactBox = styled(TextAlignCenterBox)``;
 
 const DescriptionContainer = styled(FlexAlignItemsCenterBox)`
   height: 100%;
-  padding: ${({ theme }) => theme.spacing(2)} 0;
   line-height: 1.25em;
 `;
 const DescriptionInner = styled.div`
+  ${({ theme }) => theme.mediaQuery.mobile} {
+    padding-bottom: ${({ theme }) => theme.spacing(3)};
+    text-align: center;
+    border-left: 0;
+  }
   border-left: 1px solid ${({ theme }) => theme.palette.mainLightText}CC;
   padding: 0 ${({ theme }) => theme.spacing(4)};
 `;
@@ -83,8 +91,8 @@ const Footer: React.FC<FooterProps> = ({}) => {
                   않습니다.
                 </Paragraph>
                 <Paragraph>
-                  디지털 자산 투자에 대한 손실은 본인의 책임이므로 투자에
-                  유의하시기 바랍니다.
+                  디지털 자산 투자에 대한 손실은 본인 책임이며 투자에 유의하시기
+                  바랍니다.
                 </Paragraph>
               </div>
             </DescriptionInner>
