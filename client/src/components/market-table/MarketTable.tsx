@@ -163,25 +163,23 @@ const MarketTable: React.FC<MarketTableProps> = ({
                   <TableCellInnerBox></TableCellInnerBox>
                 </TableCell>
                 <TableHeaderCell>
-                  <TableCellInnerBox>
-                    <FlexBox>
-                      <Paragraph
-                        cursor="pointer"
-                        onClick={handleClickThead("korean_name")}
-                      >
-                        이름
-                      </Paragraph>
-                      <TableHeaderSortIcon>
-                        {sortColumnName === "korean_name" ? (
-                          sortType === "asc" ? (
-                            <BiDownArrowAlt />
-                          ) : (
-                            <BiUpArrowAlt />
-                          )
-                        ) : null}
-                      </TableHeaderSortIcon>
-                    </FlexBox>
-                  </TableCellInnerBox>
+                  <FlexBox>
+                    <Paragraph
+                      cursor="pointer"
+                      onClick={handleClickThead("korean_name")}
+                    >
+                      이름
+                    </Paragraph>
+                    <TableHeaderSortIcon>
+                      {sortColumnName === "korean_name" ? (
+                        sortType === "asc" ? (
+                          <BiDownArrowAlt />
+                        ) : (
+                          <BiUpArrowAlt />
+                        )
+                      ) : null}
+                    </TableHeaderSortIcon>
+                  </FlexBox>
                 </TableHeaderCell>
                 <TableHeaderCell>
                   <FlexJustifyContentFlexEndBox>
