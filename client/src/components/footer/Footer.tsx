@@ -40,7 +40,7 @@ const DescriptionContainer = styled(FlexAlignItemsCenterBox)`
 `;
 const DescriptionInner = styled.div`
   border-left: 1px solid ${({ theme }) => theme.palette.mainLightText}CC;
-  padding-left: ${({ theme }) => theme.spacing(4)};
+  padding: 0 ${({ theme }) => theme.spacing(4)};
 `;
 
 // const ContactContainer = styled(FlexJustifyContentFlexEndBox)`
