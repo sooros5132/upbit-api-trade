@@ -93,13 +93,13 @@ const IconCol = styled(Col)`
 const NameCol = styled(Col)`
   width: auto;
 `;
-const PremiumCol = styled(Col)`
-  width: 10%;
-`;
 const PriceCol = styled(Col)`
   width: 15%;
 `;
 const ChangeCol = styled(Col)`
+  width: 10%;
+`;
+const PremiumCol = styled(Col)`
   width: 10%;
 `;
 const VolumeCol = styled(Col)`
@@ -152,9 +152,9 @@ const MarketTable: React.FC<MarketTableProps> = ({
             <colgroup>
               <IconCol />
               <NameCol />
-              <PremiumCol />
               <PriceCol />
               <ChangeCol />
+              <PremiumCol />
               <VolumeCol />
             </colgroup>
             <Thead>
@@ -183,22 +183,6 @@ const MarketTable: React.FC<MarketTableProps> = ({
                 </TableHeaderCell>
                 <TableHeaderCell>
                   <FlexJustifyContentFlexEndBox>
-                    <FlexBox onClick={handleClickThead("premium")}>
-                      <Paragraph cursor="pointer">시세차이</Paragraph>
-                      <TableHeaderSortIcon>
-                        {sortColumnName === "premium" ? (
-                          sortType === "asc" ? (
-                            <BiDownArrowAlt />
-                          ) : (
-                            <BiUpArrowAlt />
-                          )
-                        ) : null}
-                      </TableHeaderSortIcon>
-                    </FlexBox>
-                  </FlexJustifyContentFlexEndBox>
-                </TableHeaderCell>
-                <TableHeaderCell>
-                  <FlexJustifyContentFlexEndBox>
                     <FlexBox onClick={handleClickThead("tp")}>
                       <Paragraph cursor="pointer">현재가</Paragraph>
                       <TableHeaderSortIcon>
@@ -216,7 +200,7 @@ const MarketTable: React.FC<MarketTableProps> = ({
                 <TableHeaderCell>
                   <FlexJustifyContentFlexEndBox>
                     <FlexBox onClick={handleClickThead("scr")}>
-                      <Paragraph cursor="pointer">전일 대비</Paragraph>
+                      <Paragraph cursor="pointer">변동</Paragraph>
                       <TableHeaderSortIcon>
                         {sortColumnName === "scr" ? (
                           sortType === "asc" ? (
@@ -231,8 +215,24 @@ const MarketTable: React.FC<MarketTableProps> = ({
                 </TableHeaderCell>
                 <TableHeaderCell>
                   <FlexJustifyContentFlexEndBox>
+                    <FlexBox onClick={handleClickThead("premium")}>
+                      <Paragraph cursor="pointer">김프</Paragraph>
+                      <TableHeaderSortIcon>
+                        {sortColumnName === "premium" ? (
+                          sortType === "asc" ? (
+                            <BiDownArrowAlt />
+                          ) : (
+                            <BiUpArrowAlt />
+                          )
+                        ) : null}
+                      </TableHeaderSortIcon>
+                    </FlexBox>
+                  </FlexJustifyContentFlexEndBox>
+                </TableHeaderCell>
+                <TableHeaderCell>
+                  <FlexJustifyContentFlexEndBox>
                     <FlexBox onClick={handleClickThead("atp24h")}>
-                      <Paragraph cursor="pointer">거래대금</Paragraph>
+                      <Paragraph cursor="pointer">볼륨</Paragraph>
                       <TableHeaderSortIcon>
                         {sortColumnName === "atp24h" ? (
                           sortType === "asc" ? (
@@ -423,39 +423,6 @@ const TableItem = React.memo<{
       <TableCell>
         <TableCellInnerBox>
           <MonoFontBox>
-            {upbitMarket.premium ? (
-              <TextAlignRightBox>
-                <ColorBox
-                  color={
-                    upbitMarket.premium === 0
-                      ? "textBlueGray"
-                      : upbitMarket.premium > 0
-                      ? "greenLight"
-                      : "redLight"
-                  }
-                >
-                  <Paragraph>
-                    {upbitMarket.premium.toFixed(2).padStart(2, "0")}%
-                  </Paragraph>
-                  <Paragraph>
-                    {binanceMarket
-                      ? Number(
-                          (
-                            upbitMarket.tp -
-                            Number(binanceMarket.data.p) * upbitForex.basePrice
-                          ).toFixed(priceDecimalLength)
-                        ).toLocaleString()
-                      : undefined}
-                  </Paragraph>
-                </ColorBox>
-              </TextAlignRightBox>
-            ) : null}
-          </MonoFontBox>
-        </TableCellInnerBox>
-      </TableCell>
-      <TableCell>
-        <TableCellInnerBox>
-          <MonoFontBox>
             <TextAlignRightBox>
               <Paragraph
                 color={
@@ -476,6 +443,7 @@ const TableItem = React.memo<{
                     ? "greenLight"
                     : "redLight"
                 }
+                opacity={0.6}
               >
                 {binanceMarket
                   ? Number(
@@ -512,10 +480,44 @@ const TableItem = React.memo<{
                     ? "greenLight"
                     : "redLight"
                 }
+                opacity={0.6}
               >
                 {changePrice.toLocaleString()}
               </Paragraph>
             </TextAlignRightBox>
+          </MonoFontBox>
+        </TableCellInnerBox>
+      </TableCell>
+      <TableCell>
+        <TableCellInnerBox>
+          <MonoFontBox>
+            {upbitMarket.premium ? (
+              <TextAlignRightBox>
+                <ColorBox
+                  color={
+                    upbitMarket.premium === 0
+                      ? "textBlueGray"
+                      : upbitMarket.premium > 0
+                      ? "greenLight"
+                      : "redLight"
+                  }
+                >
+                  <Paragraph>
+                    {upbitMarket.premium.toFixed(2).padStart(2, "0")}%
+                  </Paragraph>
+                  <Paragraph opacity={0.6}>
+                    {binanceMarket
+                      ? Number(
+                          (
+                            upbitMarket.tp -
+                            Number(binanceMarket.data.p) * upbitForex.basePrice
+                          ).toFixed(priceDecimalLength)
+                        ).toLocaleString()
+                      : undefined}
+                  </Paragraph>
+                </ColorBox>
+              </TextAlignRightBox>
+            ) : null}
           </MonoFontBox>
         </TableCellInnerBox>
       </TableCell>

@@ -19,10 +19,10 @@ declare global {
 const Container = styled.div``;
 
 const Inner = styled.div`
+  padding: 0 ${({ theme }) => theme.spacing(1.25)};
   ${({ theme }) => theme.mediaQuery.desktop} {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 ${({ theme }) => theme.spacing(1.25)};
   }
 `;
 const TradingViewContainer = styled.div`
