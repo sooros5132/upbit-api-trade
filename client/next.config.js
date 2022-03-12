@@ -3,19 +3,18 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
 });
 
 module.exports = withBundleAnalyzer({
-  nextScriptWorkers: true,
-  env: {
-    BASE_URL: process.env.BASE_URL,
-  },
+  // env: {
+  //   BASE_URL: process.env.BASE_URL,
+  // },
   async rewrites() {
     return [
       {
-        source: "/api/v1/upbit/websocket",
-        destination: `https://quotation-api-cdn.dunamu.com/v1/forex/recent?codes=FRX.KRWUSD`,
+        source: "/asset/upbit/logos/:path*",
+        destination: `https://static.upbit.com/logos/:path*`,
       },
     ];
   },
-
+  reactStrictMode: true,
   webpack(conf) {
     conf.module.rules.push({
       test: /\.svg$/,

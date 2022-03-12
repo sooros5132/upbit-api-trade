@@ -46,7 +46,7 @@ class CustomDocument extends Document {
   }
   render() {
     return (
-      <Html lang="ko">
+      <Html>
         <Head>
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link

@@ -1,3 +1,4 @@
+import theme from "src/styles/theme";
 import styled, { useTheme } from "styled-components";
 
 export const FullWidthBox = styled.div`
@@ -5,6 +6,11 @@ export const FullWidthBox = styled.div`
 `;
 
 export const FlexColumnBox = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+export const FlexColumnHeight100Box = styled.div`
   display: flex;
   flex-direction: column;
 `;
@@ -70,9 +76,14 @@ export const FlexJustifyContentFlexEndBox = styled.div`
   justify-content: flex-end;
 `;
 
-export const FlexAlignItemsCenterBox = styled.div`
+export const FlexAlignItemsCenterHeight100Box = styled.div`
   display: flex;
   height: 100%;
+  align-items: center;
+`;
+
+export const FlexAlignItemsCenterBox = styled.div`
+  display: flex;
   align-items: center;
 `;
 
@@ -130,9 +141,35 @@ const BackgroundBox = styled.div`
 export const GridBox = styled.div`
   display: grid;
 `;
+export const Width100Box = styled.div`
+  width: 100%;
+`;
+export const Height100Box = styled.div`
+  height: 100%;
+`;
 
 export const Flex11AutoBox = styled.div`
   flex: auto;
+`;
+
+export const Flex0025Box = styled.div`
+  flex: 0 0 25%;
+`;
+
+export const Flex0033Box = styled.div`
+  flex: 0 0 33.333333%;
+`;
+
+export const Flex0050Box = styled.div`
+  flex: 0 0 50%;
+`;
+
+export const Flex0066Box = styled.div`
+  flex: 0 0 66.666666%;
+`;
+
+export const Flex0075Box = styled.div`
+  flex: 0 0 75%;
 `;
 
 export const TextAlignCenterBox = styled.div`
@@ -142,6 +179,15 @@ export const TextAlignCenterBox = styled.div`
 export const TextAlignRightBox = styled.div`
   text-align: right;
 `;
+
 export const TextAlignLeftBox = styled.div`
   text-align: left;
+`;
+
+export const MonoFontBox = styled.div`
+  font-family: "Roboto Mono", monospace; ;
+`;
+
+export const ColorBox = styled.div<{ color: keyof typeof theme.palette }>`
+  color: ${({ theme: t, color: c }) => t.palette[c]};
 `;

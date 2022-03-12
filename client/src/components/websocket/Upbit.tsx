@@ -7,10 +7,10 @@ import {
 } from "src/types/upbit";
 import { apiRequestURLs } from "src/utils/apiRequestURLs";
 import { v4 as uuidv4 } from "uuid";
-import { IMarketTableItem } from "../market-list/MarketList";
+import { IMarketTableItem } from "../market-table/MarketTable";
 
 export const UpbitWebSocketContext = React.createContext<
-  Record<string, IMarketTableItem>
+  Record<string, Omit<IMarketTableItem, "premium" | "binance_name">>
 >({});
 
 interface UpbitWebSocketProps {
@@ -33,7 +33,9 @@ const UpbitWebSocket = ({ children, marketList }: UpbitWebSocketProps) => {
   );
 
   const ws = useRef<WebSocket | null>(null);
-  const [list, setList] = React.useState<Record<string, IMarketTableItem>>({});
+  const [list, setList] = React.useState<
+    Record<string, Omit<IMarketTableItem, "premium" | "binance_name">>
+  >({});
 
   const handleMessage = React.useCallback(
     async (e: MessageEvent) => {

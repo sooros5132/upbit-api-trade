@@ -1,19 +1,35 @@
 import React from "react";
 import styled, { useTheme } from "styled-components";
 import {
+  Flex11AutoBox,
   FlexAlignItemsCenterBox,
+  FlexJustifyContentCenterBox,
+  FlexSpaceBetweenCenterBox,
   FlexSpaceBetweenEndBox,
 } from "../modules/Box";
 import { FaBitcoin } from "react-icons/fa";
 import { AiTwotoneSetting } from "react-icons/ai";
+import Link from "next/link";
+import TradingViewTapeWidget from "../tradingview/Tape";
 
 const Container = styled.header`
+  background-color: ${({ theme }) => theme.palette.mainDeepDrakBackground};
+`;
+const Inner = styled(FlexSpaceBetweenCenterBox)`
   height: ${({ theme }) => theme.spacing(5)};
+  font-size: ${({ theme }) => theme.size.px20};
+  ${({ theme }) => theme.mediaQuery.desktop} {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  padding: 0 ${({ theme }) => theme.spacing(1.25)};
+`;
+const LogoBox = styled(FlexSpaceBetweenCenterBox)`
+  color: ${({ theme }) => theme.palette.mainLightText};
 `;
 
-const Inner = styled(FlexSpaceBetweenEndBox)`
-  height: 100%;
-  padding: 0 ${({ theme }) => theme.spacing(1.5)};
+const TapeWidget = styled(Flex11AutoBox)`
+  padding: 0 ${({ theme }) => theme.spacing(1.25)};
 `;
 
 interface HeaderProps {}
@@ -27,8 +43,17 @@ const Header: React.FC<HeaderProps> = ({}) => {
     <Container>
       <Inner>
         <FlexAlignItemsCenterBox>
-          <FaBitcoin />
+          <Link href={"/"}>
+            <a>
+              <LogoBox>
+                <FaBitcoin />
+              </LogoBox>
+            </a>
+          </Link>
         </FlexAlignItemsCenterBox>
+        <TapeWidget>
+          <TradingViewTapeWidget />
+        </TapeWidget>
         <FlexAlignItemsCenterBox>
           <AiTwotoneSetting />
         </FlexAlignItemsCenterBox>

@@ -1,4 +1,4 @@
-import { IMarketTable } from "src/components/market-list/MarketListTable";
+import { IMarketTable } from "src/components/market-table/MarketListTable";
 
 export enum ThemeTypes {
   ACTION_UPDATE_TABLE = "UPDATE_TABLE",

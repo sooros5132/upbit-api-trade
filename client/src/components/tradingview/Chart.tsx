@@ -1,5 +1,6 @@
 import Script from "next/script";
 import React from "react";
+import isEqual from "react-fast-compare";
 import { IUpbitForex } from "src/types/upbit";
 import styled, { useTheme } from "styled-components";
 
@@ -7,9 +8,10 @@ const Container = styled.div<{ height: string }>`
   height: 500px;
 `;
 
-interface TradingViewProps {}
+interface TradingViewChartProps {}
 
-const TradingView: React.FC<TradingViewProps> = () => {
+const TradingViewChart: React.FC<TradingViewChartProps> = () => {
+  const theme = useTheme();
   const [tradingViewHeight, setTradingViewHeight] = React.useState("500px");
 
   const handleLoadTradingViewScript = () => {
@@ -24,7 +26,7 @@ const TradingView: React.FC<TradingViewProps> = () => {
         theme: "dark",
         style: "1",
         locale: "kr",
-        toolbar_bg: "#f1f3f6",
+        toolbar_bg: theme.palette.mainDrakBackground,
         enable_publishing: false,
         allow_symbol_change: true,
         studies: ["MASimple@tv-basicstudies"],
@@ -35,7 +37,6 @@ const TradingView: React.FC<TradingViewProps> = () => {
   return (
     <>
       <Script
-        defer
         src="https://s3.tradingview.com/tv.js"
         onLoad={handleLoadTradingViewScript}
       />
@@ -46,4 +47,6 @@ const TradingView: React.FC<TradingViewProps> = () => {
   );
 };
 
-export default TradingView;
+TradingViewChart.displayName = "TradingViewChart";
+
+export default React.memo(TradingViewChart, isEqual);
