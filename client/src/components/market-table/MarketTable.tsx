@@ -364,7 +364,6 @@ const TableItem = React.memo<{
   binanceMarket?: IBinanceSocketMessageTicker;
 }>(({ upbitMarket, binanceMarket, upbitForex }) => {
   const changeRate = upbitMarket.scr * 100;
-  const changePrice = upbitMarket.tp - upbitMarket.op;
   const marketSymbol = upbitMarket.cd.replace(krwRegex, "");
   // const usdtName = marketSymbol + "USDT";
   // const priceIntegerLength = String(upbitMarket.tp).replace(
@@ -482,7 +481,7 @@ const TableItem = React.memo<{
                 }
                 opacity={0.6}
               >
-                {changePrice.toLocaleString()}
+                {upbitMarket.scp.toLocaleString()}
               </Paragraph>
             </TextAlignRightBox>
           </MonoFontBox>
