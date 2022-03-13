@@ -86,7 +86,7 @@ export interface IUpbitSocketMessageTickerSimple {
   lp: number;
   tp: number;
   pcp: number;
-  c: string;
+  c: "RISE" | "EVEN" | "FALL";
   cp: number;
   scp: number;
   cr: number;
@@ -99,7 +99,7 @@ export interface IUpbitSocketMessageTickerSimple {
   tdt: string;
   ttm: string;
   ttms: number;
-  ab: string;
+  ab: "ASK" | "BID";
   aav: number;
   abv: number;
   h52wp: number;
@@ -107,8 +107,8 @@ export interface IUpbitSocketMessageTickerSimple {
   l52wp: number;
   l52wdt: string;
   // trade_status: string;
-  ms: string;
-  mw: string;
+  ms: "PREVIEW" | "ACTIVE" | "DELISTED";
+  mw: "NONE" | "CAUTION";
   its: boolean;
   dd: string | null;
   tms: number;

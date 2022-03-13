@@ -13,10 +13,14 @@ import Link from "next/link";
 import TradingViewTapeWidget from "../tradingview/Tape";
 
 const Container = styled.header`
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 1;
   background-color: ${({ theme }) => theme.palette.mainDeepDrakBackground};
 `;
 const Inner = styled(FlexSpaceBetweenCenterBox)`
-  height: ${({ theme }) => theme.spacing(5)};
+  height: ${({ theme }) => theme.spacing(5.5)};
   font-size: ${({ theme }) => theme.size.px20};
   ${({ theme }) => theme.mediaQuery.desktop} {
     max-width: 1200px;

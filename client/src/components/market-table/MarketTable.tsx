@@ -11,9 +11,11 @@ import {
 } from "src/types/upbit";
 import {
   ColorBox,
+  CursorPointerBox,
   FlexAlignItemsCenterBox,
   FlexBox,
   FlexColumnBox,
+  FlexCursorPointerBox,
   FlexJustifyContentFlexEndBox,
   MonoFontBox,
   TextAlignRightBox,
@@ -129,19 +131,26 @@ const MarketTable: React.FC<MarketTableProps> = ({
   const [sortColumnName, setSortColumnName] =
     React.useState<keyof IMarketTableItem>("atp24h");
   const [sortType, setSortType] = React.useState<"asc" | "desc">("desc");
+  const [stateUpdateDelay] = React.useState(100);
 
   const handleClickThead = (columnName: keyof IMarketTableItem) => () => {
     if (columnName === sortColumnName) {
       setSortType((prevState) => (prevState === "asc" ? "desc" : "asc"));
       return;
     }
-    setSortType("asc");
+    setSortType("desc");
     setSortColumnName(columnName);
   };
 
   return (
-    <UpbitWebSocket marketList={upbitKrwList}>
-      <BinanceWebSocket marketList={upbitKrwList}>
+    <UpbitWebSocket
+      marketList={upbitKrwList}
+      stateUpdateDelay={stateUpdateDelay}
+    >
+      <BinanceWebSocket
+        marketList={upbitKrwList}
+        stateUpdateDelay={stateUpdateDelay}
+      >
         <TableContainer>
           {/* <Head
         title={`₿ ${
@@ -163,13 +172,10 @@ const MarketTable: React.FC<MarketTableProps> = ({
                   <TableCellInnerBox></TableCellInnerBox>
                 </TableCell>
                 <TableHeaderCell>
-                  <FlexBox>
-                    <Paragraph
-                      cursor="pointer"
-                      onClick={handleClickThead("korean_name")}
-                    >
-                      이름
-                    </Paragraph>
+                  <FlexCursorPointerBox
+                    onClick={handleClickThead("korean_name")}
+                  >
+                    <Paragraph cursor="inherit">이름</Paragraph>
                     <TableHeaderSortIcon>
                       {sortColumnName === "korean_name" ? (
                         sortType === "asc" ? (
@@ -179,12 +185,12 @@ const MarketTable: React.FC<MarketTableProps> = ({
                         )
                       ) : null}
                     </TableHeaderSortIcon>
-                  </FlexBox>
+                  </FlexCursorPointerBox>
                 </TableHeaderCell>
                 <TableHeaderCell>
                   <FlexJustifyContentFlexEndBox>
-                    <FlexBox onClick={handleClickThead("tp")}>
-                      <Paragraph cursor="pointer">현재가</Paragraph>
+                    <FlexCursorPointerBox onClick={handleClickThead("tp")}>
+                      <Paragraph cursor="inherit">현재가</Paragraph>
                       <TableHeaderSortIcon>
                         {sortColumnName === "tp" ? (
                           sortType === "asc" ? (
@@ -194,13 +200,13 @@ const MarketTable: React.FC<MarketTableProps> = ({
                           )
                         ) : null}
                       </TableHeaderSortIcon>
-                    </FlexBox>
+                    </FlexCursorPointerBox>
                   </FlexJustifyContentFlexEndBox>
                 </TableHeaderCell>
                 <TableHeaderCell>
                   <FlexJustifyContentFlexEndBox>
-                    <FlexBox onClick={handleClickThead("scr")}>
-                      <Paragraph cursor="pointer">변동</Paragraph>
+                    <FlexCursorPointerBox onClick={handleClickThead("scr")}>
+                      <Paragraph cursor="inherit">변동</Paragraph>
                       <TableHeaderSortIcon>
                         {sortColumnName === "scr" ? (
                           sortType === "asc" ? (
@@ -210,13 +216,13 @@ const MarketTable: React.FC<MarketTableProps> = ({
                           )
                         ) : null}
                       </TableHeaderSortIcon>
-                    </FlexBox>
+                    </FlexCursorPointerBox>
                   </FlexJustifyContentFlexEndBox>
                 </TableHeaderCell>
                 <TableHeaderCell>
                   <FlexJustifyContentFlexEndBox>
-                    <FlexBox onClick={handleClickThead("premium")}>
-                      <Paragraph cursor="pointer">김프</Paragraph>
+                    <FlexCursorPointerBox onClick={handleClickThead("premium")}>
+                      <Paragraph cursor="inherit">김프</Paragraph>
                       <TableHeaderSortIcon>
                         {sortColumnName === "premium" ? (
                           sortType === "asc" ? (
@@ -226,13 +232,13 @@ const MarketTable: React.FC<MarketTableProps> = ({
                           )
                         ) : null}
                       </TableHeaderSortIcon>
-                    </FlexBox>
+                    </FlexCursorPointerBox>
                   </FlexJustifyContentFlexEndBox>
                 </TableHeaderCell>
                 <TableHeaderCell>
                   <FlexJustifyContentFlexEndBox>
-                    <FlexBox onClick={handleClickThead("atp24h")}>
-                      <Paragraph cursor="pointer">볼륨</Paragraph>
+                    <FlexCursorPointerBox onClick={handleClickThead("atp24h")}>
+                      <Paragraph cursor="inherit">볼륨</Paragraph>
                       <TableHeaderSortIcon>
                         {sortColumnName === "atp24h" ? (
                           sortType === "asc" ? (
@@ -242,7 +248,7 @@ const MarketTable: React.FC<MarketTableProps> = ({
                           )
                         ) : null}
                       </TableHeaderSortIcon>
-                    </FlexBox>
+                    </FlexCursorPointerBox>
                   </FlexJustifyContentFlexEndBox>
                 </TableHeaderCell>
               </TableHeaderRow>
@@ -425,9 +431,9 @@ const TableItem = React.memo<{
             <TextAlignRightBox>
               <Paragraph
                 color={
-                  upbitMarket.scr === 0
+                  upbitMarket.scp === 0
                     ? "gray30"
-                    : upbitMarket.scr > 0
+                    : upbitMarket.scp > 0
                     ? "greenLight"
                     : "redLight"
                 }
@@ -436,9 +442,9 @@ const TableItem = React.memo<{
               </Paragraph>
               <Paragraph
                 color={
-                  upbitMarket.scr === 0
+                  upbitMarket.scp === 0
                     ? "gray30"
-                    : upbitMarket.scr > 0
+                    : upbitMarket.scp > 0
                     ? "greenLight"
                     : "redLight"
                 }
@@ -462,9 +468,9 @@ const TableItem = React.memo<{
             <TextAlignRightBox>
               <Paragraph
                 color={
-                  upbitMarket.scr === 0
+                  upbitMarket.scp === 0
                     ? "gray30"
-                    : upbitMarket.scr > 0
+                    : upbitMarket.scp > 0
                     ? "greenLight"
                     : "redLight"
                 }
@@ -473,9 +479,9 @@ const TableItem = React.memo<{
               </Paragraph>
               <Paragraph
                 color={
-                  upbitMarket.scr === 0
+                  upbitMarket.scp === 0
                     ? "gray30"
-                    : upbitMarket.scr > 0
+                    : upbitMarket.scp > 0
                     ? "greenLight"
                     : "redLight"
                 }

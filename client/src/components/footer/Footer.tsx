@@ -14,9 +14,11 @@ import {
 import { HoverUnderLineAnchor, Paragraph, Span } from "../modules/Typography";
 
 const Container = styled.footer`
-  background-color: ${({ theme }) => theme.palette.mainDeepDrakBackground};
+  background-color: ${({ theme }) => theme.palette.gray90};
+  color: ${({ theme }) => theme.palette.gray30};
 `;
 const Inner = styled(FlexJustifyContentCenterBox)`
+  padding: ${({ theme }) => theme.spacing(2)} 0;
   ${({ theme }) => theme.mediaQuery.mobile} {
     padding: ${({ theme }) => theme.spacing(3)} 0;
     flex-wrap: wrap;
@@ -47,7 +49,7 @@ const DescriptionInner = styled.div`
     text-align: center;
     border-left: 0;
   }
-  border-left: 1px solid ${({ theme }) => theme.palette.mainLightText}CC;
+  border-left: 1px solid ${({ theme }) => theme.palette.gray70};
   padding: 0 ${({ theme }) => theme.spacing(4)};
 `;
 
@@ -72,7 +74,7 @@ const Footer: React.FC<FooterProps> = ({}) => {
                 <Paragraph>SOOROS</Paragraph>
               </LogoBox>
               <ContactBox>
-                <Paragraph color="textBlueGray">
+                <Paragraph>
                   <HoverUnderLineAnchor href="mailto:sooros5132@gmail.com">
                     sooros5132@gmail.com
                   </HoverUnderLineAnchor>
@@ -84,17 +86,12 @@ const Footer: React.FC<FooterProps> = ({}) => {
         <Flex0066Box>
           <DescriptionContainer>
             <DescriptionInner>
-              <div>
-                <Paragraph>
-                  SOOROS(<Link href="https://sooros.com">sooros.com</Link>)는
-                  사이트 내 모든 암호화폐 가격 정보에 대하여 어떠한 책임을 지지
-                  않습니다.
-                </Paragraph>
-                <Paragraph>
-                  디지털 자산 투자에 대한 손실은 본인 책임이며 투자에 유의하시기
-                  바랍니다.
-                </Paragraph>
-              </div>
+              <Paragraph>
+                SOOROS(<Link href="https://sooros.com">sooros.com</Link>)는 개인
+                사용 목적으로 만들어진 사이트이며 사이트 내 모든 암호화폐 가격
+                정보에 대하여 어떠한 책임을 지지 않습니다. 디지털 자산 투자에
+                대한 손실은 본인 책임이며 투자에 유의하시기 바랍니다.
+              </Paragraph>
             </DescriptionInner>
           </DescriptionContainer>
         </Flex0066Box>

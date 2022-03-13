@@ -47,7 +47,9 @@ export interface TypographyProps {
     | "zoom-in"
     | "zoom-out"
     | "grab"
-    | "grabbing";
+    | "grabbing"
+    | "inherit"
+    | "initial";
 }
 
 const TypographyMixer = ({

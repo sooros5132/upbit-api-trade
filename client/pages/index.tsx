@@ -3,6 +3,7 @@ import { NextSeo } from "next-seo";
 import Script from "next/script";
 import React, { useContext, useEffect } from "react";
 import MarketList from "src/components/market-table/MarketTable";
+import { Width100Box } from "src/components/modules/Box";
 import TradingView from "src/components/tradingview/Chart";
 import BinanceWebSocket from "src/components/websocket/Binance";
 import UpbitWebSocket from "src/components/websocket/Upbit";
@@ -16,9 +17,12 @@ declare global {
   }
 }
 
-const Container = styled.div``;
+const Container = styled.div`
+  flex: 1 0 auto;
+  display: flex;
+`;
 
-const Inner = styled.div`
+const Inner = styled(Width100Box)`
   padding: 0 ${({ theme }) => theme.spacing(1.25)};
   ${({ theme }) => theme.mediaQuery.desktop} {
     max-width: 1200px;

@@ -91,7 +91,6 @@ const MarketListTable: React.FC<MarketListTableProps> = ({ list }) => {
     // selectedFlatRows,
     // state: { selectedRowIds }
   } = tableInstance;
-  console.log("reload");
 
   return (
     <StyleBox>

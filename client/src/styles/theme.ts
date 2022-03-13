@@ -86,6 +86,9 @@ const theme = {
     gray40: "#A6A6A6",
     gray55: "#737373",
     gray70: "#404040",
+    gray80: "#252525",
+    gray90: "#121212",
+    gray95: "#070707",
   },
   spacing(size: number) {
     return `${size * 8}px`;

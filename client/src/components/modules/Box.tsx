@@ -5,6 +5,47 @@ export const FullWidthBox = styled.div`
   width: 100%;
 `;
 
+export const PositionRelativeBox = styled.div`
+  position: relative;
+`;
+export const PositionRelativeFullScreenBox = styled.div`
+  position: relative;
+  width: 100%;
+  height: 100%;
+`;
+
+export const PositionAbsoluteBox = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+`;
+
+export const PositionAbsoluteCenterBox = styled.div`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+`;
+
+export const PositionAbsoluteXCenterBox = styled.div`
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+`;
+
+export const PositionAbsoluteYCenterBox = styled.div`
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+`;
+
+export const PositionTopStickyBox = styled.div`
+  position: sticky;
+  top: 0;
+`;
+
 export const FlexColumnBox = styled.div`
   display: flex;
   flex-direction: column;
@@ -12,6 +53,7 @@ export const FlexColumnBox = styled.div`
 
 export const FlexColumnHeight100Box = styled.div`
   display: flex;
+  height: 100%;
   flex-direction: column;
 `;
 
@@ -190,4 +232,13 @@ export const MonoFontBox = styled.div`
 
 export const ColorBox = styled.div<{ color: keyof typeof theme.palette }>`
   color: ${({ theme: t, color: c }) => t.palette[c]};
+`;
+
+export const CursorPointerBox = styled.div`
+  cursor: pointer;
+`;
+
+export const FlexCursorPointerBox = styled.div`
+  display: flex;
+  cursor: pointer;
 `;
