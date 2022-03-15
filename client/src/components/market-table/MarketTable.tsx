@@ -336,15 +336,16 @@ const TableBody = React.memo<{
   //       ? (1 - binancePrice / upbitRealtimeMarket["KRW-BTC"]?.tp) * 100
   //       : undefined;
   // }
+  const title = `${
+    upbitRealtimeMarket["KRW-BTC"]
+      ? "₿ " + (upbitRealtimeMarket["KRW-BTC"].scr * 100).toFixed(2) + "% | "
+      : ""
+  }SOOROS`;
   return (
     <>
       <NextSeo
         // title={bitcoinPremium ? `${bitcoinPremium?.toFixed(2)}%` : undefined}
-        title={`${
-          upbitRealtimeMarket["KRW-BTC"]
-            ? "₿ " + (upbitRealtimeMarket["KRW-BTC"].cr * 100).toFixed(2) + "%"
-            : ""
-        } | SOOROS`}
+        title={title}
       ></NextSeo>
       <Tbody>
         {list.map((market) => {
