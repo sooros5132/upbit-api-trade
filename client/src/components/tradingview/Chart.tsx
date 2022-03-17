@@ -6,6 +6,10 @@ import styled, { useTheme } from "styled-components";
 
 const Container = styled.div<{ height: string }>`
   height: 500px;
+  ${({ theme }) => theme.mediaQuery.mobile} {
+    height: 50vh;
+    max-height: 300px;
+  }
 `;
 
 interface TradingViewChartProps {}

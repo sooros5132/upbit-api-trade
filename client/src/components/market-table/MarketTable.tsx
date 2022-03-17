@@ -11,10 +11,8 @@ import {
 } from "src/types/upbit";
 import {
   ColorBox,
-  CursorPointerBox,
   FlexAlignItemsCenterBox,
   FlexBox,
-  FlexColumnBox,
   FlexCursorPointerBox,
   FlexJustifyContentFlexEndBox,
   MonoFontBox,
@@ -131,7 +129,7 @@ const MarketTable: React.FC<MarketTableProps> = ({
   const [sortColumnName, setSortColumnName] =
     React.useState<keyof IMarketTableItem>("atp24h");
   const [sortType, setSortType] = React.useState<"asc" | "desc">("desc");
-  const [stateUpdateDelay] = React.useState(100);
+  const [stateUpdateDelay] = React.useState(200);
 
   const handleClickThead = (columnName: keyof IMarketTableItem) => () => {
     if (columnName === sortColumnName) {

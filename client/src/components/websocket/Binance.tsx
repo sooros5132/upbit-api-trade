@@ -44,7 +44,7 @@ const BinanceWebSocket = ({
       bufferSize.current++;
       stanbyList.current[message.data.s] = message;
 
-      if (bufferSize.current >= 500) {
+      if (bufferSize.current >= 100) {
         bufferSize.current = 0;
         setList({ ...stanbyList.current });
       }

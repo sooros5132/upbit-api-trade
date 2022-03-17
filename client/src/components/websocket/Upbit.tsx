@@ -58,7 +58,7 @@ const UpbitWebSocket = ({
         english_name: marketListObjects[message.cd]?.english_name || "",
       };
 
-      if (bufferSize.current >= 500) {
+      if (bufferSize.current >= 100) {
         bufferSize.current = 0;
         setList({ ...stanbyList.current });
       }
