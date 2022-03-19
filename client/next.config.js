@@ -9,6 +9,10 @@ module.exports = withBundleAnalyzer({
   async rewrites() {
     return [
       {
+        source: "/api/v1/upbit/:path*",
+        destination: `https://api.upbit.com/v1/:path*`,
+      },
+      {
         source: "/asset/upbit/logos/:path*",
         destination: `https://static.upbit.com/logos/:path*`,
       },
