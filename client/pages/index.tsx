@@ -1,13 +1,11 @@
 import type { GetStaticProps, NextPage } from "next";
-import { NextSeo } from "next-seo";
-import Script from "next/script";
-import React, { useContext, useEffect } from "react";
-import MarketList from "src/components/market-table/MarketTable";
+import React from "react";
+import MarketList, {
+  IMarketTableItem,
+} from "src/components/market-table/MarketTable";
 import { Width100Box } from "src/components/modules/Box";
 import TradingView from "src/components/tradingview/Chart";
-import BinanceWebSocket from "src/components/websocket/Binance";
-import UpbitWebSocket from "src/components/websocket/Upbit";
-import { IUpbitForex, IUpbitMarket } from "src/types/upbit";
+import { IUpbitApiTicker, IUpbitForex, IUpbitMarket } from "src/types/upbit";
 import { apiRequestURLs } from "src/utils/apiRequestURLs";
 import styled from "styled-components";
 
@@ -40,9 +38,14 @@ const MarketTableContainer = styled.div`
 interface HomeProps {
   upbitForex: IUpbitForex;
   upbitMarketList: Array<IUpbitMarket>;
+  upbitMarketSnapshot?: Record<string, IMarketTableItem>;
 }
 
-const Home: NextPage<HomeProps> = ({ upbitForex, upbitMarketList }) => {
+const Home: NextPage<HomeProps> = ({
+  upbitForex,
+  upbitMarketList,
+  upbitMarketSnapshot,
+}) => {
   const [upbitKrwList] = React.useState(
     upbitMarketList.filter((c) => c.market.match(/^KRW-/i))
   );
@@ -54,7 +57,11 @@ const Home: NextPage<HomeProps> = ({ upbitForex, upbitMarketList }) => {
           <TradingView />
         </TradingViewContainer>
         <MarketTableContainer>
-          <MarketList upbitForex={upbitForex} upbitKrwList={upbitKrwList} />
+          <MarketList
+            upbitForex={upbitForex}
+            upbitKrwList={upbitKrwList}
+            upbitMarketSnapshot={upbitMarketSnapshot}
+          />
         </MarketTableContainer>
       </Inner>
     </Container>
@@ -70,12 +77,69 @@ export const getStaticProps: GetStaticProps<HomeProps> = async ({ params }) => {
     resUpbitForex.json(),
     resUpbitMarketList.json(),
   ]);
+
+  const upbitMarketRecord: Record<string, IUpbitMarket> = {};
+
+  const upbitMarketQueryString = upbitMarketList
+    .filter((m: IUpbitMarket) => Boolean(m.market.match(/^krw-/i)))
+    .map((m) => {
+      upbitMarketRecord[m.market] = m;
+      return m.market;
+    })
+    .join(",");
+  const upbitMarketSnapshotList: Array<IUpbitApiTicker> = await fetch(
+    `${apiRequestURLs.upbit.marketTicker}?markets=${upbitMarketQueryString}`
+  ).then((res) => res.json());
+
+  const upbitMarketSnapshot: Record<string, IMarketTableItem> = {};
+
+  for (const t of upbitMarketSnapshotList) {
+    upbitMarketSnapshot[t.market] = {
+      ty: "ticker",
+      cd: t.market,
+      op: t.opening_price,
+      hp: t.high_price,
+      lp: t.low_price,
+      tp: t.trade_price,
+      pcp: t.prev_closing_price,
+      c: t.change,
+      cp: t.change_price,
+      scp: t.signed_change_price,
+      cr: t.change_rate,
+      scr: t.signed_change_rate,
+      tv: t.trade_volume,
+      atv: t.acc_trade_volume,
+      atv24h: t.acc_trade_volume_24h,
+      atp: t.acc_trade_price,
+      atp24h: t.acc_trade_price_24h,
+      tdt: t.trade_date_kst,
+      ttm: t.trade_time_kst,
+      ttms: t.trade_timestamp,
+      ab: "ASK",
+      aav: 0,
+      abv: 0,
+      h52wp: t.highest_52_week_price,
+      h52wdt: t.highest_52_week_date,
+      l52wp: t.lowest_52_week_price,
+      l52wdt: t.lowest_52_week_date,
+      ms: "ACTIVE",
+      mw: "NONE",
+      its: false,
+      dd: null,
+      tms: t.timestamp,
+      st: "SNAPSHOT",
+      english_name: upbitMarketRecord[t.market].english_name,
+      korean_name: upbitMarketRecord[t.market].korean_name,
+    };
+  }
+
   return {
     props: {
       upbitForex: upbitForex[0],
       upbitMarketList,
+      upbitMarketSnapshot,
     },
-    revalidate: 60,
+    revalidate: 5,
   };
 };
 

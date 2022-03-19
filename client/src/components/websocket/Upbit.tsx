@@ -10,12 +10,13 @@ import { v4 as uuidv4 } from "uuid";
 import { IMarketTableItem } from "../market-table/MarketTable";
 
 export const UpbitWebSocketContext = React.createContext<
-  Record<string, Omit<IMarketTableItem, "premium" | "binance_name">>
+  Record<string, IMarketTableItem>
 >({});
 
 interface UpbitWebSocketProps {
   marketList: Array<IUpbitMarket>;
   stateUpdateDelay: number;
+  upbitMarketSnapshot?: Record<string, IMarketTableItem>;
   children?: React.ReactNode;
 }
 
@@ -28,6 +29,7 @@ const isOnlyRealtime = true; //실시간 시세만 제공
 const UpbitWebSocket = ({
   children,
   marketList,
+  upbitMarketSnapshot,
   stateUpdateDelay,
 }: UpbitWebSocketProps) => {
   const codes = React.useMemo(
@@ -38,10 +40,10 @@ const UpbitWebSocket = ({
     () => _.keyBy(marketList, "market"),
     [marketList]
   );
-  const [list, setList] = React.useState<
-    Record<string, Omit<IMarketTableItem, "premium" | "binance_name">>
-  >({});
-  const stanbyList = React.useRef<typeof list>({});
+  const [list, setList] = React.useState<Record<string, IMarketTableItem>>(
+    upbitMarketSnapshot || {}
+  );
+  const stanbyList = React.useRef<typeof list>(upbitMarketSnapshot || {});
   const bufferSize = useRef(0);
   const ws = useRef<WebSocket | null>(null);
 

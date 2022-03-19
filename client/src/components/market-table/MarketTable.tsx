@@ -5,6 +5,7 @@ import isEqual from "react-fast-compare";
 import { BiUpArrowAlt, BiDownArrowAlt } from "react-icons/bi";
 import UpbitWebSocket, { UpbitWebSocketContext } from "../websocket/Upbit";
 import {
+  IUpbitApiTicker,
   IUpbitForex,
   IUpbitMarket,
   IUpbitSocketMessageTickerSimple,
@@ -113,18 +114,20 @@ const btcRegex = /^btc-/i;
 export interface IMarketTableItem extends IUpbitSocketMessageTickerSimple {
   korean_name: string;
   english_name: string;
-  binance_name: string;
-  premium: number;
+  binance_name?: string;
+  premium?: number;
 }
 
 interface MarketTableProps {
   upbitForex: IUpbitForex;
   upbitKrwList: Array<IUpbitMarket>;
+  upbitMarketSnapshot?: Record<string, IMarketTableItem>;
 }
 
 const MarketTable: React.FC<MarketTableProps> = ({
   upbitForex,
   upbitKrwList,
+  upbitMarketSnapshot,
 }) => {
   const [sortColumnName, setSortColumnName] =
     React.useState<keyof IMarketTableItem>("atp24h");
@@ -140,10 +143,13 @@ const MarketTable: React.FC<MarketTableProps> = ({
     setSortColumnName(columnName);
   };
 
+  console.log(upbitMarketSnapshot);
+
   return (
     <UpbitWebSocket
       marketList={upbitKrwList}
       stateUpdateDelay={stateUpdateDelay}
+      upbitMarketSnapshot={upbitMarketSnapshot}
     >
       <BinanceWebSocket
         marketList={upbitKrwList}
