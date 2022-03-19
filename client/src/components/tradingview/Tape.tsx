@@ -1,4 +1,3 @@
-import Script from "next/script";
 import React, { useEffect } from "react";
 import isEqual from "react-fast-compare";
 

@@ -49,7 +49,7 @@ export interface IUpbitSocketMessageTicker {
   low_price: number;
   trade_price: number;
   prev_closing_price: number;
-  change: string;
+  change: "RISE" | "EVEN" | "FALL";
   change_price: number;
   signed_change_price: number;
   change_rate: number;
@@ -62,7 +62,7 @@ export interface IUpbitSocketMessageTicker {
   trade_date: string;
   trade_time: string;
   trade_timestamp: number;
-  ask_bid: string;
+  ask_bid: "ASK" | "BID";
   acc_ask_volume: number;
   acc_bid_volume: number;
   highest_52_week_price: number;

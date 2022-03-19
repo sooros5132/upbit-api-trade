@@ -1,7 +1,7 @@
-import React from "react";
-import { FlexCenterCenterBox } from "src/components/modules/Box";
-import { Paragraph } from "src/components/modules/Typography";
-import styled from "styled-components";
+import { Typography } from '@mui/material';
+import React from 'react';
+import { FlexCenterCenterBox } from 'src/components/modules/Box';
+import styled from 'styled-components';
 
 const Container = styled(FlexCenterCenterBox)`
   flex: 1 0 auto;
@@ -24,15 +24,15 @@ const Custom404: React.FC = () => {
   return (
     <Container>
       <RightBox>
-        <Paragraph fontSize="px24">404</Paragraph>
+        <Typography fontSize="px24">404</Typography>
       </RightBox>
       <LeftBox>
-        <Paragraph fontSize="px24">This page could not be found.</Paragraph>
+        <Typography fontSize="px24">This page could not be found.</Typography>
       </LeftBox>
     </Container>
   );
 };
 
-Custom404.displayName = "Custom404";
+Custom404.displayName = 'Custom404';
 
 export default Custom404;

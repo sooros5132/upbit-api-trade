@@ -6,10 +6,12 @@ import Document, {
   NextScript,
 } from "next/document";
 import { ServerStyleSheet } from "styled-components";
+import { ServerStyleSheets } from "@mui/styles";
 
 class CustomDocument extends Document {
   static async getInitialProps(ctx: DocumentContext) {
-    const styledComponentsSheet = new ServerStyleSheet();
+    const sheet = new ServerStyleSheet();
+    const materialSheets = new ServerStyleSheets();
     // const materialSheets = new ServerStyleSheets();
     const originalRenderPage = ctx.renderPage;
 
@@ -18,10 +20,7 @@ class CustomDocument extends Document {
       ctx.renderPage = () =>
         originalRenderPage({
           enhanceApp: (App) => (props) =>
-            styledComponentsSheet.collectStyles(
-              // materialSheets.collect(<App {...props} />),
-              <App {...props} />
-            ),
+            sheet.collectStyles(materialSheets.collect(<App {...props} />)),
         });
       // Documents의 initial props
       const initialProps = await Document.getInitialProps(ctx);
@@ -31,18 +30,15 @@ class CustomDocument extends Document {
         styles: (
           <>
             {initialProps.styles}
-            {/* {materialSheets.getStyleElement()} */}
-            {styledComponentsSheet.getStyleElement()}
+            {sheet.getStyleElement()}
           </>
         ),
       };
     } catch (error) {
       throw error;
     } finally {
-      styledComponentsSheet.seal();
+      sheet.seal();
     }
-    const initialProps = await Document.getInitialProps(ctx);
-    return { ...initialProps };
   }
   render() {
     return (

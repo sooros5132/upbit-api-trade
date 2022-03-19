@@ -1,3 +1,4 @@
+import { styled } from "@mui/material/styles";
 import type { GetStaticProps, NextPage } from "next";
 import React from "react";
 import MarketList, {
@@ -7,15 +8,8 @@ import { Width100Box } from "src/components/modules/Box";
 import TradingView from "src/components/tradingview/Chart";
 import { IUpbitApiTicker, IUpbitForex, IUpbitMarket } from "src/types/upbit";
 import { apiRequestURLs } from "src/utils/apiRequestURLs";
-import styled from "styled-components";
 
-declare global {
-  interface Window {
-    TradingView?: any;
-  }
-}
-
-const Container = styled.div`
+const Container = styled("div")`
   flex: 1 0 auto;
   display: flex;
 `;
@@ -27,11 +21,11 @@ const Inner = styled(Width100Box)`
     margin: 0 auto;
   }
 `;
-const TradingViewContainer = styled.div`
+const TradingViewContainer = styled("div")`
   margin: ${({ theme }) => theme.spacing(2)} 0;
 `;
 
-const MarketTableContainer = styled.div`
+const MarketTableContainer = styled("div")`
   margin-bottom: ${({ theme }) => theme.spacing(2)};
 `;
 

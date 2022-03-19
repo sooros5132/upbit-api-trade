@@ -1,24 +1,23 @@
 import React from "react";
-import styled, { useTheme } from "styled-components";
 import {
   Flex11AutoBox,
   FlexAlignItemsCenterBox,
-  FlexJustifyContentCenterBox,
   FlexSpaceBetweenCenterBox,
-  FlexSpaceBetweenEndBox,
 } from "../modules/Box";
 import { FaBitcoin } from "react-icons/fa";
 import { AiTwotoneSetting } from "react-icons/ai";
 import Link from "next/link";
 import TradingViewTapeWidget from "../tradingview/Tape";
+import { styled, useTheme } from "@mui/material/styles";
 
-const Container = styled.header`
+const Container = styled("header")`
   position: sticky;
   top: 0;
   left: 0;
   z-index: 1;
-  background-color: ${({ theme }) => theme.palette.mainDeepDrakBackground};
+  background-color: ${({ theme }) => theme.color.mainDeepDrakBackground};
 `;
+
 const Inner = styled(FlexSpaceBetweenCenterBox)`
   height: ${({ theme }) => theme.spacing(5.5)};
   font-size: ${({ theme }) => theme.size.px20};
@@ -28,8 +27,9 @@ const Inner = styled(FlexSpaceBetweenCenterBox)`
   }
   padding: 0 ${({ theme }) => theme.spacing(1.25)};
 `;
+
 const LogoBox = styled(FlexSpaceBetweenCenterBox)`
-  color: ${({ theme }) => theme.palette.mainLightText};
+  color: ${({ theme }) => theme.color.mainLightText};
 `;
 
 const TapeWidget = styled(Flex11AutoBox)`

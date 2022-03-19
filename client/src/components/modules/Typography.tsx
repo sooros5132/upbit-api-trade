@@ -1,84 +1,68 @@
-import theme from "src/styles/theme";
-import styled, {
-  css,
-  DefaultTheme,
-  StyledComponent,
-  ThemedStyledFunction,
-} from "styled-components";
+import { Typography, TypographyProps } from '@mui/material';
+import { styled } from '@mui/material/styles';
 
-export interface TypographyProps {
-  children?: React.ReactNode;
-  color?: keyof typeof theme.palette;
-  fontSize?: keyof typeof theme.size;
-  opacity?: number;
-  cursor?:
-    | "auto"
-    | "default"
-    | "none"
-    | "context-menu"
-    | "help"
-    | "pointer"
-    | "progress"
-    | "wait"
-    | "cell"
-    | "crosshair"
-    | "text"
-    | "vertical-text"
-    | "alias"
-    | "copy"
-    | "move"
-    | "no-drop"
-    | "not-allowed"
-    | "e-resize"
-    | "n-resize"
-    | "ne-resize"
-    | "nw-resize"
-    | "s-resize"
-    | "se-resize"
-    | "sw-resize"
-    | "w-resize"
-    | "ew-resize"
-    | "ns-resize"
-    | "nesw-resize"
-    | "nwse-resize"
-    | "col-resize"
-    | "row-resize"
-    | "all-scroll"
-    | "zoom-in"
-    | "zoom-out"
-    | "grab"
-    | "grabbing"
-    | "inherit"
-    | "initial";
-}
+export const CursorPointerBox = styled(Typography)(() => ({
+  cursor: 'pointer'
+}));
 
-const TypographyMixer = ({
-  theme: t,
-  color,
-  fontSize,
-  cursor,
-  opacity,
-}: TypographyProps & { theme: DefaultTheme }) => css`
-  color: ${color ? t.palette[color] : "inherit"};
-  font-size: ${fontSize ? t.size[fontSize] : "inherit"};
-  cursor: ${cursor ? cursor : "initial"};
-  opacity: ${opacity ? opacity : "initial"};
-`;
+export const MonoFontTypography = styled(Typography)(() => ({
+  fontFamily: 'Roboto Mono,Trebuchet MS,roboto,ubuntu,sans-serif,monospace'
+}));
 
-export const Span = styled.span<TypographyProps>`
-  ${(props) => TypographyMixer(props)}
-`;
+export const ColorInheritTypography = styled(Typography)(() => ({
+  color: 'inherit'
+}));
 
-export const Paragraph = styled.p<TypographyProps>`
-  ${(props) => TypographyMixer(props)}
-`;
+export const FontSizeInheritTypography = styled(Typography)(() => ({
+  fontSize: 'inherit'
+}));
 
-export const MonoFontTypography = styled.span`
-  font-family: "Roboto Mono", monospace; ;
-`;
+export const InheritTypography = styled(Typography)(() => ({
+  fontSize: 'inherit',
+  color: 'inherit'
+}));
 
-export const HoverUnderLineAnchor = styled.a`
-  &:hover {
-    text-decoration: underline;
+// 부모의 고정된 크기가 있어야 하고 overflow: hidden이 있어야 한다.
+export const EllipsisTypography = styled(Typography)(({ theme }) => ({
+  overflow: 'hidden',
+  whiteSpace: 'nowrap',
+  textOverflow: 'ellipsis'
+}));
+
+export const BreakSpacesTypography = styled(Typography)(({ theme }) => ({
+  wordBreak: 'keep-all',
+  overflowWrap: 'anywhere'
+}));
+
+export const BreakAllTypography = styled(Typography)(({ theme }) => ({
+  wordBreak: 'break-all',
+  overflowWrap: 'break-word'
+}));
+
+export const PreWrapTypography = styled(Typography)(({ theme }) => ({
+  whiteSpace: 'pre-wrap'
+}));
+
+export const PreLineTypography = styled(Typography)(({ theme }) => ({
+  whiteSpace: 'pre-line'
+}));
+
+export const HoverUnderLineSpan = styled((props: TypographyProps) => (
+  <Typography component="span" {...props}>
+    {props.children}
+  </Typography>
+))(({ theme }) => ({
+  cursor: 'pointer',
+  '&:hover': {
+    textDecoration: 'underline'
   }
-`;
+}));
+
+export const HoverUnderLineAnchor = styled((props: TypographyProps) => (
+  <Typography component="a">{props.children}</Typography>
+))(() => ({
+  cursor: 'pointer',
+  '&:hover': {
+    textDecoration: 'underline'
+  }
+}));

@@ -1,16 +1,16 @@
+import { styled, useTheme } from "@mui/material/styles";
 import Script from "next/script";
 import React from "react";
 import isEqual from "react-fast-compare";
 import { IUpbitForex } from "src/types/upbit";
-import styled, { useTheme } from "styled-components";
 
-const Container = styled.div<{ height: string }>`
-  height: 500px;
-  ${({ theme }) => theme.mediaQuery.mobile} {
-    height: 50vh;
-    max-height: 300px;
-  }
-`;
+const Container = styled("div")(({ theme }) => ({
+  height: 500,
+  [`${theme.breakpoints.down("sm")}`]: {
+    height: "50vh",
+    maxHeight: 300,
+  },
+}));
 
 interface TradingViewChartProps {}
 
@@ -30,7 +30,7 @@ const TradingViewChart: React.FC<TradingViewChartProps> = () => {
         theme: "dark",
         style: "1",
         locale: "kr",
-        toolbar_bg: theme.palette.mainDrakBackground,
+        toolbar_bg: theme.color.mainDrakBackground,
         enable_publishing: false,
         allow_symbol_change: true,
         studies: ["MASimple@tv-basicstudies"],
@@ -44,7 +44,7 @@ const TradingViewChart: React.FC<TradingViewChartProps> = () => {
         src="https://s3.tradingview.com/tv.js"
         onLoad={handleLoadTradingViewScript}
       />
-      <Container height={tradingViewHeight}>
+      <Container>
         <div style={{ height: "100%" }} id={"tradingview_4a4c4"} />
       </Container>
     </>
