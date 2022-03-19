@@ -82,7 +82,7 @@ export const getStaticProps: GetStaticProps<HomeProps> = async ({ params }) => {
 
   const upbitMarketQueryString = upbitMarketList
     .filter((m: IUpbitMarket) => Boolean(m.market.match(/^krw-/i)))
-    .map((m) => {
+    .map((m: IUpbitMarket) => {
       upbitMarketRecord[m.market] = m;
       return m.market;
     })

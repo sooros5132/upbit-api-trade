@@ -143,8 +143,6 @@ const MarketTable: React.FC<MarketTableProps> = ({
     setSortColumnName(columnName);
   };
 
-  console.log(upbitMarketSnapshot);
-
   return (
     <UpbitWebSocket
       marketList={upbitKrwList}
