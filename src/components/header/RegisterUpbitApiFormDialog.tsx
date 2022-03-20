@@ -83,7 +83,7 @@ const RegisterUpbitApiFormDialog: React.FC<RegisterUpbitApiFormDialogProps> = ({
             <Typography>API 권한을 다시 한번 확인하고 연동해주세요.</Typography>
             <Typography>API 사용 부주의로 인한 금전적 손실은 책임 지지 않습니다</Typography>
           </BackgroundRedBox>
-          <Typography>
+          {/* <Typography>
             <b>76.76.21.21</b> - 현재 접속한 서버 아이피입니다.
           </Typography>
           <Typography>
@@ -91,7 +91,8 @@ const RegisterUpbitApiFormDialog: React.FC<RegisterUpbitApiFormDialogProps> = ({
               <UnderLineSpan>Open API 관리</UnderLineSpan>
             </a>
             에서 허용 IP에 등록해야 사용이 가능합니다.
-          </Typography>
+          </Typography> */}
+          <Typography>현재 API연동 기능을 사용할 수 없습니다.</Typography>
         </TextAlignCenterBox>
         <Box mt={1}>
           <Typography>Access key</Typography>
