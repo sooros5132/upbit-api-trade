@@ -1,5 +1,5 @@
-const withBundleAnalyzer = require("@next/bundle-analyzer")({
-  enabled: process.env.ANALYZE === "true",
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true'
 });
 
 module.exports = withBundleAnalyzer({
@@ -9,13 +9,9 @@ module.exports = withBundleAnalyzer({
   async rewrites() {
     return [
       {
-        source: "/api/v1/upbit/:path*",
-        destination: `https://api.upbit.com/v1/:path*`,
-      },
-      {
-        source: "/asset/upbit/logos/:path*",
-        destination: `https://static.upbit.com/logos/:path*`,
-      },
+        source: '/asset/upbit/logos/:path*',
+        destination: `https://static.upbit.com/logos/:path*`
+      }
     ];
   },
   reactStrictMode: true,
@@ -24,7 +20,7 @@ module.exports = withBundleAnalyzer({
       test: /\.svg$/,
       use: [
         {
-          loader: "@svgr/webpack",
+          loader: '@svgr/webpack',
           options: {
             svgoConfig: {
               plugins: [
@@ -34,18 +30,18 @@ module.exports = withBundleAnalyzer({
                   removeStyleElement: false,
                   removeUnknownsAndDefaults: false,
                   // Enable svgr's svg to fill the size
-                  removeViewBox: false,
-                },
-              ],
-            },
-          },
-        },
-      ],
+                  removeViewBox: false
+                }
+              ]
+            }
+          }
+        }
+      ]
     });
     // 절대경로
     conf.resolve.modules.push(__dirname);
     return conf;
-  },
+  }
 });
 // const nextConfig = {
 //   /* config options here */

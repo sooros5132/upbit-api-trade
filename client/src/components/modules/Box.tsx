@@ -1,152 +1,153 @@
-import theme from "src/styles/theme";
-import styled, { useTheme } from "styled-components";
+import { Box } from '@mui/material';
+import { styled } from '@mui/material/styles';
 
-export const FullWidthBox = styled.div`
+export const FullWidthBox = styled(Box)`
   width: 100%;
 `;
 
-export const PositionRelativeBox = styled.div`
+export const PositionRelativeBox = styled(Box)`
   position: relative;
 `;
-export const PositionRelativeFullScreenBox = styled.div`
+
+export const PositionRelativeFullScreenBox = styled(Box)`
   position: relative;
   width: 100%;
   height: 100%;
 `;
 
-export const PositionAbsoluteBox = styled.div`
+export const PositionAbsoluteBox = styled(Box)`
   position: absolute;
   top: 0;
   left: 0;
 `;
 
-export const PositionAbsoluteCenterBox = styled.div`
+export const PositionAbsoluteCenterBox = styled(Box)`
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
 `;
 
-export const PositionAbsoluteXCenterBox = styled.div`
+export const PositionAbsoluteXCenterBox = styled(Box)`
   position: absolute;
   top: 0;
   left: 50%;
   transform: translateX(-50%);
 `;
 
-export const PositionAbsoluteYCenterBox = styled.div`
+export const PositionAbsoluteYCenterBox = styled(Box)`
   position: absolute;
   top: 50%;
   left: 0;
   transform: translateY(-50%);
 `;
 
-export const PositionTopStickyBox = styled.div`
+export const PositionTopStickyBox = styled(Box)`
   position: sticky;
   top: 0;
 `;
 
-export const FlexColumnBox = styled.div`
+export const FlexColumnBox = styled(Box)`
   display: flex;
   flex-direction: column;
 `;
 
-export const FlexColumnHeight100Box = styled.div`
+export const FlexColumnHeight100Box = styled(Box)`
   display: flex;
   height: 100%;
   flex-direction: column;
 `;
 
-export const FlexColumnAlignItemsCenterBox = styled.div`
+export const FlexColumnAlignItemsCenterBox = styled(Box)`
   display: flex;
   flex-direction: column;
   align-items: center;
 `;
 
-export const FlexColumnJustifyContentCenterBox = styled.div`
+export const FlexColumnJustifyContentCenterBox = styled(Box)`
   display: flex;
   flex-direction: column;
   justify-content: center;
 `;
 
-export const FlexColumnAlignItemsFlexEndBox = styled.div`
+export const FlexColumnAlignItemsFlexEndBox = styled(Box)`
   display: flex;
   flex-direction: column;
   align-items: flex-end;
 `;
 
-export const FlexColumnJustifyContentFlexEndBox = styled.div`
+export const FlexColumnJustifyContentFlexEndBox = styled(Box)`
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
 `;
 
-export const FlexColumnBottomBox = styled.div`
+export const FlexColumnBottomBox = styled(Box)`
   display: flex;
   height: 100%;
   flex-direction: column;
   justify-content: flex-end;
 `;
 
-export const FlexBox = styled.div`
+export const FlexBox = styled(Box)`
   display: flex;
 `;
 
-export const FlexFullBox = styled.div`
+export const FlexFullBox = styled(Box)`
   display: flex;
   width: 100%;
   height: 100%;
 `;
 
-export const FlexNoWrapBox = styled.div`
+export const FlexNoWrapBox = styled(Box)`
   display: flex;
   flex-wrap: nowrap;
 `;
 
-export const FlexWrapBox = styled.div`
+export const FlexWrapBox = styled(Box)`
   display: flex;
   flex-wrap: wrap;
 `;
 
-export const FlexJustifyContentCenterBox = styled.div`
+export const FlexJustifyContentCenterBox = styled(Box)`
   display: flex;
   justify-content: center;
 `;
 
-export const FlexJustifyContentFlexEndBox = styled.div`
+export const FlexJustifyContentFlexEndBox = styled(Box)`
   display: flex;
   justify-content: flex-end;
 `;
 
-export const FlexAlignItemsCenterHeight100Box = styled.div`
+export const FlexAlignItemsCenterHeight100Box = styled(Box)`
   display: flex;
   height: 100%;
   align-items: center;
 `;
 
-export const FlexAlignItemsCenterBox = styled.div`
+export const FlexAlignItemsCenterBox = styled(Box)`
   display: flex;
   align-items: center;
 `;
 
-export const FlexAlignItemsFlexEndBox = styled.div`
+export const FlexAlignItemsFlexEndBox = styled(Box)`
   display: flex;
   align-items: flex-end;
 `;
 
-export const FlexEndEndBox = styled.div`
+export const FlexEndEndBox = styled(Box)`
   display: flex;
   justify-content: flex-end;
   align-items: flex-end;
 `;
 
-export const FlexCenterCenterBox = styled.div`
+export const FlexCenterCenterBox = styled(Box)`
   display: flex;
   justify-content: center;
   align-items: center;
 `;
 
-export const FlexCenterCenterFullBox = styled.div`
+export const FlexCenterCenterFullBox = styled(Box)`
   display: flex;
   justify-content: center;
   align-items: center;
@@ -154,91 +155,102 @@ export const FlexCenterCenterFullBox = styled.div`
   height: 100%;
 `;
 
-export const FlexSpaceAroundBox = styled.div`
+export const FlexSpaceAroundBox = styled(Box)`
   display: flex;
   justify-content: space-around;
 `;
 
-export const FlexSpaceBetweenBox = styled.div`
+export const FlexSpaceBetweenBox = styled(Box)`
   display: flex;
   justify-content: space-between;
 `;
 
-export const FlexSpaceBetweenCenterBox = styled.div`
+export const FlexSpaceBetweenCenterBox = styled(Box)`
   display: flex;
   justify-content: space-between;
   align-items: center;
 `;
 
-export const FlexSpaceBetweenEndBox = styled.div`
+export const FlexSpaceBetweenEndBox = styled(Box)`
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
 `;
 
-const BackgroundBox = styled.div`
+const BackgroundBox = styled(Box)`
   background-color: white;
 `;
 
-export const GridBox = styled.div`
+export const GridBox = styled(Box)`
   display: grid;
 `;
-export const Width100Box = styled.div`
+export const Width100Box = styled(Box)`
   width: 100%;
 `;
-export const Height100Box = styled.div`
+export const Height100Box = styled(Box)`
   height: 100%;
 `;
 
-export const Flex11AutoBox = styled.div`
+export const Flex11AutoBox = styled(Box)`
   flex: auto;
 `;
 
-export const Flex0025Box = styled.div`
+export const Flex0025Box = styled(Box)`
   flex: 0 0 25%;
 `;
 
-export const Flex0033Box = styled.div`
+export const Flex0033Box = styled(Box)`
   flex: 0 0 33.333333%;
 `;
 
-export const Flex0050Box = styled.div`
+export const Flex0050Box = styled(Box)`
   flex: 0 0 50%;
 `;
 
-export const Flex0066Box = styled.div`
+export const Flex0066Box = styled(Box)`
   flex: 0 0 66.666666%;
 `;
 
-export const Flex0075Box = styled.div`
+export const Flex0075Box = styled(Box)`
   flex: 0 0 75%;
 `;
 
-export const TextAlignCenterBox = styled.div`
+export const TextAlignCenterBox = styled(Box)`
   text-align: center;
 `;
 
-export const TextAlignRightBox = styled.div`
+export const TextAlignRightBox = styled(Box)`
   text-align: right;
 `;
 
-export const TextAlignLeftBox = styled.div`
+export const TextAlignLeftBox = styled(Box)`
   text-align: left;
 `;
 
-export const MonoFontBox = styled.div`
-  font-family: "Roboto Mono", monospace; ;
+export const MonoFontBox = styled(Box)`
+  font-family: 'Roboto Mono', monospace; ;
 `;
 
-export const ColorBox = styled.div<{ color: keyof typeof theme.palette }>`
-  color: ${({ theme: t, color: c }) => t.palette[c]};
-`;
-
-export const CursorPointerBox = styled.div`
+export const CursorPointerBox = styled(Box)`
   cursor: pointer;
 `;
 
-export const FlexCursorPointerBox = styled.div`
+export const FlexCursorPointerBox = styled(Box)`
   display: flex;
   cursor: pointer;
 `;
+
+export const BackgroundRedBox = styled(Box)(({ theme }) => ({
+  borderRadius: 5,
+  padding: `${theme.spacing(0.625)} ${theme.spacing(4)}`,
+  backgroundColor: theme.color.redBackgroundDark,
+  color: theme.color.redLight,
+  marginBottom: theme.spacing(1)
+}));
+
+export const BackgroundGreenBox = styled(Box)(({ theme }) => ({
+  borderRadius: 5,
+  padding: `${theme.spacing(0.625)} ${theme.spacing(4)}`,
+  backgroundColor: theme.color.redBackgroundDark,
+  color: theme.color.redLight
+}));

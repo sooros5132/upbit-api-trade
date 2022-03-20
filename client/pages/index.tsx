@@ -1,15 +1,17 @@
-import { styled } from "@mui/material/styles";
-import type { GetStaticProps, NextPage } from "next";
-import React from "react";
-import MarketList, {
-  IMarketTableItem,
-} from "src/components/market-table/MarketTable";
-import { Width100Box } from "src/components/modules/Box";
-import TradingView from "src/components/tradingview/Chart";
-import { IUpbitApiTicker, IUpbitForex, IUpbitMarket } from "src/types/upbit";
-import { apiRequestURLs } from "src/utils/apiRequestURLs";
+import { styled } from '@mui/material/styles';
+import type { GetStaticProps, NextPage } from 'next';
+import React from 'react';
+import { upbitApis } from 'src-server/utils/upbitApis';
+import MarketList, { IMarketTableItem } from 'src/components/market-table/MarketTable';
+import { Width100Box } from 'src/components/modules/Box';
+import TradingView from 'src/components/tradingview/Chart';
+import { IUpbitApiTicker, IUpbitForex, IUpbitMarket } from 'src/types/upbit';
+import { useSnackbar } from 'notistack';
+import { useUpbitAuthStore } from 'src/store/upbitAuth';
+import { clientApiUrls } from 'src/utils/clientApiUrls';
+import useSWR from 'swr';
 
-const Container = styled("div")`
+const Container = styled('div')`
   flex: 1 0 auto;
   display: flex;
 `;
@@ -21,11 +23,11 @@ const Inner = styled(Width100Box)`
     margin: 0 auto;
   }
 `;
-const TradingViewContainer = styled("div")`
+const TradingViewContainer = styled('div')`
   margin: ${({ theme }) => theme.spacing(2)} 0;
 `;
 
-const MarketTableContainer = styled("div")`
+const MarketTableContainer = styled('div')`
   margin-bottom: ${({ theme }) => theme.spacing(2)};
 `;
 
@@ -35,13 +37,27 @@ interface HomeProps {
   upbitMarketSnapshot?: Record<string, IMarketTableItem>;
 }
 
-const Home: NextPage<HomeProps> = ({
-  upbitForex,
-  upbitMarketList,
-  upbitMarketSnapshot,
-}) => {
+const Home: NextPage<HomeProps> = ({ upbitForex, upbitMarketList, upbitMarketSnapshot }) => {
+  const { enqueueSnackbar } = useSnackbar();
+  const upbitAuthStore = useUpbitAuthStore();
   const [upbitKrwList] = React.useState(
-    upbitMarketList.filter((c) => c.market.match(/^KRW-/i))
+    upbitMarketList.filter((c) => c.market.match(/^KRW-/i), {})
+  );
+  const { data, error } = useSWR(
+    process.env.NEXT_PUBLIC_SOOROS_API + clientApiUrls.upbit.accounts,
+    async () => {
+      if (upbitAuthStore.accessKey && upbitAuthStore.secretKey) {
+        if (await upbitAuthStore.registerKey(upbitAuthStore.accessKey, upbitAuthStore.secretKey)) {
+          // enqueueSnackbar('업비트 API에 연동되었습니다.', {
+          //   variant: 'success'
+          // });
+        } else {
+          // enqueueSnackbar('서버와 연결이 불안정합니다. 업비트 API연동에 실패했습니다.', {
+          //   variant: 'error'
+          // });
+        }
+      }
+    }
   );
 
   return (
@@ -64,32 +80,32 @@ const Home: NextPage<HomeProps> = ({
 
 export const getStaticProps: GetStaticProps<HomeProps> = async ({ params }) => {
   const [resUpbitForex, resUpbitMarketList] = await Promise.all([
-    fetch(apiRequestURLs.upbit.forex),
-    fetch(apiRequestURLs.upbit.marketList),
+    fetch(upbitApis.forexRecent + '?codes=FRX.KRWUSD'),
+    fetch(upbitApis.marketAll + '?isDetails=false')
   ]);
   const [upbitForex, upbitMarketList] = await Promise.all([
     resUpbitForex.json(),
-    resUpbitMarketList.json(),
+    resUpbitMarketList.json()
   ]);
 
   const upbitMarketRecord: Record<string, IUpbitMarket> = {};
 
   const upbitMarketQueryString = upbitMarketList
-    .filter((m: IUpbitMarket) => Boolean(m.market.match(/^krw-/i)))
+    ?.filter((m: IUpbitMarket) => Boolean(m.market.match(/^krw-/i)))
     .map((m: IUpbitMarket) => {
       upbitMarketRecord[m.market] = m;
       return m.market;
     })
-    .join(",");
+    .join(',');
   const upbitMarketSnapshotList: Array<IUpbitApiTicker> = await fetch(
-    `${apiRequestURLs.upbit.marketTicker}?markets=${upbitMarketQueryString}`
+    `${upbitApis.ticker}?markets=${upbitMarketQueryString}`
   ).then((res) => res.json());
 
   const upbitMarketSnapshot: Record<string, IMarketTableItem> = {};
 
   for (const t of upbitMarketSnapshotList) {
     upbitMarketSnapshot[t.market] = {
-      ty: "ticker",
+      ty: 'ticker',
       cd: t.market,
       op: t.opening_price,
       hp: t.high_price,
@@ -109,21 +125,21 @@ export const getStaticProps: GetStaticProps<HomeProps> = async ({ params }) => {
       tdt: t.trade_date_kst,
       ttm: t.trade_time_kst,
       ttms: t.trade_timestamp,
-      ab: "ASK",
+      ab: 'ASK',
       aav: 0,
       abv: 0,
       h52wp: t.highest_52_week_price,
       h52wdt: t.highest_52_week_date,
       l52wp: t.lowest_52_week_price,
       l52wdt: t.lowest_52_week_date,
-      ms: "ACTIVE",
-      mw: "NONE",
+      ms: 'ACTIVE',
+      mw: 'NONE',
       its: false,
       dd: null,
       tms: t.timestamp,
-      st: "SNAPSHOT",
+      st: 'SNAPSHOT',
       english_name: upbitMarketRecord[t.market].english_name,
-      korean_name: upbitMarketRecord[t.market].korean_name,
+      korean_name: upbitMarketRecord[t.market].korean_name
     };
   }
 
@@ -131,9 +147,9 @@ export const getStaticProps: GetStaticProps<HomeProps> = async ({ params }) => {
     props: {
       upbitForex: upbitForex[0],
       upbitMarketList,
-      upbitMarketSnapshot,
+      upbitMarketSnapshot
     },
-    revalidate: 5,
+    revalidate: 5
   };
 };
 

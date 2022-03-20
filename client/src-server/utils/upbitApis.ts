@@ -1,0 +1,22 @@
+export const upbitApis = {
+  forexRecent: 'https://quotation-api-cdn.dunamu.com/v1/forex/recent',
+  marketAll: 'https://api.upbit.com/v1/market/all',
+  ticker: 'https://api.upbit.com/v1/ticker',
+  accounts: 'https://api.upbit.com/v1/accounts',
+  ordersChance: 'https://api.upbit.com/v1/orders/chance',
+  order: 'https://api.upbit.com/v1/order',
+  orders: 'https://api.upbit.com/v1/orders',
+  withdraw: 'https://api.upbit.com/v1/withdraw',
+  withdraws: 'https://api.upbit.com/v1/withdraws',
+  withdrawsChance: 'https://api.upbit.com/v1/withdraws/chance',
+  withdrawsCoin: 'https://api.upbit.com/v1/withdraws/coin',
+  withdrawsKrw: 'https://api.upbit.com/v1/withdraws/krw',
+  deposits: 'https://api.upbit.com/v1/deposits',
+  deposit: 'https://api.upbit.com/v1/deposit',
+  depositsGenerateCoinAddress: 'https://api.upbit.com/v1/deposits/generate_coin_address',
+  depositsCoinAddresses: 'https://api.upbit.com/v1/deposits/coin_addresses',
+  depositsCoinAddress: 'https://api.upbit.com/v1/deposits/coin_address',
+  depositsKrw: 'https://api.upbit.com/v1/deposits/krw',
+  statusWallet: 'https://api.upbit.com/v1/status/wallet',
+  apiKeys: 'https://api.upbit.com/v1/api_keys'
+} as const;

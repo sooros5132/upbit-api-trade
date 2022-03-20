@@ -1,11 +1,18 @@
 import { Typography, TypographyProps } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
-export const CursorPointerBox = styled(Typography)(() => ({
-  cursor: 'pointer'
-}));
+export const SpanTypography = styled((props: TypographyProps) => (
+  <Typography component="span">{props.children}</Typography>
+))();
 
 export const MonoFontTypography = styled(Typography)(() => ({
+  fontFamily: 'Roboto Mono,Trebuchet MS,roboto,ubuntu,sans-serif,monospace'
+}));
+export const MonoFontSpanTypography = styled((props: TypographyProps) => (
+  <Typography component="span" {...props}>
+    {props.children}
+  </Typography>
+))(() => ({
   fontFamily: 'Roboto Mono,Trebuchet MS,roboto,ubuntu,sans-serif,monospace'
 }));
 
@@ -58,11 +65,37 @@ export const HoverUnderLineSpan = styled((props: TypographyProps) => (
   }
 }));
 
-export const HoverUnderLineAnchor = styled((props: TypographyProps) => (
-  <Typography component="a">{props.children}</Typography>
-))(() => ({
+export const UnderLineSpan = styled((props: TypographyProps) => (
+  <Typography component="span" {...props}>
+    {props.children}
+  </Typography>
+))(({ theme }) => ({
   cursor: 'pointer',
-  '&:hover': {
-    textDecoration: 'underline'
-  }
+  textDecoration: 'underline'
+}));
+
+export const AskBidTypography = styled(MonoFontTypography)<{
+  state?: number;
+  opacity?: number;
+}>(({ theme, state, opacity }) => ({
+  color:
+    !state || state === 0
+      ? theme.color.gray30
+      : state > 0
+      ? theme.color.greenLight
+      : theme.color.redLight,
+  opacity
+}));
+
+export const AskBidSpanTypography = styled(MonoFontSpanTypography)<{
+  state?: number;
+  opacity?: number;
+}>(({ theme, state, opacity }) => ({
+  color:
+    !state || state === 0
+      ? theme.color.gray30
+      : state > 0
+      ? theme.color.greenLight
+      : theme.color.redLight,
+  opacity
 }));

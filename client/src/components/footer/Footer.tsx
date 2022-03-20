@@ -11,7 +11,6 @@ import {
   TextAlignCenterBox,
   Width100Box
 } from '../modules/Box';
-import { HoverUnderLineAnchor } from '../modules/Typography';
 
 const Container = styled('footer')(({ theme }) => ({
   backgroundColor: theme.color.gray90,
@@ -90,9 +89,9 @@ const Footer: React.FC<FooterProps> = ({}) => {
                 <Link href="https://sooros.com">
                   <a>sooros.com</a>
                 </Link>
-                )는 개인 사용 목적으로 만들어진 사이트이며 사이트 내 모든 암호화폐 가격 정보에
-                대하여 어떠한 책임을 지지 않습니다. 디지털 자산 투자에 대한 손실은 본인 책임이며
-                투자에 유의하시기 바랍니다.
+                )는 토이프로젝트&amp;개인사용 목적으로 만들어진 사이트이며 사이트 내 모든 암호화폐
+                가격 정보에 대하여 어떠한 책임을 지지 않습니다. 디지털 자산 투자에 대한 금전적
+                손실은 본인 책임이며 투자에 유의하시기 바랍니다.
               </Typography>
             </DescriptionInner>
           </DescriptionContainer>

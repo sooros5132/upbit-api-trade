@@ -1,16 +1,9 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import _ from 'lodash';
 import isEqual from 'react-fast-compare';
 import { BiUpArrowAlt, BiDownArrowAlt } from 'react-icons/bi';
-import UpbitWebSocket, { UpbitWebSocketContext } from '../websocket/Upbit';
+import { IUpbitForex, IUpbitMarket, IUpbitSocketMessageTickerSimple } from 'src/types/upbit';
 import {
-  IUpbitApiTicker,
-  IUpbitForex,
-  IUpbitMarket,
-  IUpbitSocketMessageTickerSimple
-} from 'src/types/upbit';
-import {
-  ColorBox,
   FlexAlignItemsCenterBox,
   FlexBox,
   FlexCursorPointerBox,
@@ -24,7 +17,9 @@ import { IBinanceSocketMessageTicker } from 'src/types/binance';
 import { NextSeo } from 'next-seo';
 import { styled } from '@mui/material/styles';
 import { Typography } from '@mui/material';
-import { MonoFontTypography } from '../modules/Typography';
+import { AskBidTypography, MonoFontTypography } from '../modules/Typography';
+import { useUpbitDataStore } from 'src/store/upbitData';
+import { clientApiUrls } from 'src/utils/clientApiUrls';
 
 const TableContainer = styled('div')`
   margin: 0 auto;
@@ -44,7 +39,7 @@ const Tbody = styled('tbody')`
 `;
 
 const TableRow = styled('tr')`
-  border-bottom: 1px solid ${({ theme }) => theme.color.white + '10'};
+  border-bottom: 1px solid ${({ theme }) => theme.color.black + '10'};
   min-width: ${({ theme }) => theme.spacing(5)};
   padding: ${({ theme }) => theme.spacing(0.5)};
 `;
@@ -69,13 +64,13 @@ const TableCellInnerBox = styled('div')`
   padding: ${({ theme }) => `${theme.spacing(1)} ${theme.spacing(0.5)}`};
 `;
 
-const MarketIconImage = styled('img')`
-  width: 20px;
-  height: 20px;
-  object-fit: contain;
-  background-color: rgb(255 255 255);
-  border-radius: 50%;
-`;
+const MarketIconImage = styled('img')(({ theme }) => ({
+  width: 20,
+  height: 20,
+  objectFit: 'contain',
+  backgroundColor: theme.color.absolutlyWhite,
+  borderRadius: '50%'
+}));
 
 const ExchangeImage = styled('img')`
   width: 1em;
@@ -84,38 +79,25 @@ const ExchangeImage = styled('img')`
   object-fit: contain;
 `;
 
-const Col = styled('col')`
-  padding: ${({ theme }) => theme.spacing(0.5)};
-`;
-
-const IconCol = styled(Col)`
+const IconCell = styled(TableCell)`
   font-size: ${({ theme }) => theme.size.px14};
-  width: 1em;
+  width: 28px;
 `;
-const NameCol = styled(Col)`
-  width: auto;
+const NameCell = styled(TableHeaderCell)`
+  width: 50%;
 `;
-const PriceCol = styled(Col)`
+const PriceCell = styled(TableHeaderCell)`
   width: 15%;
 `;
-const ChangeCol = styled(Col)`
+const ChangeCell = styled(TableHeaderCell)`
   width: 10%;
 `;
-const PremiumCol = styled(Col)`
+const PremiumCell = styled(TableHeaderCell)`
   width: 10%;
 `;
-const VolumeCol = styled(Col)`
-  width: 10%;
+const VolumeCell = styled(TableHeaderCell)`
+  width: 12%;
 `;
-
-const AskBidTypography = styled(MonoFontTypography)<{
-  state: number;
-  opacity?: number;
-}>(({ theme, state, opacity }) => ({
-  color:
-    state === 0 ? theme.color.gray30 : state > 0 ? theme.color.greenLight : theme.color.redLight,
-  opacity
-}));
 
 const krwRegex = /^krw-/i;
 const usdtRegex = /^usdt-/i;
@@ -142,6 +124,36 @@ const MarketTable: React.FC<MarketTableProps> = ({
   const [sortColumnName, setSortColumnName] = React.useState<keyof IMarketTableItem>('atp24h');
   const [sortType, setSortType] = React.useState<'asc' | 'desc'>('desc');
   const [stateUpdateDelay] = React.useState(200);
+  const { upbitSocket, disconnectUpbitSocket, connectUpbitSocket } = useUpbitDataStore();
+
+  useEffect(() => {
+    connectUpbitSocket({
+      marketList: upbitKrwList,
+      stateUpdateDelay,
+      upbitMarketSnapshot: upbitMarketSnapshot
+    });
+  }, [
+    connectUpbitSocket,
+    disconnectUpbitSocket,
+    stateUpdateDelay,
+    upbitKrwList,
+    upbitMarketSnapshot
+  ]);
+
+  useEffect(() => {
+    const upbitConnectCheck = setInterval(() => {
+      if (!upbitSocket || upbitSocket.readyState === 3) {
+        upbitSocket?.close();
+        connectUpbitSocket({
+          marketList: upbitKrwList,
+          stateUpdateDelay,
+          upbitMarketSnapshot: upbitMarketSnapshot
+        });
+      }
+    }, 5000);
+
+    return () => clearInterval(upbitConnectCheck);
+  }, [connectUpbitSocket, stateUpdateDelay, upbitKrwList, upbitMarketSnapshot, upbitSocket]);
 
   const handleClickThead = (columnName: keyof IMarketTableItem) => () => {
     if (columnName === sortColumnName) {
@@ -153,33 +165,21 @@ const MarketTable: React.FC<MarketTableProps> = ({
   };
 
   return (
-    <UpbitWebSocket
-      marketList={upbitKrwList}
-      stateUpdateDelay={stateUpdateDelay}
-      upbitMarketSnapshot={upbitMarketSnapshot}
-    >
-      <BinanceWebSocket marketList={upbitKrwList} stateUpdateDelay={stateUpdateDelay}>
-        <TableContainer>
-          {/* <Head
-        title={`₿ ${
-          upbitRealtimeMarket["KRW-BTC"]?.trade_price?.toLocaleString() || ""
-        } | SOOROS`}
-      /> */}
-          <Table cellSpacing="0" cellPadding="0">
-            <colgroup>
-              <IconCol />
-              <NameCol />
-              <PriceCol />
-              <ChangeCol />
-              <PremiumCol />
-              <VolumeCol />
-            </colgroup>
-            <Thead>
-              <TableHeaderRow>
-                <TableCell>
-                  <TableCellInnerBox></TableCellInnerBox>
-                </TableCell>
-                <TableHeaderCell>
+    <BinanceWebSocket marketList={upbitKrwList} stateUpdateDelay={stateUpdateDelay}>
+      <TableContainer>
+        {/* <Head
+          title={`₿ ${
+            upbitRealtimeMarket["KRW-BTC"]?.trade_price?.toLocaleString() || ""
+          } | SOOROS`}
+        /> */}
+        <Table cellSpacing="0" cellPadding="0">
+          <Thead>
+            <TableHeaderRow>
+              <IconCell>
+                <TableCellInnerBox></TableCellInnerBox>
+              </IconCell>
+              <NameCell>
+                <FlexBox>
                   <FlexCursorPointerBox onClick={handleClickThead('korean_name')}>
                     <Typography component="span">이름</Typography>
                     <TableHeaderSortIcon>
@@ -192,82 +192,83 @@ const MarketTable: React.FC<MarketTableProps> = ({
                       ) : null}
                     </TableHeaderSortIcon>
                   </FlexCursorPointerBox>
-                </TableHeaderCell>
-                <TableHeaderCell>
-                  <FlexJustifyContentFlexEndBox>
-                    <FlexCursorPointerBox onClick={handleClickThead('tp')}>
-                      <Typography component="span">현재가</Typography>
-                      <TableHeaderSortIcon>
-                        {sortColumnName === 'tp' ? (
-                          sortType === 'asc' ? (
-                            <BiDownArrowAlt />
-                          ) : (
-                            <BiUpArrowAlt />
-                          )
-                        ) : null}
-                      </TableHeaderSortIcon>
-                    </FlexCursorPointerBox>
-                  </FlexJustifyContentFlexEndBox>
-                </TableHeaderCell>
-                <TableHeaderCell>
-                  <FlexJustifyContentFlexEndBox>
-                    <FlexCursorPointerBox onClick={handleClickThead('scr')}>
-                      <Typography component="span">변동</Typography>
-                      <TableHeaderSortIcon>
-                        {sortColumnName === 'scr' ? (
-                          sortType === 'asc' ? (
-                            <BiDownArrowAlt />
-                          ) : (
-                            <BiUpArrowAlt />
-                          )
-                        ) : null}
-                      </TableHeaderSortIcon>
-                    </FlexCursorPointerBox>
-                  </FlexJustifyContentFlexEndBox>
-                </TableHeaderCell>
-                <TableHeaderCell>
-                  <FlexJustifyContentFlexEndBox>
-                    <FlexCursorPointerBox onClick={handleClickThead('premium')}>
-                      <Typography component="span">김프</Typography>
-                      <TableHeaderSortIcon>
-                        {sortColumnName === 'premium' ? (
-                          sortType === 'asc' ? (
-                            <BiDownArrowAlt />
-                          ) : (
-                            <BiUpArrowAlt />
-                          )
-                        ) : null}
-                      </TableHeaderSortIcon>
-                    </FlexCursorPointerBox>
-                  </FlexJustifyContentFlexEndBox>
-                </TableHeaderCell>
-                <TableHeaderCell>
-                  <FlexJustifyContentFlexEndBox>
-                    <FlexCursorPointerBox onClick={handleClickThead('atp24h')}>
-                      <Typography component="span">볼륨</Typography>
-                      <TableHeaderSortIcon>
-                        {sortColumnName === 'atp24h' ? (
-                          sortType === 'asc' ? (
-                            <BiDownArrowAlt />
-                          ) : (
-                            <BiUpArrowAlt />
-                          )
-                        ) : null}
-                      </TableHeaderSortIcon>
-                    </FlexCursorPointerBox>
-                  </FlexJustifyContentFlexEndBox>
-                </TableHeaderCell>
-              </TableHeaderRow>
-            </Thead>
-            <TableBody
-              upbitForex={upbitForex}
-              sortColumnName={sortColumnName}
-              sortType={sortType}
-            />
-          </Table>
-        </TableContainer>
-      </BinanceWebSocket>
-    </UpbitWebSocket>
+                </FlexBox>
+              </NameCell>
+              <PriceCell>
+                <FlexJustifyContentFlexEndBox>
+                  <FlexCursorPointerBox onClick={handleClickThead('tp')}>
+                    <Typography component="span">현재가</Typography>
+                    <TableHeaderSortIcon>
+                      {sortColumnName === 'tp' ? (
+                        sortType === 'asc' ? (
+                          <BiDownArrowAlt />
+                        ) : (
+                          <BiUpArrowAlt />
+                        )
+                      ) : null}
+                    </TableHeaderSortIcon>
+                  </FlexCursorPointerBox>
+                </FlexJustifyContentFlexEndBox>
+              </PriceCell>
+              <ChangeCell>
+                <FlexJustifyContentFlexEndBox>
+                  <FlexCursorPointerBox onClick={handleClickThead('scr')}>
+                    <Typography component="span">변동</Typography>
+                    <TableHeaderSortIcon>
+                      {sortColumnName === 'scr' ? (
+                        sortType === 'asc' ? (
+                          <BiDownArrowAlt />
+                        ) : (
+                          <BiUpArrowAlt />
+                        )
+                      ) : null}
+                    </TableHeaderSortIcon>
+                  </FlexCursorPointerBox>
+                </FlexJustifyContentFlexEndBox>
+              </ChangeCell>
+              <PremiumCell>
+                <FlexJustifyContentFlexEndBox>
+                  <FlexCursorPointerBox onClick={handleClickThead('premium')}>
+                    <Typography component="span">김프</Typography>
+                    <TableHeaderSortIcon>
+                      {sortColumnName === 'premium' ? (
+                        sortType === 'asc' ? (
+                          <BiDownArrowAlt />
+                        ) : (
+                          <BiUpArrowAlt />
+                        )
+                      ) : null}
+                    </TableHeaderSortIcon>
+                  </FlexCursorPointerBox>
+                </FlexJustifyContentFlexEndBox>
+              </PremiumCell>
+              <VolumeCell>
+                <FlexJustifyContentFlexEndBox>
+                  <FlexCursorPointerBox onClick={handleClickThead('atp24h')}>
+                    <Typography component="span">볼륨</Typography>
+                    <TableHeaderSortIcon>
+                      {sortColumnName === 'atp24h' ? (
+                        sortType === 'asc' ? (
+                          <BiDownArrowAlt />
+                        ) : (
+                          <BiUpArrowAlt />
+                        )
+                      ) : null}
+                    </TableHeaderSortIcon>
+                  </FlexCursorPointerBox>
+                </FlexJustifyContentFlexEndBox>
+              </VolumeCell>
+            </TableHeaderRow>
+          </Thead>
+          <TableBody
+            upbitForex={upbitForex}
+            sortColumnName={sortColumnName}
+            sortType={sortType}
+            upbitMarketSnapshot={upbitMarketSnapshot}
+          />
+        </Table>
+      </TableContainer>
+    </BinanceWebSocket>
   );
 };
 
@@ -275,8 +276,9 @@ const TableBody = React.memo<{
   upbitForex: IUpbitForex;
   sortColumnName: keyof IMarketTableItem;
   sortType: 'asc' | 'desc';
-}>(({ upbitForex, sortColumnName, sortType }) => {
-  const upbitRealtimeMarket = useContext(UpbitWebSocketContext);
+  upbitMarketSnapshot?: Record<string, IMarketTableItem>;
+}>(({ upbitForex, sortColumnName, sortType, upbitMarketSnapshot }) => {
+  const { marketSocketData: upbitRealtimeMarket } = useUpbitDataStore();
   const binanceRealtimeMarket = useContext(BinanceWebSocketContext);
 
   const columnSort = React.useCallback(
@@ -312,8 +314,10 @@ const TableBody = React.memo<{
     },
     [sortColumnName, sortType]
   );
-
-  const list = Object.values(upbitRealtimeMarket)
+  const selecteList = Object.keys(upbitRealtimeMarket).length
+    ? upbitRealtimeMarket
+    : upbitMarketSnapshot || {};
+  const list = Object.values(selecteList)
     .map((upbitMarket) => {
       const binanceMarketName = upbitMarket.cd.replace(krwRegex, '') + 'USDT';
       const binanceMarket = binanceRealtimeMarket[binanceMarketName];
@@ -399,7 +403,7 @@ const TableItem = React.memo<{
           <Typography color="gray20">{upbitMarket.korean_name}</Typography>
           <FlexBox>
             <a
-              href={`https://upbit.com/exchange?code=CRIX.UPBIT.${upbitMarket.cd}`}
+              href={clientApiUrls.upbit.marketHref + upbitMarket.cd}
               target="_blank"
               rel="noreferrer"
             >
@@ -408,7 +412,7 @@ const TableItem = React.memo<{
             &nbsp;
             {binanceMarket ? (
               <a
-                href={`https://www.binance.com/en/trade/${marketSymbol}_USDT`}
+                href={`${clientApiUrls.binance.marketHref}${marketSymbol}_USDT`}
                 target="_blank"
                 rel="noreferrer"
               >

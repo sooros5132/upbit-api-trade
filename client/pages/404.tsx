@@ -1,22 +1,22 @@
 import { Typography } from '@mui/material';
+import { styled } from '@mui/material/styles';
 import React from 'react';
 import { FlexCenterCenterBox } from 'src/components/modules/Box';
-import styled from 'styled-components';
 
 const Container = styled(FlexCenterCenterBox)`
   flex: 1 0 auto;
   display: flex;
 `;
 
-const InnerBox = styled.div`
+const InnerBox = styled('div')`
   padding: ${({ theme }) => theme.spacing(0.5)};
 `;
 const RightBox = styled(InnerBox)`
   padding-right: ${({ theme }) => theme.spacing(2.5)};
-  color: ${({ theme }) => theme.palette.mainLightText};
+  color: ${({ theme }) => theme.color.mainLightText};
 `;
 const LeftBox = styled(InnerBox)`
-  border-left: 1px solid ${({ theme }) => theme.palette.white};
+  border-left: 1px solid ${({ theme }) => theme.color.white};
   padding-left: ${({ theme }) => theme.spacing(2.5)};
 `;
 

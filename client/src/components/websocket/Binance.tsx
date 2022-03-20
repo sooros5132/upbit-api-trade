@@ -1,9 +1,9 @@
-import _ from "lodash";
-import React, { useCallback, useEffect, useRef } from "react";
-import { IBinanceSocketMessageTicker } from "src/types/binance";
-import { IUpbitMarket } from "src/types/upbit";
-import { apiRequestURLs } from "src/utils/apiRequestURLs";
-import { IMarketTableItem } from "../market-table/MarketTable";
+import _ from 'lodash';
+import React, { useCallback, useEffect, useRef } from 'react';
+import { IBinanceSocketMessageTicker } from 'src/types/binance';
+import { IUpbitMarket } from 'src/types/upbit';
+import { clientApiUrls } from 'src/utils/clientApiUrls';
+import { IMarketTableItem } from '../market-table/MarketTable';
 
 export const BinanceWebSocketContext = React.createContext<
   Record<string, IBinanceSocketMessageTicker>
@@ -18,18 +18,14 @@ interface BinanceWebSocketProps {
 const BinanceWebSocket = ({
   children,
   marketList: upbitMarketList,
-  stateUpdateDelay,
+  stateUpdateDelay
 }: BinanceWebSocketProps) => {
   const marketList = React.useMemo(
     () =>
-      upbitMarketList.map(
-        (m) => m.market.replace(/^krw-/i, "").toLowerCase() + "usdt@aggTrade"
-      ),
+      upbitMarketList.map((m) => m.market.replace(/^krw-/i, '').toLowerCase() + 'usdt@aggTrade'),
     [upbitMarketList]
   );
-  const [list, setList] = React.useState<
-    Record<string, IBinanceSocketMessageTicker>
-  >({});
+  const [list, setList] = React.useState<Record<string, IBinanceSocketMessageTicker>>({});
   const ws = useRef<WebSocket | null>(null);
   const bufferSize = useRef(0);
   const stanbyList = React.useRef<typeof list>({});
@@ -65,34 +61,28 @@ const BinanceWebSocket = ({
 
   const wsConnect = useCallback(() => {
     if (!ws.current) {
-      ws.current = new WebSocket(apiRequestURLs.binance.websocket);
-      ws.current.addEventListener("open", () => {
+      ws.current = new WebSocket(clientApiUrls.binance.websocket);
+      ws.current.addEventListener('open', () => {
         if (ws.current)
           ws.current.send(
             JSON.stringify({
-              method: "SUBSCRIBE",
+              method: 'SUBSCRIBE',
               params: marketList,
-              id: 1,
+              id: 1
             })
           );
       });
 
-      ws.current.addEventListener("message", handleMessage);
+      ws.current.addEventListener('message', handleMessage);
 
-      ws.current.addEventListener(
-        "error",
-        (err: WebSocketEventMap["error"]) => {
-          console.error("Socket encountered error: ", err, "Closing socket");
-          if (ws.current) {
-            ws.current.close();
-          }
+      ws.current.addEventListener('error', (err: WebSocketEventMap['error']) => {
+        console.error('Socket encountered error: ', err, 'Closing socket');
+        if (ws.current) {
+          ws.current.close();
         }
-      );
-      ws.current.addEventListener("close", (e: WebSocketEventMap["close"]) => {
-        console.log(
-          "Socket is closed. Reconnect will be attempted in 1 second.",
-          e.reason
-        );
+      });
+      ws.current.addEventListener('close', (e: WebSocketEventMap['close']) => {
+        console.log('Socket is closed. Reconnect will be attempted in 1 second.', e.reason);
         setTimeout(() => {
           ws.current = null;
           wsConnect();
@@ -104,9 +94,7 @@ const BinanceWebSocket = ({
   useEffect(wsConnect, [wsConnect]);
 
   return (
-    <BinanceWebSocketContext.Provider value={list}>
-      {children}
-    </BinanceWebSocketContext.Provider>
+    <BinanceWebSocketContext.Provider value={list}>{children}</BinanceWebSocketContext.Provider>
   );
 };
 

@@ -31,7 +31,7 @@ const size = {
   px70: '5rem',
   px100: '7.142857142857143rem',
   px130: '9.285714285714286rem'
-} as const;
+};
 
 const theme = {
   size: size,
@@ -70,6 +70,8 @@ const theme = {
     redMain: '#E86D5F',
     redLight: '#F08C7D',
     redDark: '#70261B',
+    redBackgroundLight: '#F7B7B0',
+    redBackgroundDark: '#401E1A',
     greenMain: '#30CF5D',
     greenLight: '#7BEC9B',
     greenDark: '#249C46',
@@ -89,13 +91,15 @@ const theme = {
     gray20: '#D9D9D9',
     gray30: '#BFBFBF',
     gray40: '#A6A6A6',
+    gray50: '#939393',
     gray55: '#737373',
+    gray65: '#6F6F6F',
     gray70: '#404040',
     gray80: '#252525',
     gray90: '#121212',
     gray95: '#070707'
   }
-} as const;
+};
 
 const CommonTheme = {
   size: theme.size,
@@ -318,77 +322,77 @@ const CommonTheme = {
         {
           props: { variant: 'outlined', color: 'warning' },
           style: {}
+        },
+        {
+          props: { variant: 'containedDisable' },
+          style: {
+            color: theme.color.gray30,
+            backgroundColor: theme.color.gray10,
+            '&:hover': {
+              color: theme.color.gray40,
+              backgroundColor: theme.color.gray15
+            }
+          }
+        },
+        {
+          props: { variant: 'outlinedDisable' },
+          style: {
+            color: theme.color.gray30,
+            borderStyle: 'solid',
+            borderColor: theme.color.gray15,
+            borderWidth: 1,
+            borderRadius: 4,
+            '&:hover': {
+              borderColor: theme.color.gray20,
+              backgroundColor: theme.color.gray05
+            }
+          }
+        },
+        {
+          props: { variant: 'textDisable' },
+          style: {
+            color: theme.color.gray30,
+            '&:hover': {
+              color: theme.color.gray40,
+              backgroundColor: theme.color.gray05
+            }
+          }
+        },
+        {
+          props: { variant: 'containedGray' },
+          style: {
+            color: theme.color.gray50,
+            backgroundColor: theme.color.gray15,
+            '&:hover': {
+              color: theme.color.gray65,
+              backgroundColor: theme.color.gray20
+            }
+          }
+        },
+        {
+          props: { variant: 'outlinedGray' },
+          style: {
+            color: theme.color.gray50,
+            borderStyle: 'solid',
+            borderColor: theme.color.gray20,
+            borderWidth: 1,
+            borderRadius: 4,
+            '&:hover': {
+              borderColor: theme.color.gray30,
+              backgroundColor: theme.color.gray10
+            }
+          }
+        },
+        {
+          props: { variant: 'textGray' },
+          style: {
+            color: theme.color.gray50,
+            '&:hover': {
+              color: theme.color.gray50,
+              backgroundColor: theme.color.gray10
+            }
+          }
         }
-        // {
-        //   props: { variant: 'containedDisable' },
-        //   style: {
-        //     color: CommonStyles.gray30,
-        //     backgroundColor: CommonStyles.gray10,
-        //     '&:hover': {
-        //       color: CommonStyles.gray40,
-        //       backgroundColor: CommonStyles.gray15
-        //     }
-        //   }
-        // },
-        // {
-        //   props: { variant: 'outlinedDisable' },
-        //   style: {
-        //     color: CommonStyles.gray30,
-        //     borderStyle: 'solid',
-        //     borderColor: CommonStyles.gray15,
-        //     borderWidth: 1,
-        //     borderRadius: 4,
-        //     '&:hover': {
-        //       borderColor: CommonStyles.gray20,
-        //       backgroundColor: CommonStyles.gray05
-        //     }
-        //   }
-        // },
-        // {
-        //   props: { variant: 'textDisable' },
-        //   style: {
-        //     color: CommonStyles.gray30,
-        //     '&:hover': {
-        //       color: CommonStyles.gray40,
-        //       backgroundColor: CommonStyles.gray05
-        //     }
-        //   }
-        // },
-        // {
-        //   props: { variant: 'containedGray' },
-        //   style: {
-        //     color: CommonStyles.gray50,
-        //     backgroundColor: CommonStyles.gray15,
-        //     '&:hover': {
-        //       color: CommonStyles.gray65,
-        //       backgroundColor: CommonStyles.gray20
-        //     }
-        //   }
-        // },
-        // {
-        //   props: { variant: 'outlinedGray' },
-        //   style: {
-        //     color: CommonStyles.gray50,
-        //     borderStyle: 'solid',
-        //     borderColor: CommonStyles.gray20,
-        //     borderWidth: 1,
-        //     borderRadius: 4,
-        //     '&:hover': {
-        //       borderColor: CommonStyles.gray30,
-        //       backgroundColor: CommonStyles.gray10
-        //     }
-        //   }
-        // },
-        // {
-        //   props: { variant: 'textGray' },
-        //   style: {
-        //     color: CommonStyles.gray50,
-        //     '&:hover': {
-        //       color: CommonStyles.gray50,
-        //       backgroundColor: CommonStyles.gray10
-        //     }
-        //   }
-        // }
         // {
         //   props: { variant: 'outlined', color: 'black' },
         //   style: {

@@ -1,3 +1,10 @@
+export interface IUpbitErrorMessage {
+  error: {
+    name: string;
+    message: string;
+  };
+}
+
 export interface IUpbitForex {
   code: string; // "FRX.KRWUSD"
   currencyCode: string; // "USD"
@@ -49,7 +56,7 @@ export interface IUpbitSocketMessageTicker {
   low_price: number;
   trade_price: number;
   prev_closing_price: number;
-  change: "RISE" | "EVEN" | "FALL";
+  change: 'RISE' | 'EVEN' | 'FALL';
   change_price: number;
   signed_change_price: number;
   change_rate: number;
@@ -62,7 +69,7 @@ export interface IUpbitSocketMessageTicker {
   trade_date: string;
   trade_time: string;
   trade_timestamp: number;
-  ask_bid: "ASK" | "BID";
+  ask_bid: 'ASK' | 'BID';
   acc_ask_volume: number;
   acc_bid_volume: number;
   highest_52_week_price: number;
@@ -90,7 +97,7 @@ export interface IUpbitApiTicker {
   low_price: number;
   trade_price: number;
   prev_closing_price: number;
-  change: "RISE" | "EVEN" | "FALL";
+  change: 'RISE' | 'EVEN' | 'FALL';
   change_price: number;
   change_rate: number;
   signed_change_price: number;
@@ -115,7 +122,7 @@ export interface IUpbitSocketMessageTickerSimple {
   lp: number;
   tp: number;
   pcp: number;
-  c: "RISE" | "EVEN" | "FALL";
+  c: 'RISE' | 'EVEN' | 'FALL';
   cp: number;
   scp: number;
   cr: number;
@@ -128,7 +135,7 @@ export interface IUpbitSocketMessageTickerSimple {
   tdt: string;
   ttm: string;
   ttms: number;
-  ab: "ASK" | "BID";
+  ab: 'ASK' | 'BID';
   aav: number;
   abv: number;
   h52wp: number;
@@ -136,8 +143,8 @@ export interface IUpbitSocketMessageTickerSimple {
   l52wp: number;
   l52wdt: string;
   // trade_status: string;
-  ms: "PREVIEW" | "ACTIVE" | "DELISTED";
-  mw: "NONE" | "CAUTION";
+  ms: 'PREVIEW' | 'ACTIVE' | 'DELISTED';
+  mw: 'NONE' | 'CAUTION';
   its: boolean;
   dd: string | null;
   tms: number;
