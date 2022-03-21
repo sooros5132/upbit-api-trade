@@ -11,12 +11,12 @@ const MAX_FONT_SIZE = 18;
 interface ISiteSettingState {
   theme: 'dark' | 'light';
   fontSize: number;
-  tradingViewWidgetSymbol: string;
+  selectedMarketSymbol: string;
   showMyAccounts: boolean;
 }
 
 interface ISiteSettingStore extends ISiteSettingState {
-  setTradingViewWidgetSymbol: (symbol: string) => void;
+  setSelectedMarketSymbol: (symbol: string) => void;
   setShowMyAccounts: (show: boolean) => void;
   changeTheme: (mode: ISiteSettingState['theme']) => void;
   changeFontSize: (fontSize: number) => void;
@@ -25,7 +25,7 @@ interface ISiteSettingStore extends ISiteSettingState {
 const defaultState: ISiteSettingState = {
   theme: 'dark',
   fontSize: 14,
-  tradingViewWidgetSymbol: 'BINANCE:BTCUSDT',
+  selectedMarketSymbol: 'BTC',
   showMyAccounts: true
 };
 
@@ -35,9 +35,9 @@ export const initStore = () => {
       persist(
         devtools((set, get) => ({
           ...defaultState,
-          setTradingViewWidgetSymbol: (symbol: string) =>
+          setSelectedMarketSymbol: (symbol: string) =>
             set(() => ({
-              tradingViewWidgetSymbol: symbol
+              selectedMarketSymbol: symbol
             })),
           setShowMyAccounts: (show: boolean) =>
             set(() => ({

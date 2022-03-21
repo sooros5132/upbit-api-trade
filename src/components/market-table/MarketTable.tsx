@@ -4,6 +4,7 @@ import isEqual from 'react-fast-compare';
 import { BiUpArrowAlt, BiDownArrowAlt } from 'react-icons/bi';
 import { IUpbitForex, IUpbitMarket, IUpbitSocketMessageTickerSimple } from 'src/types/upbit';
 import {
+  CursorPointerBox,
   FlexAlignItemsCenterBox,
   FlexBox,
   FlexCursorPointerBox,
@@ -20,6 +21,7 @@ import { Typography } from '@mui/material';
 import { AskBidTypography, MonoFontTypography } from '../modules/Typography';
 import { useUpbitDataStore } from 'src/store/upbitData';
 import { clientApiUrls } from 'src/utils/clientApiUrls';
+import { useSiteSettingStore } from 'src/store/siteSetting';
 
 const TableContainer = styled('div')`
   margin: 0 auto;
@@ -279,6 +281,7 @@ const TableBody = React.memo<{
   upbitMarketSnapshot?: Record<string, IMarketTableItem>;
 }>(({ upbitForex, sortColumnName, sortType, upbitMarketSnapshot }) => {
   const { marketSocketData: upbitRealtimeMarket } = useUpbitDataStore();
+  const { selectedMarketSymbol } = useSiteSettingStore();
   const binanceRealtimeMarket = useContext(BinanceWebSocketContext);
 
   const columnSort = React.useCallback(
@@ -308,7 +311,6 @@ const TableBody = React.memo<{
             return 1;
           }
         }
-        return 0;
       }
       return 0;
     },
@@ -345,8 +347,10 @@ const TableBody = React.memo<{
   //       : undefined;
   // }
   const title = `${
-    upbitRealtimeMarket['KRW-BTC']
-      ? '₿ ' + (upbitRealtimeMarket['KRW-BTC'].scr * 100).toFixed(2) + '% | '
+    upbitRealtimeMarket[selectedMarketSymbol]
+      ? `${selectedMarketSymbol} ${upbitRealtimeMarket[
+          selectedMarketSymbol
+        ].tp.toLocaleString()} | `
       : ''
   }SOOROS`;
   return (
@@ -354,7 +358,7 @@ const TableBody = React.memo<{
       <NextSeo
         // title={bitcoinPremium ? `${bitcoinPremium?.toFixed(2)}%` : undefined}
         title={title}
-      ></NextSeo>
+      />
       <Tbody>
         {list.map((market) => {
           return (
@@ -363,6 +367,7 @@ const TableBody = React.memo<{
               upbitMarket={market}
               binanceMarket={binanceRealtimeMarket[market.binance_name]}
               upbitForex={upbitForex}
+              // onClickMarketIcon={handleClickMarketIcon}
             />
           );
         })}
@@ -377,123 +382,143 @@ const TableItem = React.memo<{
   upbitMarket: IMarketTableItem;
   upbitForex: IUpbitForex;
   binanceMarket?: IBinanceSocketMessageTicker;
-}>(({ upbitMarket, binanceMarket, upbitForex }) => {
-  const changeRate = upbitMarket.scr * 100;
-  const marketSymbol = upbitMarket.cd.replace(krwRegex, '');
-  // const usdtName = marketSymbol + "USDT";
-  // const priceIntegerLength = String(upbitMarket.tp).replace(
-  //   /\.[0-9]+$/,
-  //   ""
-  // ).length;
-  const priceDecimalLength = String(upbitMarket.tp).replace(/^[0-9]+\.?/, '').length;
-  return (
-    <TableRow>
-      <TableCell>
-        <TableCellInnerBox>
-          <FlexAlignItemsCenterBox>
-            <MarketIconImage
-              src={`/asset/upbit/logos/${upbitMarket.cd.replace(krwRegex, '')}.png`}
-              alt={`${upbitMarket.cd}-icon`}
-            />
-          </FlexAlignItemsCenterBox>
-        </TableCellInnerBox>
-      </TableCell>
-      <TableCell>
-        <TableCellInnerBox>
-          <Typography color="gray20">{upbitMarket.korean_name}</Typography>
-          <FlexBox>
-            <a
-              href={clientApiUrls.upbit.marketHref + upbitMarket.cd}
-              target="_blank"
-              rel="noreferrer"
-            >
-              <ExchangeImage src="/icons/upbit.png" alt="upbit favicon"></ExchangeImage>
-            </a>
-            &nbsp;
-            {binanceMarket ? (
+  // onClickMarketIcon: (prop: string) => (event: React.MouseEvent<HTMLDivElement>) => void;
+}>(
+  ({
+    upbitMarket,
+    binanceMarket,
+    upbitForex
+    // , onClickMarketIcon
+  }) => {
+    const changeRate = upbitMarket.scr * 100;
+    const marketSymbol = upbitMarket.cd.replace(krwRegex, '');
+    const { setSelectedMarketSymbol } = useSiteSettingStore();
+
+    const handleClickMarketIcon = (prop: string) => () => {
+      setSelectedMarketSymbol(prop);
+      window.scrollTo(0, 0);
+    };
+    // const usdtName = marketSymbol + "USDT";
+    // const priceIntegerLength = String(upbitMarket.tp).replace(
+    //   /\.[0-9]+$/,
+    //   ""
+    // ).length;
+
+    const priceDecimalLength = String(upbitMarket.tp).replace(/^[0-9]+\.?/, '').length;
+    return (
+      <TableRow>
+        <TableCell>
+          <TableCellInnerBox>
+            <FlexAlignItemsCenterBox>
+              <CursorPointerBox onClick={handleClickMarketIcon(marketSymbol)}>
+                <MarketIconImage
+                  src={`/asset/upbit/logos/${marketSymbol}.png`}
+                  alt={`${upbitMarket.cd}-icon`}
+                />
+              </CursorPointerBox>
+            </FlexAlignItemsCenterBox>
+          </TableCellInnerBox>
+        </TableCell>
+        <TableCell>
+          <TableCellInnerBox>
+            <Typography color="gray20">{upbitMarket.korean_name}</Typography>
+            <FlexBox>
               <a
-                href={`${clientApiUrls.binance.marketHref}${marketSymbol}_USDT`}
+                href={clientApiUrls.upbit.marketHref + upbitMarket.cd}
                 target="_blank"
                 rel="noreferrer"
               >
-                <ExchangeImage src="/icons/binance.ico" alt="upbit favicon"></ExchangeImage>
+                <ExchangeImage src="/icons/upbit.png" alt="upbit favicon"></ExchangeImage>
               </a>
-            ) : null}
-          </FlexBox>
-        </TableCellInnerBox>
-      </TableCell>
-      <TableCell>
-        <TableCellInnerBox>
-          <MonoFontBox>
-            <TextAlignRightBox>
-              <AskBidTypography state={upbitMarket.scp}>
-                {upbitMarket.tp.toLocaleString()}
-              </AskBidTypography>
-              <AskBidTypography state={upbitMarket.scp} opacity={0.6}>
-                {binanceMarket
-                  ? Number(
-                      (Number(binanceMarket.data.p) * upbitForex.basePrice).toFixed(
-                        priceDecimalLength
-                      )
-                    ).toLocaleString()
-                  : null}
-              </AskBidTypography>
-            </TextAlignRightBox>
-          </MonoFontBox>
-        </TableCellInnerBox>
-      </TableCell>
-      <TableCell>
-        <TableCellInnerBox>
-          <MonoFontBox>
-            <TextAlignRightBox>
-              <AskBidTypography state={upbitMarket.scp}>{changeRate.toFixed(2)}%</AskBidTypography>
-              <AskBidTypography state={upbitMarket.scp} opacity={0.6}>
-                {upbitMarket.scp.toLocaleString()}
-              </AskBidTypography>
-            </TextAlignRightBox>
-          </MonoFontBox>
-        </TableCellInnerBox>
-      </TableCell>
-      <TableCell>
-        <TableCellInnerBox>
-          <MonoFontBox>
-            {upbitMarket.premium ? (
+              &nbsp;
+              {binanceMarket ? (
+                <a
+                  href={`${clientApiUrls.binance.marketHref}${marketSymbol}_USDT`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <ExchangeImage src="/icons/binance.ico" alt="upbit favicon"></ExchangeImage>
+                </a>
+              ) : null}
+            </FlexBox>
+          </TableCellInnerBox>
+        </TableCell>
+        <TableCell>
+          <TableCellInnerBox>
+            <MonoFontBox>
               <TextAlignRightBox>
-                <AskBidTypography state={upbitMarket.premium}>
-                  {upbitMarket.premium.toFixed(2).padStart(2, '0')}%
+                <AskBidTypography state={upbitMarket.scp}>
+                  {upbitMarket.tp.toLocaleString()}
                 </AskBidTypography>
-                <AskBidTypography state={upbitMarket.premium} opacity={0.6}>
+                <AskBidTypography state={upbitMarket.scp} opacity={0.6}>
                   {binanceMarket
                     ? Number(
-                        (
-                          upbitMarket.tp -
-                          Number(binanceMarket.data.p) * upbitForex.basePrice
-                        ).toFixed(priceDecimalLength)
+                        (Number(binanceMarket.data.p) * upbitForex.basePrice).toFixed(
+                          priceDecimalLength
+                        )
                       ).toLocaleString()
-                    : undefined}
+                    : null}
                 </AskBidTypography>
               </TextAlignRightBox>
-            ) : null}
-          </MonoFontBox>
-        </TableCellInnerBox>
-      </TableCell>
-      <TableCell>
-        <TableCellInnerBox>
-          <MonoFontBox>
-            <TextAlignRightBox>
-              <MonoFontTypography color="gray30">
-                {koPriceLabelFormat(upbitMarket.atp24h)}
-              </MonoFontTypography>
-              <MonoFontTypography color="gray30">
-                {/* {binanceMarket ? koPriceLabelFormat(binanceMarket.) : null} */}
-              </MonoFontTypography>
-            </TextAlignRightBox>
-          </MonoFontBox>
-        </TableCellInnerBox>
-      </TableCell>
-    </TableRow>
-  );
-}, isEqual);
+            </MonoFontBox>
+          </TableCellInnerBox>
+        </TableCell>
+        <TableCell>
+          <TableCellInnerBox>
+            <MonoFontBox>
+              <TextAlignRightBox>
+                <AskBidTypography state={upbitMarket.scp}>
+                  {changeRate.toFixed(2)}%
+                </AskBidTypography>
+                <AskBidTypography state={upbitMarket.scp} opacity={0.6}>
+                  {upbitMarket.scp.toLocaleString()}
+                </AskBidTypography>
+              </TextAlignRightBox>
+            </MonoFontBox>
+          </TableCellInnerBox>
+        </TableCell>
+        <TableCell>
+          <TableCellInnerBox>
+            <MonoFontBox>
+              {upbitMarket.premium ? (
+                <TextAlignRightBox>
+                  <AskBidTypography state={upbitMarket.premium}>
+                    {upbitMarket.premium.toFixed(2).padStart(2, '0')}%
+                  </AskBidTypography>
+                  <AskBidTypography state={upbitMarket.premium} opacity={0.6}>
+                    {binanceMarket
+                      ? Number(
+                          (
+                            upbitMarket.tp -
+                            Number(binanceMarket.data.p) * upbitForex.basePrice
+                          ).toFixed(priceDecimalLength)
+                        ).toLocaleString()
+                      : undefined}
+                  </AskBidTypography>
+                </TextAlignRightBox>
+              ) : null}
+            </MonoFontBox>
+          </TableCellInnerBox>
+        </TableCell>
+        <TableCell>
+          <TableCellInnerBox>
+            <MonoFontBox>
+              <TextAlignRightBox>
+                <MonoFontTypography color="gray30">
+                  {koPriceLabelFormat(upbitMarket.atp24h)}
+                </MonoFontTypography>
+                <MonoFontTypography color="gray30">
+                  {/* {binanceMarket ? koPriceLabelFormat(binanceMarket.) : null} */}
+                </MonoFontTypography>
+              </TextAlignRightBox>
+            </MonoFontBox>
+          </TableCellInnerBox>
+        </TableCell>
+      </TableRow>
+    );
+  },
+  isEqual
+);
 TableItem.displayName = 'TableItem';
 
 MarketTable.displayName = 'MarketTable';
