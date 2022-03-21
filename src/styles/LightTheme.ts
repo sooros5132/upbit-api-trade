@@ -1,5 +1,5 @@
 import { ThemeOptions } from '@mui/material/styles';
-import CommomTheme from './CommomTheme';
+import { CommonCustomTheme } from './CommomTheme';
 // import indigo from '@mui/material/colors/indigo';
 // import red from '@mui/material/colors/red';
 // import pink from '@mui/material/colors/pink';
@@ -7,8 +7,8 @@ import CommomTheme from './CommomTheme';
 // import lightBlue from '@mui/material/colors/lightBlue';
 // import amber from '@mui/material/colors/amber';
 
-export const LightColor: typeof CommomTheme['color'] = {
-  ...CommomTheme['color']
+export const LightColor: typeof CommonCustomTheme['color'] = {
+  ...CommonCustomTheme['color']
   //   backgroundLrightingMain: '#000000'
 };
 

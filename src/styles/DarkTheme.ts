@@ -1,7 +1,7 @@
 import { darkScrollbar } from '@mui/material';
 import { ThemeOptions } from '@mui/material/styles';
 import { tabsClasses } from '@mui/material/Tabs';
-import CommonTheme from './CommomTheme';
+import { CommonCustomTheme } from './CommomTheme';
 // import indigo from '@mui/material/colors/indigo';
 // import red from '@mui/material/colors/red';
 // import pink from '@mui/material/colors/pink';
@@ -10,8 +10,8 @@ import CommonTheme from './CommomTheme';
 // import amber from '@mui/material/colors/amber';
 // import { purple } from '@mui/material/colors';
 
-export const DarkColor: typeof CommonTheme['color'] = {
-  ...CommonTheme['color'],
+export const DarkColor: typeof CommonCustomTheme['color'] = {
+  ...CommonCustomTheme['color'],
   white: '#000000',
   black: '#ffffff'
 };
