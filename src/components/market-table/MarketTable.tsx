@@ -37,7 +37,7 @@ const Table = styled('table')`
 const Thead = styled('thead')``;
 const Tbody = styled('tbody')`
   & tr:hover {
-    background-color: ${({ theme }) => theme.color.white + '10'};
+    background-color: ${({ theme }) => theme.color.black + '10'};
   }
 `;
 
@@ -53,7 +53,7 @@ const TableCell = styled('td')`
 `;
 
 const TableHeaderRow = styled(TableRow)`
-  background-color: ${({ theme }) => theme.color.white + '05'};
+  background-color: ${({ theme }) => theme.color.black + '05'};
 `;
 const TableHeaderCell = styled(TableCell)`
   padding: ${({ theme }) => `${theme.spacing(1)} ${theme.spacing(0.5)}`};
@@ -352,13 +352,13 @@ const TableBody = React.memo<{
   //       ? (1 - binancePrice / upbitRealtimeMarket["KRW-BTC"]?.tp) * 100
   //       : undefined;
   // }
+  const titleSymbol = `KRW-${selectedMarketSymbol || 'BTC'}`;
   const title = `${
-    upbitRealtimeMarket[selectedMarketSymbol]
-      ? `${selectedMarketSymbol} ${upbitRealtimeMarket[
-          selectedMarketSymbol
-        ].tp.toLocaleString()} | `
+    selecteList[titleSymbol]
+      ? `${selectedMarketSymbol} ${selecteList[titleSymbol].tp.toLocaleString()}₩ | `
       : ''
   }SOOROS`;
+
   return (
     <>
       <NextSeo
