@@ -80,7 +80,11 @@ const TradingViewChart: React.FC<TradingViewChartProps> = () => {
         ) : (
           <UnMountedContainer>
             <Typography>
-              <a href="https://www.tradingview.com/chart?symbol=BINANCE%3ABTCUSDT">
+              <a
+                href="https://www.tradingview.com/chart?symbol=BINANCE%3ABTCUSDT"
+                rel="noreferrer"
+                target="_blank"
+              >
                 <HoverUnderLineSpan>TradingView BTCUSDT Chart</HoverUnderLineSpan>
               </a>
             </Typography>
