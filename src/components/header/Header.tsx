@@ -133,11 +133,11 @@ const Header: React.FC = () => {
           </Tooltip>
         )}
       </Inner>
-      <AccountsConintainer>
-        {showMyAccounts && upbitAuth.accounts.length ? (
+      {isMounted && showMyAccounts && upbitAuth.accounts.length ? (
+        <AccountsConintainer>
           <MyAccounts upbitAccounts={upbitAuth.accounts} />
-        ) : null}
-      </AccountsConintainer>
+        </AccountsConintainer>
+      ) : null}
       <RegisterUpbitApiFormDialog
         open={openRegisterUpbitApiDialog}
         onClose={(open) => setOpenRegisterUpbitApiDialog(open)}
