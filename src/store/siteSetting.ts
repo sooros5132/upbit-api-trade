@@ -12,11 +12,13 @@ interface ISiteSettingState {
   theme: 'dark' | 'light';
   fontSize: number;
   selectedMarketSymbol: string;
+  selectedExchange: 'BINANCE' | 'UPBIT';
   showMyAccounts: boolean;
 }
 
 interface ISiteSettingStore extends ISiteSettingState {
   setSelectedMarketSymbol: (symbol: string) => void;
+  setSelectedExchange: (exchange: ISiteSettingState['selectedExchange']) => void;
   setShowMyAccounts: (show: boolean) => void;
   changeTheme: (mode: ISiteSettingState['theme']) => void;
   changeFontSize: (fontSize: number) => void;
@@ -26,6 +28,7 @@ const defaultState: ISiteSettingState = {
   theme: 'dark',
   fontSize: 14,
   selectedMarketSymbol: 'BTC',
+  selectedExchange: 'BINANCE',
   showMyAccounts: true
 };
 
@@ -35,9 +38,13 @@ export const initStore = () => {
       persist(
         devtools((set, get) => ({
           ...defaultState,
-          setSelectedMarketSymbol: (symbol: string) =>
+          setSelectedMarketSymbol: (symbol: ISiteSettingState['selectedMarketSymbol']) =>
             set(() => ({
               selectedMarketSymbol: symbol
+            })),
+          setSelectedExchange: (exchange: ISiteSettingState['selectedExchange']) =>
+            set(() => ({
+              selectedExchange: exchange
             })),
           setShowMyAccounts: (show: boolean) =>
             set(() => ({

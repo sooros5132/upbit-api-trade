@@ -17,15 +17,20 @@ interface TradingViewChartProps {}
 
 const TradingViewChart: React.FC<TradingViewChartProps> = () => {
   const theme = useTheme();
-  const { selectedMarketSymbol } = useSiteSettingStore();
+  const { selectedMarketSymbol, selectedExchange } = useSiteSettingStore();
 
   const handleLoadTradingViewScript = React.useCallback(() => {
     const TradingView = window?.TradingView;
 
+    const symbol =
+      selectedExchange === 'BINANCE'
+        ? `BINANCE:${selectedMarketSymbol}USDT`
+        : `UPBIT:${selectedMarketSymbol}KRW`;
+
     if (TradingView && TradingView.widget) {
       new TradingView.widget({
         autosize: true,
-        symbol: `UPBIT:${selectedMarketSymbol}KRW`,
+        symbol,
         interval: '15',
         timezone: 'Asia/Seoul',
         theme: 'dark',
@@ -38,7 +43,7 @@ const TradingViewChart: React.FC<TradingViewChartProps> = () => {
         container_id: 'tradingview_4a4c4'
       });
     }
-  }, [theme.color.mainDrakBackground, selectedMarketSymbol]);
+  }, [selectedExchange, selectedMarketSymbol, theme.color.mainDrakBackground]);
 
   React.useEffect(() => {
     handleLoadTradingViewScript();

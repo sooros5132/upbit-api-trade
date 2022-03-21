@@ -22,6 +22,7 @@ import { AskBidTypography, MonoFontTypography } from '../modules/Typography';
 import { useUpbitDataStore } from 'src/store/upbitData';
 import { clientApiUrls } from 'src/utils/clientApiUrls';
 import { useSiteSettingStore } from 'src/store/siteSetting';
+import { AiOutlineAreaChart } from 'react-icons/ai';
 
 const TableContainer = styled('div')`
   margin: 0 auto;
@@ -77,9 +78,14 @@ const MarketIconImage = styled('img')(({ theme }) => ({
 const ExchangeImage = styled('img')`
   width: 1em;
   height: 1em;
-  opacity: 0.75;
+  opacity: 0.65;
   object-fit: contain;
 `;
+
+const ChartIconBox = styled(CursorPointerBox)(({ theme }) => ({
+  color: theme.color.black,
+  opacity: 0.4
+}));
 
 const IconCell = styled(TableCell)`
   font-size: ${({ theme }) => theme.size.px14};
@@ -392,10 +398,11 @@ const TableItem = React.memo<{
   }) => {
     const changeRate = upbitMarket.scr * 100;
     const marketSymbol = upbitMarket.cd.replace(krwRegex, '');
-    const { setSelectedMarketSymbol } = useSiteSettingStore();
+    const { setSelectedMarketSymbol, setSelectedExchange } = useSiteSettingStore();
 
-    const handleClickMarketIcon = (prop: string) => () => {
-      setSelectedMarketSymbol(prop);
+    const handleClickMarketIcon = (symbol: string, exchange: 'BINANCE' | 'UPBIT') => () => {
+      setSelectedMarketSymbol(symbol);
+      setSelectedExchange(exchange);
       window.scrollTo(0, 0);
     };
     // const usdtName = marketSymbol + "USDT";
@@ -410,12 +417,10 @@ const TableItem = React.memo<{
         <TableCell>
           <TableCellInnerBox>
             <FlexAlignItemsCenterBox>
-              <CursorPointerBox onClick={handleClickMarketIcon(marketSymbol)}>
-                <MarketIconImage
-                  src={`/asset/upbit/logos/${marketSymbol}.png`}
-                  alt={`${upbitMarket.cd}-icon`}
-                />
-              </CursorPointerBox>
+              <MarketIconImage
+                src={`/asset/upbit/logos/${marketSymbol}.png`}
+                alt={`${upbitMarket.cd}-icon`}
+              />
             </FlexAlignItemsCenterBox>
           </TableCellInnerBox>
         </TableCell>
@@ -430,15 +435,23 @@ const TableItem = React.memo<{
               >
                 <ExchangeImage src="/icons/upbit.png" alt="upbit favicon"></ExchangeImage>
               </a>
+              <ChartIconBox onClick={handleClickMarketIcon(marketSymbol, 'UPBIT')}>
+                <AiOutlineAreaChart />
+              </ChartIconBox>
               &nbsp;
               {binanceMarket ? (
-                <a
-                  href={`${clientApiUrls.binance.marketHref}${marketSymbol}_USDT`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <ExchangeImage src="/icons/binance.ico" alt="upbit favicon"></ExchangeImage>
-                </a>
+                <>
+                  <a
+                    href={`${clientApiUrls.binance.marketHref}${marketSymbol}_USDT`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <ExchangeImage src="/icons/binance.ico" alt="upbit favicon"></ExchangeImage>
+                  </a>
+                  <ChartIconBox onClick={handleClickMarketIcon(marketSymbol, 'BINANCE')}>
+                    <AiOutlineAreaChart />
+                  </ChartIconBox>
+                </>
               ) : null}
             </FlexBox>
           </TableCellInnerBox>
