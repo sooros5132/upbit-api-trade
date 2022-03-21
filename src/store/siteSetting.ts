@@ -68,7 +68,13 @@ export const initStore = () => {
         })),
         {
           name: 'siteSetting', // unique name
-          getStorage: () => localStorage // (optional) by default, 'localStorage' is used
+          getStorage: () => localStorage, // (optional) by default, 'localStorage' is used
+          partialize: (state) =>
+            Object.fromEntries(
+              Object.entries(state).filter(
+                ([key]) => !['selectedMarketSymbol', 'selectedExchange'].includes(key)
+              )
+            )
         }
       )
     );
