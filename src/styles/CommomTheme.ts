@@ -98,8 +98,8 @@ const theme = {
     gray80: '#252525',
     gray90: '#121212',
     gray95: '#070707',
-    tooltipBackground: 'rgba(11, 22, 11, 0.92)',
-    tooltipArrow: 'rgba(11, 22, 11, 0.92)'
+    tooltipBackground: 'rgba(11, 12, 11, 0.92)',
+    tooltipArrow: 'rgba(11, 12, 11, 0.92)'
   }
 };
 
