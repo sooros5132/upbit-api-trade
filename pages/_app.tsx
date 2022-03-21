@@ -2,7 +2,7 @@ import type { AppProps } from 'next/app';
 import { NextSeo } from 'next-seo';
 import { createUpbitAuthStore, UpbitAuthStoreProvider } from 'src/store/upbitAuth';
 import Layout from 'src/components/Layout';
-import CommonTheme from 'src/styles/CommomTheme';
+import CommonTheme, { CommonCustomTheme } from 'src/styles/CommomTheme';
 import { SnackbarKey, SnackbarProvider } from 'notistack';
 import { createRef } from 'react';
 import { Button } from '@mui/material';
@@ -16,14 +16,14 @@ import { createSiteSettingStore, SiteSettingStoreProvider } from 'src/store/site
 // xl, extra-large: 1536px
 declare module '@mui/material/styles' {
   interface Theme {
-    size: typeof CommonTheme.size;
-    color: typeof CommonTheme.color;
-    mediaQuery: typeof CommonTheme.mediaQuery;
+    size: typeof CommonCustomTheme.size;
+    color: typeof CommonCustomTheme.color;
+    mediaQuery: typeof CommonCustomTheme.mediaQuery;
   }
   interface ThemeOptions {
-    size?: typeof CommonTheme.size;
-    color?: typeof CommonTheme.color;
-    mediaQuery?: typeof CommonTheme.mediaQuery;
+    size?: typeof CommonCustomTheme.size;
+    color?: typeof CommonCustomTheme.color;
+    mediaQuery?: typeof CommonCustomTheme.mediaQuery;
   }
 }
 declare module '@mui/material/Button' {

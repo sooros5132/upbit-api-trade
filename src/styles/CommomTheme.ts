@@ -33,7 +33,7 @@ const size = {
   px130: '9.285714285714286rem'
 };
 
-const theme = {
+export const CommonCustomTheme = {
   size: size,
   mediaQuery: {
     /* Extra small devices (phones, 600px and down) */
@@ -104,32 +104,32 @@ const theme = {
 };
 
 const CommonTheme: ThemeOptions = {
-  size: theme.size,
-  mediaQuery: theme.mediaQuery,
-  color: theme.color,
+  size: CommonCustomTheme.size,
+  mediaQuery: CommonCustomTheme.mediaQuery,
+  color: CommonCustomTheme.color,
   palette: {
     primary: {
-      main: theme.color.main
+      main: CommonCustomTheme.color.main
       // dark: CommonStyles.LTMain02,
       // light: CommonStyles.LTMain04
     },
     secondary: {
-      main: theme.color.secondaryMain
+      main: CommonCustomTheme.color.secondaryMain
       // dark: CommonStyles.LTSecondary,
       // light: CommonStyles.LTSecondary
     },
     success: {
-      main: theme.color.greenMain
+      main: CommonCustomTheme.color.greenMain
       // dark: '',
       // light: ''
     },
     error: {
-      main: theme.color.redMain
+      main: CommonCustomTheme.color.redMain
       // dark: '',
       // light: ''
     },
     info: {
-      main: theme.color.blueMain
+      main: CommonCustomTheme.color.blueMain
       // dark: CommonStyles.LTInfo01,
       // light: CommonStyles.LTInfo03
     }
@@ -154,8 +154,8 @@ const CommonTheme: ThemeOptions = {
           fontFamily: '-apple-system,BlinkMacSystemFont,helvetica,Apple SD Gothic Neo,sans-serif',
           // WebkitFontSmoothing: 'antialiased',
           // MozOsxFontSmoothing: 'grayscale',
-          backgroundColor: theme.color.htmlBackground,
-          color: theme.color.textDefaultWhite
+          backgroundColor: CommonCustomTheme.color.htmlBackground,
+          color: CommonCustomTheme.color.textDefaultWhite
         },
         code: {
           fontFamily: "source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace"
@@ -189,31 +189,31 @@ const CommonTheme: ThemeOptions = {
         fontWeight: 'inherit',
         color: 'inherit',
         fontFamily: 'inherit'
-        // color: theme.color.textDefaultBlack
+        // color: CommonCustomTheme.color.textDefaultBlack
       },
       styleOverrides: {
         h1: {},
         h2: {
-          fontSize: theme.size.px30,
+          fontSize: CommonCustomTheme.size.px30,
           fontWeight: 'bold'
         },
         h3: {
-          fontSize: theme.size.px24,
+          fontSize: CommonCustomTheme.size.px24,
           fontWeight: 'bold'
         },
         h4: {
-          fontSize: theme.size.px20,
+          fontSize: CommonCustomTheme.size.px20,
           fontWeight: 'bold'
         },
         h5: {
-          fontSize: theme.size.px16,
+          fontSize: CommonCustomTheme.size.px16,
           fontWeight: 'bold'
         },
         h6: {
-          fontSize: theme.size.px14
+          fontSize: CommonCustomTheme.size.px14
         },
         overline: {
-          fontSize: theme.size.px10
+          fontSize: CommonCustomTheme.size.px10
         }
       }
     },
@@ -256,12 +256,12 @@ const CommonTheme: ThemeOptions = {
           // background: "linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)",
         },
         containedPrimary: {
-          backgroundColor: theme.color.main,
-          color: theme.color.textDefaultWhite
+          backgroundColor: CommonCustomTheme.color.main,
+          color: CommonCustomTheme.color.textDefaultWhite
         },
         containedSecondary: {
-          backgroundColor: theme.color.secondaryMain,
-          color: theme.color.textDefaultWhite
+          backgroundColor: CommonCustomTheme.color.secondaryMain,
+          color: CommonCustomTheme.color.textDefaultWhite
         },
         outlined: {}
       },
@@ -278,24 +278,24 @@ const CommonTheme: ThemeOptions = {
         {
           props: { variant: 'contained', disabled: true },
           style: {
-            color: theme.color.gray30,
-            backgroundColor: theme.color.gray10,
+            color: CommonCustomTheme.color.gray30,
+            backgroundColor: CommonCustomTheme.color.gray10,
             '&:hover': {
-              color: theme.color.gray40,
-              backgroundColor: theme.color.gray15
+              color: CommonCustomTheme.color.gray40,
+              backgroundColor: CommonCustomTheme.color.gray15
             }
           }
         },
         {
           props: { variant: 'contained', color: 'success' },
           style: {
-            color: theme.color.textDefaultWhite
+            color: CommonCustomTheme.color.textDefaultWhite
           }
         },
         {
           props: { variant: 'contained', color: 'info' },
           style: {
-            color: theme.color.textDefaultWhite
+            color: CommonCustomTheme.color.textDefaultWhite
           }
         },
         {
@@ -305,8 +305,8 @@ const CommonTheme: ThemeOptions = {
         {
           props: { variant: 'outlined', color: 'info' },
           style: {
-            borderColor: theme.color.blueLight,
-            backgroundColor: theme.color.blueMain
+            borderColor: CommonCustomTheme.color.blueLight,
+            backgroundColor: CommonCustomTheme.color.blueMain
           }
         },
         {
@@ -328,70 +328,70 @@ const CommonTheme: ThemeOptions = {
         {
           props: { variant: 'containedDisable' },
           style: {
-            color: theme.color.gray30,
-            backgroundColor: theme.color.gray10,
+            color: CommonCustomTheme.color.gray30,
+            backgroundColor: CommonCustomTheme.color.gray10,
             '&:hover': {
-              color: theme.color.gray40,
-              backgroundColor: theme.color.gray15
+              color: CommonCustomTheme.color.gray40,
+              backgroundColor: CommonCustomTheme.color.gray15
             }
           }
         },
         {
           props: { variant: 'outlinedDisable' },
           style: {
-            color: theme.color.gray30,
+            color: CommonCustomTheme.color.gray30,
             borderStyle: 'solid',
-            borderColor: theme.color.gray15,
+            borderColor: CommonCustomTheme.color.gray15,
             borderWidth: 1,
             borderRadius: 4,
             '&:hover': {
-              borderColor: theme.color.gray20,
-              backgroundColor: theme.color.gray05
+              borderColor: CommonCustomTheme.color.gray20,
+              backgroundColor: CommonCustomTheme.color.gray05
             }
           }
         },
         {
           props: { variant: 'textDisable' },
           style: {
-            color: theme.color.gray30,
+            color: CommonCustomTheme.color.gray30,
             '&:hover': {
-              color: theme.color.gray40,
-              backgroundColor: theme.color.gray05
+              color: CommonCustomTheme.color.gray40,
+              backgroundColor: CommonCustomTheme.color.gray05
             }
           }
         },
         {
           props: { variant: 'containedGray' },
           style: {
-            color: theme.color.gray50,
-            backgroundColor: theme.color.gray15,
+            color: CommonCustomTheme.color.gray50,
+            backgroundColor: CommonCustomTheme.color.gray15,
             '&:hover': {
-              color: theme.color.gray65,
-              backgroundColor: theme.color.gray20
+              color: CommonCustomTheme.color.gray65,
+              backgroundColor: CommonCustomTheme.color.gray20
             }
           }
         },
         {
           props: { variant: 'outlinedGray' },
           style: {
-            color: theme.color.gray50,
+            color: CommonCustomTheme.color.gray50,
             borderStyle: 'solid',
-            borderColor: theme.color.gray20,
+            borderColor: CommonCustomTheme.color.gray20,
             borderWidth: 1,
             borderRadius: 4,
             '&:hover': {
-              borderColor: theme.color.gray30,
-              backgroundColor: theme.color.gray10
+              borderColor: CommonCustomTheme.color.gray30,
+              backgroundColor: CommonCustomTheme.color.gray10
             }
           }
         },
         {
           props: { variant: 'textGray' },
           style: {
-            color: theme.color.gray50,
+            color: CommonCustomTheme.color.gray50,
             '&:hover': {
-              color: theme.color.gray50,
-              backgroundColor: theme.color.gray10
+              color: CommonCustomTheme.color.gray50,
+              backgroundColor: CommonCustomTheme.color.gray10
             }
           }
         }
@@ -478,7 +478,7 @@ const CommonTheme: ThemeOptions = {
           [`& .${tabsClasses.scroller}`]: {
             borderBottomWidth: 1,
             borderBottomStyle: 'solid',
-            borderBottomColor: theme.color.textBlueGray
+            borderBottomColor: CommonCustomTheme.color.textBlueGray
           },
           '& .MuiButtonBase-root': {
             fontWeight: 'bold'
@@ -486,7 +486,7 @@ const CommonTheme: ThemeOptions = {
           // '& .MuiTabs-flexContainer': {
           //   borderBottomWidth: 1,
           //   borderBottomStyle: 'solid',
-          //   borderBottomColor: theme.color.textBlueGray
+          //   borderBottomColor: CommonCustomTheme.color.textBlueGray
           // }
         }
       },
@@ -505,7 +505,7 @@ const CommonTheme: ThemeOptions = {
       },
       styleOverrides: {
         root: {
-          color: theme.color.textBlueGray
+          color: CommonCustomTheme.color.textBlueGray
         }
       }
     },
@@ -537,10 +537,10 @@ const CommonTheme: ThemeOptions = {
     MuiTooltip: {
       styleOverrides: {
         tooltip: {
-          backgroundColor: theme.color.tooltipArrow
+          backgroundColor: CommonCustomTheme.color.tooltipArrow
         },
         arrow: {
-          color: theme.color.tooltipArrow
+          color: CommonCustomTheme.color.tooltipArrow
         }
       }
     }
