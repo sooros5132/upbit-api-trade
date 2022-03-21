@@ -37,7 +37,7 @@ const RegisterUpbitApiFormDialog: React.FC<RegisterUpbitApiFormDialogProps> = ({
       return;
     }
 
-    const registerResult = await registerKey(values.accessKey, values.secretKey);
+    const registerResult = await registerKey(values.accessKey.trim(), values.secretKey.trim());
     if (Array.isArray(registerResult)) {
       enqueueSnackbar('업비트 API에 연동되었습니다.', {
         variant: 'success'
