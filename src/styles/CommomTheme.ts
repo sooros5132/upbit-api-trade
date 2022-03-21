@@ -97,11 +97,13 @@ const theme = {
     gray70: '#404040',
     gray80: '#252525',
     gray90: '#121212',
-    gray95: '#070707'
+    gray95: '#070707',
+    tooltipBackground: 'rgba(11, 22, 11, 0.92)',
+    tooltipArrow: 'rgba(11, 22, 11, 0.92)'
   }
 };
 
-const CommonTheme = {
+const CommonTheme: ThemeOptions = {
   size: theme.size,
   mediaQuery: theme.mediaQuery,
   color: theme.color,
@@ -529,6 +531,16 @@ const CommonTheme = {
           width: '1.2em',
           height: '1.2em',
           fontSize: 'inherit'
+        }
+      }
+    },
+    MuiTooltip: {
+      styleOverrides: {
+        tooltip: {
+          backgroundColor: theme.color.tooltipArrow
+        },
+        arrow: {
+          color: theme.color.tooltipArrow
         }
       }
     }
