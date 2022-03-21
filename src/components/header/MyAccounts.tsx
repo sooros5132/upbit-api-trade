@@ -18,6 +18,7 @@ import { clientApiUrls } from 'src/utils/clientApiUrls';
 const AccountsContainer = styled(FlexBox)(({ theme }) => ({
   paddingBottom: theme.spacing(1)
 }));
+
 const AccountsInner = styled(FlexAlignItemsCenterBox)(() => ({
   overflowX: 'auto',
   whiteSpace: 'nowrap'
@@ -71,6 +72,14 @@ const AccountItem = memo(({ account }: IAccountItemProps) => {
                 rowGap: 0.5
               }}
             >
+              <Typography>매수가</Typography>
+              <TextAlignRightBox>
+                <MonoFontTypography>{avg_buy_price.toLocaleString()}</MonoFontTypography>
+              </TextAlignRightBox>
+              <Typography>현재가</Typography>
+              <TextAlignRightBox>
+                <MonoFontTypography>{currentPrice.toLocaleString()}</MonoFontTypography>
+              </TextAlignRightBox>
               <Typography>매수금액</Typography>
               <TextAlignRightBox>
                 <MonoFontTypography>
@@ -92,14 +101,6 @@ const AccountItem = memo(({ account }: IAccountItemProps) => {
               <Typography>보유수량</Typography>
               <TextAlignRightBox>
                 <MonoFontTypography>{totalBalance.toFixed(8)}</MonoFontTypography>
-              </TextAlignRightBox>
-              <Typography>매수가</Typography>
-              <TextAlignRightBox>
-                <MonoFontTypography>{avg_buy_price.toLocaleString()}</MonoFontTypography>
-              </TextAlignRightBox>
-              <Typography>현재가</Typography>
-              <TextAlignRightBox>
-                <MonoFontTypography>{currentPrice.toLocaleString()}</MonoFontTypography>
               </TextAlignRightBox>
             </GridBox>
           }
@@ -129,9 +130,14 @@ function MyAccounts({ upbitAccounts: upbitAccountsTemp }: IMyAccountsProps) {
           totalBalance: Number(account.balance) + Number(account.locked)
         } as IAccountItemProps['account'])
     )
-    .sort(
-      (a, b) => Number(b.avg_buy_price) * b.totalBalance - Number(a.avg_buy_price) * a.totalBalance
-    );
+    .sort((a, b) => {
+      if (!a.currentPrice) {
+        return -1;
+      } else if (!b.currentPrice) {
+        return 1;
+      }
+      return b.currentPrice * b.totalBalance - a.currentPrice * a.totalBalance;
+    });
   return (
     <AccountsContainer>
       <Tooltip title="KRW 마켓에 있는 코인만 지원합니다." arrow>
