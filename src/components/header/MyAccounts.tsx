@@ -69,7 +69,8 @@ const AccountItem = memo(({ account }: IAccountItemProps) => {
               sx={{
                 gridTemplateColumns: 'auto 1fr',
                 columnGap: 0.5,
-                rowGap: 0.5
+                rowGap: 0.5,
+                fontSize: (theme) => theme.size.px14
               }}
             >
               <Typography>매수가</Typography>
@@ -107,7 +108,9 @@ const AccountItem = memo(({ account }: IAccountItemProps) => {
         >
           <AskBidTypography state={profitAndLoss}>
             &nbsp;
-            {`${Math.round(currentPrice * totalBalance).toLocaleString()}₩ ${profitAndLoss}%`}
+            {`${Math.round(currentPrice * totalBalance).toLocaleString()}₩ ${profitAndLoss.toFixed(
+              2
+            )}%`}
           </AskBidTypography>
         </Tooltip>
       </FlexAlignItemsCenterBox>
