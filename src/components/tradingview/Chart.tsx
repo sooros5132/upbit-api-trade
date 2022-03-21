@@ -1,9 +1,11 @@
+import { Typography } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
 import Script from 'next/script';
-import React from 'react';
+import React, { memo, useCallback, useEffect, useState } from 'react';
 import isEqual from 'react-fast-compare';
 import { useSiteSettingStore } from 'src/store/siteSetting';
-import { IUpbitForex } from 'src/types/upbit';
+import { FlexCenterCenterBox } from '../modules/Box';
+import { HoverUnderLineSpan } from '../modules/Typography';
 
 const Container = styled('div')(({ theme }) => ({
   height: 500,
@@ -13,13 +15,29 @@ const Container = styled('div')(({ theme }) => ({
   }
 }));
 
+const UnMountedContainer = styled(FlexCenterCenterBox)(({ theme }) => ({
+  height: '100%',
+  fontSize: theme.size.px50,
+  fontWeight: 'bold',
+  color: theme.color.gray70,
+  border: `1px dashed ${theme.color.gray70}`,
+  borderRadius: 20,
+  [`${theme.breakpoints.down('md')}`]: {
+    fontSize: theme.size.px36
+  },
+  [`${theme.breakpoints.down('sm')}`]: {
+    fontSize: theme.size.px24
+  }
+}));
+
 interface TradingViewChartProps {}
 
 const TradingViewChart: React.FC<TradingViewChartProps> = () => {
   const theme = useTheme();
   const { selectedMarketSymbol, selectedExchange } = useSiteSettingStore();
+  const [isMounted, setMounted] = useState(false);
 
-  const handleLoadTradingViewScript = React.useCallback(() => {
+  const handleLoadTradingViewScript = useCallback(() => {
     const TradingView = window?.TradingView;
 
     const symbol =
@@ -45,15 +63,29 @@ const TradingViewChart: React.FC<TradingViewChartProps> = () => {
     }
   }, [selectedExchange, selectedMarketSymbol, theme.color.mainDrakBackground]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     handleLoadTradingViewScript();
   }, [handleLoadTradingViewScript, selectedMarketSymbol]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <>
       <Script src="https://s3.tradingview.com/tv.js" onLoad={() => handleLoadTradingViewScript()} />
       <Container>
-        <div style={{ height: '100%' }} id={'tradingview_4a4c4'} />
+        {isMounted ? (
+          <div style={{ height: '100%' }} id={'tradingview_4a4c4'} />
+        ) : (
+          <UnMountedContainer>
+            <Typography>
+              <a href="https://www.tradingview.com/chart?symbol=BINANCE%3ABTCUSDT">
+                <HoverUnderLineSpan>TradingView BTCUSDT Chart</HoverUnderLineSpan>
+              </a>
+            </Typography>
+          </UnMountedContainer>
+        )}
       </Container>
     </>
   );
@@ -61,4 +93,4 @@ const TradingViewChart: React.FC<TradingViewChartProps> = () => {
 
 TradingViewChart.displayName = 'TradingViewChart';
 
-export default React.memo(TradingViewChart, isEqual);
+export default memo(TradingViewChart, isEqual);
