@@ -8,6 +8,7 @@ import { createRef } from 'react';
 import { Button } from '@mui/material';
 import { createUpbitDataStore, UpbitDataStoreProvider } from 'src/store/upbitData';
 import { createSiteSettingStore, SiteSettingStoreProvider } from 'src/store/siteSetting';
+import Script from 'next/script';
 
 // xs, extra-small: 0px
 // sm, small: 600px
@@ -88,6 +89,19 @@ function MyApp({ Component, pageProps }: AppProps) {
             preventDuplicate
             // TransitionComponent={(props)=>(<Slide {...props} direction="right" >{props.children}</Slide>)}
           >
+            <Script async src="https://www.googletagmanager.com/gtag/js?id=G-VYNSSXH1VE" />
+            <Script
+              id="googleAnalyticsScript"
+              dangerouslySetInnerHTML={{
+                __html: `
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  gtag('js', new Date());
+                
+                  gtag('config', 'G-VYNSSXH1VE');
+                `
+              }}
+            />
             <Layout>
               <Component {...pageProps} />
             </Layout>
