@@ -287,13 +287,15 @@ const TableBody = React.memo<{
   upbitMarketSnapshot?: Record<string, IMarketTableItem>;
 }>(({ upbitForex, sortColumnName, sortType, upbitMarketSnapshot }) => {
   const { marketSocketData: upbitRealtimeMarket } = useUpbitDataStore();
-  const { selectedMarketSymbol } = useSiteSettingStore();
+  const { selectedExchange, selectedMarketSymbol } = useSiteSettingStore();
   const binanceRealtimeMarket = useContext(BinanceWebSocketContext);
 
   const columnSort = React.useCallback(
     (aItem: IMarketTableItem, bItem: IMarketTableItem) => {
       const a = aItem[sortColumnName];
       const b = bItem[sortColumnName];
+      if (a === undefined) return 1;
+      if (b === undefined) return -1;
       if (typeof a === 'number' && typeof b === 'number') {
         if (sortType === 'asc') {
           return a - b;
@@ -309,14 +311,15 @@ const TableBody = React.memo<{
           if (aValue > bValue) {
             return -1;
           }
-        } else {
-          if (aValue < bValue) {
-            return -1;
-          }
-          if (aValue > bValue) {
-            return 1;
-          }
+          return 0;
         }
+        if (aValue < bValue) {
+          return -1;
+        }
+        if (aValue > bValue) {
+          return 1;
+        }
+        return 0;
       }
       return 0;
     },
@@ -329,10 +332,10 @@ const TableBody = React.memo<{
     .map((upbitMarket) => {
       const binanceMarketName = upbitMarket.cd.replace(krwRegex, '') + 'USDT';
       const binanceMarket = binanceRealtimeMarket[binanceMarketName];
-      const binancePrice = binanceRealtimeMarket[binanceMarketName]
+      const binancePrice = binanceMarket
         ? Number(binanceMarket.data.p) * upbitForex.basePrice
         : undefined;
-      const premium = binancePrice ? (1 - binancePrice / upbitMarket.tp) * 100 : 0;
+      const premium = binancePrice ? (1 - binancePrice / upbitMarket.tp) * 100 : undefined;
 
       return {
         ...upbitMarket,
@@ -353,12 +356,26 @@ const TableBody = React.memo<{
   //       : undefined;
   // }
   const titleSymbol = `KRW-${selectedMarketSymbol || 'BTC'}`;
-  const title = `${
-    selecteList[titleSymbol]
-      ? `${selectedMarketSymbol} ${selecteList[titleSymbol].tp.toLocaleString()}₩ | `
-      : ''
-  }SOOROS`;
-
+  let title = 'SOOROS';
+  switch (selectedExchange) {
+    case 'BINANCE': {
+      const symbol = selectedMarketSymbol + 'USDT';
+      title =
+        (binanceRealtimeMarket[symbol]
+          ? `${selectedMarketSymbol} ${Number(
+              binanceRealtimeMarket[symbol].data.p
+            ).toLocaleString()}$ | `
+          : '') + title;
+      break;
+    }
+    case 'UPBIT': {
+      title =
+        (selecteList[titleSymbol]
+          ? `${selectedMarketSymbol} ${selecteList[titleSymbol].tp.toLocaleString()}₩ | `
+          : '') + title;
+      break;
+    }
+  }
   return (
     <>
       <NextSeo
@@ -493,7 +510,7 @@ const TableItem = React.memo<{
         <TableCell>
           <TableCellInnerBox>
             <MonoFontBox>
-              {upbitMarket.premium ? (
+              {typeof upbitMarket.premium === 'number' ? (
                 <TextAlignRightBox>
                   <AskBidTypography state={upbitMarket.premium}>
                     {upbitMarket.premium.toFixed(2).padStart(2, '0')}%

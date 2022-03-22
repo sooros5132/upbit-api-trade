@@ -30,7 +30,7 @@ interface IAccountItemProps {
 
 const AccountItem = memo(({ account }: IAccountItemProps) => {
   const { currentPrice } = account;
-  if (!currentPrice) return null;
+  if (typeof currentPrice !== 'number') return null;
 
   const {
     avg_buy_price,
@@ -134,10 +134,10 @@ function MyAccounts({ upbitAccounts: upbitAccountsTemp }: IMyAccountsProps) {
         } as IAccountItemProps['account'])
     )
     .sort((a, b) => {
-      if (!a.currentPrice) {
-        return -1;
-      } else if (!b.currentPrice) {
+      if (typeof a.currentPrice !== 'number') {
         return 1;
+      } else if (typeof b.currentPrice !== 'number') {
+        return -1;
       }
       return b.currentPrice * b.totalBalance - a.currentPrice * a.totalBalance;
     });
