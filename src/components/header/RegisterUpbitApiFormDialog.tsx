@@ -76,7 +76,7 @@ const RegisterUpbitApiFormDialog: React.FC<RegisterUpbitApiFormDialogProps> = ({
         }
       ]}
     >
-      <Box minWidth={350}>
+      <Box minWidth={200}>
         <TextAlignCenterBox>
           <BackgroundRedBox>
             <Typography>자산조회 기능만 사용이 가능합니다.</Typography>
