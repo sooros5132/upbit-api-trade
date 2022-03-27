@@ -4,7 +4,7 @@ import isEqual from 'react-fast-compare';
 import { useUpbitAuthStore } from 'src/store/upbitAuth';
 import { FormDialog } from '../modules/dialog/Dialog';
 import { useSnackbar } from 'notistack';
-import { BackgroundRedBox, TextAlignCenterBox } from '../modules/Box';
+import { BackgroundBlueBox, BackgroundRedBox, TextAlignCenterBox } from '../modules/Box';
 import { HoverUnderLineSpan, UnderLineSpan } from '../modules/Typography';
 
 interface RegisterUpbitApiFormDialogProps {
@@ -66,7 +66,7 @@ const RegisterUpbitApiFormDialog: React.FC<RegisterUpbitApiFormDialogProps> = ({
           isSubmitButton: false,
           returningIdentifier: 'cancel',
           title: '취소',
-          color: 'secondary'
+          variant: 'containedGray'
         },
         {
           isSubmitButton: true,
@@ -92,7 +92,12 @@ const RegisterUpbitApiFormDialog: React.FC<RegisterUpbitApiFormDialogProps> = ({
             </a>
             에서 허용 IP에 등록해야 사용이 가능합니다.
           </Typography> */}
-          <Typography>현재 API연동 기능을 사용할 수 없습니다.</Typography>
+          <BackgroundBlueBox>
+            <Typography>
+              현재 운영중인 서버는 고정아이피가 아니므로 업비트 API연동을 이용하실 수 없습니다.
+            </Typography>
+            <Typography>빠른 시일 내에 고치겠습니다.</Typography>
+          </BackgroundBlueBox>
         </TextAlignCenterBox>
         <Box mt={1}>
           <Typography>Access key</Typography>

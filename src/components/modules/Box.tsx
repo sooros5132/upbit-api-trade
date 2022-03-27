@@ -254,3 +254,10 @@ export const BackgroundGreenBox = styled(Box)(({ theme }) => ({
   backgroundColor: theme.color.redBackgroundDark,
   color: theme.color.redLight
 }));
+
+export const BackgroundBlueBox = styled(Box)(({ theme }) => ({
+  borderRadius: 5,
+  padding: `${theme.spacing(0.625)} ${theme.spacing(4)}`,
+  backgroundColor: theme.color.blueBackgroundDark,
+  color: theme.color.blueLight
+}));
