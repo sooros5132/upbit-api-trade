@@ -13,7 +13,53 @@ import { CommonCustomTheme } from './CommomTheme';
 export const DarkColor: typeof CommonCustomTheme['color'] = {
   ...CommonCustomTheme['color'],
   white: '#000000',
-  black: '#ffffff'
+  black: '#ffffff',
+  gray01: '#fcfcfc',
+  gray03: '#f7f7f7',
+  gray05: '#f2f2f2',
+  gray10: '#e6e6e6',
+  gray15: '#d9d9d9',
+  gray20: '#cccccc',
+  gray25: '#bfbfbf',
+  gray30: '#b3b3b3',
+  gray35: '#a6a6a6',
+  gray40: '#999999',
+  gray45: '#8c8c8c',
+  gray50: '#808080',
+  gray55: '#737373',
+  gray60: '#666666',
+  gray65: '#595959',
+  gray70: '#4d4d4d',
+  gray75: '#404040',
+  gray80: '#333333',
+  gray85: '#262626',
+  gray90: '#1a1a1a',
+  gray95: '#0d0d0d',
+  gray97: '#080808',
+  gray99: '#030303'
+  // gray99: '#fcfcfc',
+  // gray97: '#f7f7f7',
+  // gray95: '#f2f2f2',
+  // gray90: '#e6e6e6',
+  // gray85: '#d9d9d9',
+  // gray80: '#cccccc',
+  // gray75: '#bfbfbf',
+  // gray70: '#b3b3b3',
+  // gray65: '#a6a6a6',
+  // gray60: '#999999',
+  // gray55: '#8c8c8c',
+  // gray50: '#808080',
+  // gray45: '#737373',
+  // gray40: '#666666',
+  // gray35: '#595959',
+  // gray30: '#4d4d4d',
+  // gray25: '#404040',
+  // gray20: '#333333',
+  // gray15: '#262626',
+  // gray10: '#1a1a1a',
+  // gray05: '#0d0d0d',
+  // gray03: '#080808',
+  // gray01: '#030303',
 };
 
 const DarkTheme: ThemeOptions = {
@@ -154,78 +200,80 @@ const DarkTheme: ThemeOptions = {
         {
           props: { variant: 'outlined', color: 'warning' },
           style: {}
+        },
+        {
+          props: { variant: 'containedDisable' },
+          style: {
+            color: DarkColor.gray40,
+            backgroundColor: DarkColor.gray20,
+            '&:hover': {
+              color: DarkColor.gray50,
+              backgroundColor: DarkColor.gray30
+            }
+          }
+        },
+        {
+          props: { variant: 'outlinedDisable' },
+          style: {
+            color: DarkColor.gray30,
+            borderStyle: 'solid',
+            borderColor: DarkColor.gray15,
+            borderWidth: 1,
+            borderRadius: 4,
+            '&:hover': {
+              borderColor: DarkColor.gray20,
+              backgroundColor: DarkColor.gray05
+            }
+          }
+        },
+        {
+          props: { variant: 'textDisable' },
+          style: {
+            border: 0,
+            color: DarkColor.gray40,
+            '&:hover': {
+              color: DarkColor.gray50,
+              backgroundColor: DarkColor.gray20
+            }
+          }
+        },
+        {
+          props: { variant: 'containedGray' },
+          style: {
+            color: DarkColor.gray50,
+            borderColor: CommonCustomTheme.color.gray70,
+            backgroundColor: DarkColor.gray85,
+            '&:hover': {
+              color: DarkColor.gray65,
+              borderColor: CommonCustomTheme.color.gray65,
+              backgroundColor: DarkColor.gray80
+            }
+          }
+        },
+        {
+          props: { variant: 'outlinedGray' },
+          style: {
+            color: DarkColor.gray50,
+            borderStyle: 'solid',
+            borderColor: DarkColor.gray20,
+            borderWidth: 1,
+            borderRadius: 4,
+            '&:hover': {
+              borderColor: DarkColor.gray30,
+              backgroundColor: DarkColor.gray10
+            }
+          }
+        },
+        {
+          props: { variant: 'textGray' },
+          style: {
+            color: DarkColor.gray50,
+            '&:hover': {
+              color: DarkColor.gray50,
+              backgroundColor: DarkColor.gray10
+            }
+          }
         }
-        // {
-        //   props: { variant: 'containedDisable' },
-        //   style: {
-        //     color: DarkColor.gray40,
-        //     backgroundColor: DarkColor.gray20,
-        //     '&:hover': {
-        //       color: DarkColor.gray50,
-        //       backgroundColor: DarkColor.gray30
-        //     }
-        //   }
-        // },
-        // {
-        //   props: { variant: 'outlinedDisable' },
-        //   style: {
-        //     color: DarkColor.gray30,
-        //     borderStyle: 'solid',
-        //     borderColor: DarkColor.gray15,
-        //     borderWidth: 1,
-        //     borderRadius: 4,
-        //     '&:hover': {
-        //       borderColor: DarkColor.gray20,
-        //       backgroundColor: DarkColor.gray05
-        //     }
-        //   }
-        // },
-        // {
-        //   props: { variant: 'textDisable' },
-        //   style: {
-        //     border: 0,
-        //     color: DarkColor.gray40,
-        //     '&:hover': {
-        //       color: DarkColor.gray50,
-        //       backgroundColor: DarkColor.gray20
-        //     }
-        //   }
-        // },
-        // {
-        //   props: { variant: 'containedGray' },
-        //   style: {
-        //     color: DarkColor.gray50,
-        //     backgroundColor: DarkColor.gray15,
-        //     '&:hover': {
-        //       color: DarkColor.gray65,
-        //       backgroundColor: DarkColor.gray20
-        //     }
-        //   }
-        // },
-        // {
-        //   props: { variant: 'outlinedGray' },
-        //   style: {
-        //     color: DarkColor.gray50,
-        //     borderStyle: 'solid',
-        //     borderColor: DarkColor.gray20,
-        //     borderWidth: 1,
-        //     borderRadius: 4,
-        //     '&:hover': {
-        //       borderColor: DarkColor.gray30,
-        //       backgroundColor: DarkColor.gray10
-        //     }
-        //   }
-        // },
-        // {
-        //   props: { variant: 'textGray' },
-        //   style: {
-        //     color: DarkColor.gray50,
-        //     '&:hover': {
-        //       color: DarkColor.gray50,
-        //       backgroundColor: DarkColor.gray10
-        //     }
-        //   }
-        // }
       ]
     },
     MuiTabs: {

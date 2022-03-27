@@ -1,5 +1,4 @@
 import Document, { DocumentContext, Html, Main, Head, NextScript } from 'next/document';
-import { ServerStyleSheet } from 'styled-components';
 import { ServerStyleSheets } from '@mui/styles';
 // declare class ServerStyleSheets {
 //   constructor(options?: object);
