@@ -89,19 +89,17 @@ function MyApp({ Component, pageProps }: AppProps) {
             preventDuplicate
             // TransitionComponent={(props)=>(<Slide {...props} direction="right" >{props.children}</Slide>)}
           >
-            <Script async src="https://www.googletagmanager.com/gtag/js?id=G-VYNSSXH1VE" />
             <Script
-              id="googleAnalyticsScript"
-              dangerouslySetInnerHTML={{
-                __html: `
-                  window.dataLayer = window.dataLayer || [];
-                  function gtag(){dataLayer.push(arguments);}
-                  gtag('js', new Date());
-                
-                  gtag('config', 'G-VYNSSXH1VE');
-                `
-              }}
+              src="https://www.googletagmanager.com/gtag/js?id=G-VYNSSXH1VE"
+              strategy="beforeInteractive"
             />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+
+gtag('config', 'G-VYNSSXH1VE');`}
+            </Script>
             <Layout>
               <Component {...pageProps} />
             </Layout>
