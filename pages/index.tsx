@@ -5,11 +5,11 @@ import { upbitApis } from 'src-server/utils/upbitApis';
 import MarketList, { IMarketTableItem } from 'src/components/market-table/MarketTable';
 import { Width100Box } from 'src/components/modules/Box';
 import TradingView from 'src/components/tradingview/Chart';
-import { IUpbitApiTicker, IUpbitForex, IUpbitMarket } from 'src/types/upbit';
-import { useSnackbar } from 'notistack';
+import { IUpbitForex, IUpbitMarket } from 'src/types/upbit';
 import { useUpbitAuthStore } from 'src/store/upbitAuth';
 import { clientApiUrls } from 'src/utils/clientApiUrls';
 import useSWR from 'swr';
+import { IBinanceSocketMessageTicker, IBinanceTickerPrice } from 'src/types/binance';
 
 const Container = styled('div')`
   flex: 1 0 auto;
@@ -35,14 +35,21 @@ interface HomeProps {
   upbitForex: IUpbitForex;
   upbitMarketList: Array<IUpbitMarket>;
   upbitMarketSnapshot?: Record<string, IMarketTableItem>;
+  binanceMarketSnapshot?: Record<string, IBinanceSocketMessageTicker>;
 }
 
-const Home: NextPage<HomeProps> = ({ upbitForex, upbitMarketList, upbitMarketSnapshot }) => {
-  const { enqueueSnackbar } = useSnackbar();
+const Home: NextPage<HomeProps> = ({
+  upbitForex,
+  upbitMarketList,
+  upbitMarketSnapshot,
+  binanceMarketSnapshot
+}) => {
   const upbitAuthStore = useUpbitAuthStore();
   const [upbitKrwList] = React.useState(
     upbitMarketList.filter((c) => c.market.match(/^KRW-/i), {})
   );
+  // const { setMarketSocketData } = useUpbitDataStore();
+  // if (upbitMarketSnapshot) setMarketSocketData(upbitMarketSnapshot);
   const { data, error } = useSWR(
     process.env.NEXT_PUBLIC_SOOROS_API + clientApiUrls.upbit.accounts,
     async () => {
@@ -71,6 +78,7 @@ const Home: NextPage<HomeProps> = ({ upbitForex, upbitMarketList, upbitMarketSna
             upbitForex={upbitForex}
             upbitKrwList={upbitKrwList}
             upbitMarketSnapshot={upbitMarketSnapshot}
+            binanceMarketSnapshot={binanceMarketSnapshot}
           />
         </MarketTableContainer>
       </Inner>
@@ -90,18 +98,43 @@ export const getStaticProps: GetStaticProps<HomeProps> = async ({ params }) => {
 
   const upbitMarketRecord: Record<string, IUpbitMarket> = {};
 
-  const upbitMarketQueryString = upbitMarketList
-    ?.filter((m: IUpbitMarket) => Boolean(m.market.match(/^krw-/i)))
-    .map((m: IUpbitMarket) => {
-      upbitMarketRecord[m.market] = m;
-      return m.market;
+  const krwSymbolList = upbitMarketList
+    ?.filter((m: IUpbitMarket) => {
+      if (Boolean(m.market.match(/^krw-/i))) {
+        upbitMarketRecord[m.market] = m;
+        return true;
+      }
     })
-    .join(',');
-  const upbitMarketSnapshotList: Array<IUpbitApiTicker> = await fetch(
-    `${upbitApis.ticker}?markets=${upbitMarketQueryString}`
-  ).then((res) => res.json());
+    .map((m: IUpbitMarket) => m.market);
+  const upbitSymbols = krwSymbolList.join(',');
+  const binanceSymbols = `["${krwSymbolList
+    .map((m: string) => m.replace(/^krw-/i, '') + 'USDT')
+    .join('","')}"]`;
+  console.log(binanceSymbols);
+
+  const upbitMarketSnapshotList = await fetch(`${upbitApis.ticker}?markets=${upbitSymbols}`).then(
+    (res) => res.json()
+  );
+
+  // 바이낸스는 해당 마켓이 없을 경우 에러를 냄
+
+  // const [upbitMarketSnapshotList, binanceMarketSnapshotList] = await Promise.all([
+  //   fetch(`${upbitApis.ticker}?markets=${upbitSymbols}`).then((res) => res.json()),
+  //   fetch(`${binanceApis.tickerPrice}?symbols=${binanceSymbols}`).then((res) => res.json())
+  // ]);
 
   const upbitMarketSnapshot: Record<string, IMarketTableItem> = {};
+  // const binanceMarketSnapshot: Record<string, IBinanceSocketMessageTicker> = {};
+
+  // for (const m of binanceMarketSnapshotList) {
+  //   binanceMarketSnapshot[m.symbol] = {
+  //     data: {
+  //       p: m.price,
+  //       s: m.symbol
+  //     },
+  //     stream: ''
+  //   } as IBinanceSocketMessageTicker;
+  // }
 
   for (const t of upbitMarketSnapshotList) {
     upbitMarketSnapshot[t.market] = {
@@ -148,6 +181,7 @@ export const getStaticProps: GetStaticProps<HomeProps> = async ({ params }) => {
       upbitForex: upbitForex[0],
       upbitMarketList,
       upbitMarketSnapshot
+      // binanceMarketSnapshot
     },
     revalidate: 5
   };

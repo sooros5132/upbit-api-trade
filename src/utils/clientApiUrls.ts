@@ -24,7 +24,7 @@ export const clientApiUrls = {
     apiKeys: '/upbit/api_keys'
   },
   binance: {
-    websocket: 'wss://fstream.binance.com/stream',
-    marketHref: 'https://www.binance.com/en/trade/'
+    websocket: 'wss://stream.binance.com/stream',
+    marketHref: 'https://www.binance.com/en/trade'
   }
 } as const;

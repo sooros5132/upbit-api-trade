@@ -122,12 +122,14 @@ interface MarketTableProps {
   upbitForex: IUpbitForex;
   upbitKrwList: Array<IUpbitMarket>;
   upbitMarketSnapshot?: Record<string, IMarketTableItem>;
+  binanceMarketSnapshot?: Record<string, IBinanceSocketMessageTicker>;
 }
 
 const MarketTable: React.FC<MarketTableProps> = ({
   upbitForex,
   upbitKrwList,
-  upbitMarketSnapshot
+  upbitMarketSnapshot,
+  binanceMarketSnapshot
 }) => {
   const [sortColumnName, setSortColumnName] = React.useState<keyof IMarketTableItem>('atp24h');
   const [sortType, setSortType] = React.useState<'asc' | 'desc'>('desc');
@@ -273,6 +275,7 @@ const MarketTable: React.FC<MarketTableProps> = ({
             sortColumnName={sortColumnName}
             sortType={sortType}
             upbitMarketSnapshot={upbitMarketSnapshot}
+            binanceMarketSnapshot={binanceMarketSnapshot}
           />
         </Table>
       </TableContainer>
@@ -285,7 +288,8 @@ const TableBody = React.memo<{
   sortColumnName: keyof IMarketTableItem;
   sortType: 'asc' | 'desc';
   upbitMarketSnapshot?: Record<string, IMarketTableItem>;
-}>(({ upbitForex, sortColumnName, sortType, upbitMarketSnapshot }) => {
+  binanceMarketSnapshot?: Record<string, IBinanceSocketMessageTicker>;
+}>(({ upbitForex, sortColumnName, sortType, upbitMarketSnapshot, binanceMarketSnapshot }) => {
   const { marketSocketData: upbitRealtimeMarket } = useUpbitDataStore();
   const { selectedExchange, selectedMarketSymbol } = useSiteSettingStore();
   const binanceRealtimeMarket = useContext(BinanceWebSocketContext);
@@ -331,7 +335,11 @@ const TableBody = React.memo<{
   const list = Object.values(selecteList)
     .map((upbitMarket) => {
       const binanceMarketName = upbitMarket.cd.replace(krwRegex, '') + 'USDT';
-      const binanceMarket = binanceRealtimeMarket[binanceMarketName];
+      const binanceMarket =
+        // binanceMarketSnapshot && selecteList === upbitMarketSnapshot
+        //   ? binanceMarketSnapshot[binanceMarketName]
+        // :
+        binanceRealtimeMarket[binanceMarketName];
       const binancePrice = binanceMarket
         ? Number(binanceMarket.data.p) * upbitForex.basePrice
         : undefined;
@@ -383,17 +391,15 @@ const TableBody = React.memo<{
         title={title}
       />
       <Tbody>
-        {list.map((market) => {
-          return (
-            <TableItem
-              key={`market-table-${market.cd}`}
-              upbitMarket={market}
-              binanceMarket={binanceRealtimeMarket[market.binance_name]}
-              upbitForex={upbitForex}
-              // onClickMarketIcon={handleClickMarketIcon}
-            />
-          );
-        })}
+        {list.map((market) => (
+          <TableItem
+            key={`market-table-${market.cd}`}
+            upbitMarket={market}
+            binanceMarket={binanceRealtimeMarket[market.binance_name]}
+            upbitForex={upbitForex}
+            // onClickMarketIcon={handleClickMarketIcon}
+          />
+        ))}
       </Tbody>
     </>
   );
@@ -456,10 +462,10 @@ const TableItem = React.memo<{
                 <AiOutlineAreaChart />
               </ChartIconBox>
               &nbsp;
-              {binanceMarket ? (
+              {binanceMarket && (
                 <>
                   <a
-                    href={`${clientApiUrls.binance.marketHref}${marketSymbol}_USDT`}
+                    href={`${clientApiUrls.binance.marketHref}/${marketSymbol}_USDT`}
                     target="_blank"
                     rel="noreferrer"
                   >
@@ -469,7 +475,7 @@ const TableItem = React.memo<{
                     <AiOutlineAreaChart />
                   </ChartIconBox>
                 </>
-              ) : null}
+              )}
             </FlexBox>
           </TableCellInnerBox>
         </TableCell>
@@ -481,13 +487,12 @@ const TableItem = React.memo<{
                   {upbitMarket.tp.toLocaleString()}
                 </AskBidTypography>
                 <AskBidTypography state={upbitMarket.scp} opacity={0.6}>
-                  {binanceMarket
-                    ? Number(
-                        (Number(binanceMarket.data.p) * upbitForex.basePrice).toFixed(
-                          priceDecimalLength
-                        )
-                      ).toLocaleString()
-                    : null}
+                  {binanceMarket &&
+                    Number(
+                      (Number(binanceMarket.data.p) * upbitForex.basePrice).toFixed(
+                        priceDecimalLength
+                      )
+                    ).toLocaleString()}
                 </AskBidTypography>
               </TextAlignRightBox>
             </MonoFontBox>
@@ -510,23 +515,22 @@ const TableItem = React.memo<{
         <TableCell>
           <TableCellInnerBox>
             <MonoFontBox>
-              {typeof upbitMarket.premium === 'number' ? (
+              {typeof upbitMarket.premium === 'number' && (
                 <TextAlignRightBox>
                   <AskBidTypography state={upbitMarket.premium}>
                     {upbitMarket.premium.toFixed(2).padStart(2, '0')}%
                   </AskBidTypography>
                   <AskBidTypography state={upbitMarket.premium} opacity={0.6}>
-                    {binanceMarket
-                      ? Number(
-                          (
-                            upbitMarket.tp -
-                            Number(binanceMarket.data.p) * upbitForex.basePrice
-                          ).toFixed(priceDecimalLength)
-                        ).toLocaleString()
-                      : undefined}
+                    {binanceMarket &&
+                      Number(
+                        (
+                          upbitMarket.tp -
+                          Number(binanceMarket.data.p) * upbitForex.basePrice
+                        ).toFixed(priceDecimalLength)
+                      ).toLocaleString()}
                   </AskBidTypography>
                 </TextAlignRightBox>
-              ) : null}
+              )}
             </MonoFontBox>
           </TableCellInnerBox>
         </TableCell>
