@@ -1,8 +1,6 @@
-import create, { GetState } from 'zustand';
-import { devtools, NamedSet } from 'zustand/middleware';
-import createContext from 'zustand/context';
+import create from 'zustand';
+import { devtools } from 'zustand/middleware';
 import { persist } from 'zustand/middleware';
-import { IUpbitAccounts } from 'src-server/type/upbit';
 
 const DEFAULT_FONT_SIZE = 14;
 const MIN_FONT_SIZE = 12;

@@ -1,6 +1,5 @@
 import create, { GetState } from 'zustand';
 import { devtools, NamedSet } from 'zustand/middleware';
-import createContext from 'zustand/context';
 import { IUpbitAccounts } from 'src-server/type/upbit';
 import { IMarketTableItem } from 'src/components/market-table/MarketTable';
 import { IUpbitMarket, IUpbitSocketMessageTickerSimple } from 'src/types/upbit';

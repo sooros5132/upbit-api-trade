@@ -1,13 +1,10 @@
 import type { AppProps } from 'next/app';
 import { NextSeo } from 'next-seo';
-import { createUpbitAuthStore, UpbitAuthStoreProvider } from 'src/store/upbitAuth';
 import Layout from 'src/components/Layout';
 import CommonTheme, { CommonCustomTheme } from 'src/styles/CommomTheme';
 import { SnackbarKey, SnackbarProvider } from 'notistack';
 import { createRef } from 'react';
 import { Button } from '@mui/material';
-import { createUpbitDataStore, UpbitDataStoreProvider } from 'src/store/upbitData';
-import { createSiteSettingStore, SiteSettingStoreProvider } from 'src/store/siteSetting';
 import Script from 'next/script';
 
 // xs, extra-small: 0px

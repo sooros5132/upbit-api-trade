@@ -1,6 +1,5 @@
 import create from 'zustand';
 import { devtools, NamedSet } from 'zustand/middleware';
-import createContext from 'zustand/context';
 import { IBinanceSocketMessageTicker } from 'src/types/binance';
 
 interface IBinanceDataState {
