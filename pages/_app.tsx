@@ -51,62 +51,56 @@ const onClickDismiss = (key: SnackbarKey) => () => {
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <SiteSettingStoreProvider createStore={createSiteSettingStore}>
-      <UpbitAuthStoreProvider createStore={createUpbitAuthStore}>
-        <UpbitDataStoreProvider createStore={createUpbitDataStore}>
-          <NextSeo
-            title="SOOROS"
-            defaultTitle="SOOROS"
-            openGraph={{
-              url: 'https://sooros.com',
-              title: 'sooros',
-              description: '실시간 업비트 - 바이낸스 프리미엄 시세를 볼 수 있습니다.',
-              locale: 'ko_KR',
-              type: 'website'
-            }}
-            description="실시간 업비트 - 바이낸스 프리미엄 시세를 볼 수 있습니다."
-          >
-            <link rel="icon" href="/favicon.ico" />
-            <meta charSet="utf-8" />
-            <meta name="viewport" content="initial-scale=1, width=device-width" />
-          </NextSeo>
-          <SnackbarProvider
-            ref={notistackRef}
-            maxSnack={3}
-            anchorOrigin={{
-              vertical: 'bottom',
-              horizontal: 'right'
-            }}
-            action={(key) => (
-              <Button
-                sx={{ minWidth: 0, p: '0.2em', px: '0.6em', color: 'inherit' }}
-                onClick={onClickDismiss(key)}
-              >
-                닫기
-              </Button>
-            )}
-            hideIconVariant={false}
-            preventDuplicate
-            // TransitionComponent={(props)=>(<Slide {...props} direction="right" >{props.children}</Slide>)}
-          >
-            <Script
-              src="https://www.googletagmanager.com/gtag/js?id=G-VYNSSXH1VE"
-              strategy="beforeInteractive"
-            />
-            <Script id="google-analytics" strategy="afterInteractive">
-              {`window.dataLayer = window.dataLayer || [];
+    <SnackbarProvider
+      ref={notistackRef}
+      maxSnack={3}
+      anchorOrigin={{
+        vertical: 'bottom',
+        horizontal: 'right'
+      }}
+      action={(key) => (
+        <Button
+          sx={{ minWidth: 0, p: '0.2em', px: '0.6em', color: 'inherit' }}
+          onClick={onClickDismiss(key)}
+        >
+          닫기
+        </Button>
+      )}
+      hideIconVariant={false}
+      preventDuplicate
+      // TransitionComponent={(props)=>(<Slide {...props} direction="right" >{props.children}</Slide>)}
+    >
+      <NextSeo
+        title="SOOROS"
+        defaultTitle="SOOROS"
+        openGraph={{
+          url: 'https://sooros.com',
+          title: 'sooros',
+          description: '실시간 업비트 - 바이낸스 프리미엄 시세를 볼 수 있습니다.',
+          locale: 'ko_KR',
+          type: 'website'
+        }}
+        description="실시간 업비트 - 바이낸스 프리미엄 시세를 볼 수 있습니다."
+      >
+        <link rel="icon" href="/favicon.ico" />
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="initial-scale=1, width=device-width" />
+      </NextSeo>
+      <Script
+        src="https://www.googletagmanager.com/gtag/js?id=G-VYNSSXH1VE"
+        strategy="beforeInteractive"
+      />
+      <Script id="google-analytics" strategy="afterInteractive">
+        {`window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 
 gtag('config', 'G-VYNSSXH1VE');`}
-            </Script>
-            <Layout>
-              <Component {...pageProps} />
-            </Layout>
-          </SnackbarProvider>
-        </UpbitDataStoreProvider>
-      </UpbitAuthStoreProvider>
-    </SiteSettingStoreProvider>
+      </Script>
+      <Layout>
+        <Component {...pageProps} />
+      </Layout>
+    </SnackbarProvider>
   );
 }
 

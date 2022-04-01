@@ -29,44 +29,6 @@ interface IUpbitDataStore extends IUpbitDataState {
   connectUpbitSocket: (props: IHandleConnectUpbitSocket) => void;
   disconnectUpbitSocket: () => void;
 }
-
-export const initStore = () => {
-  const createStore = () =>
-    create<IUpbitDataStore>(
-      // persist(
-      devtools((set, get) => ({
-        ...defaultState,
-        setMarketList: (marketList) => {
-          set({ marketList: [...marketList] });
-        },
-        setAccounts: (accounts) => {
-          set({ accounts: [...accounts] });
-        },
-        setMarketSocketData: (data) => {
-          set({ marketSocketData: { ...data } });
-        },
-        connectUpbitSocket: handleConnectUpbitSocket(set, get),
-        disconnectUpbitSocket: () => {
-          const upbitSocket = get().upbitSocket;
-          if (upbitSocket) {
-            if (upbitSocket.readyState === 1) upbitSocket.close();
-            set({ upbitSocket: undefined });
-          }
-        },
-        distroyAll: () => {
-          set({ ...defaultState });
-        }
-      }))
-      //   {
-      //     name: 'upbitData', // unique name
-      //     getStorage: () => localStorage // (optional) by default, 'localStorage' is used
-      //   }
-      // )
-    );
-
-  return createStore;
-};
-
 interface IHandleConnectUpbitSocket {
   marketList: Array<IUpbitMarket>;
   stateUpdateDelay: number;
@@ -146,6 +108,34 @@ const handleConnectUpbitSocket =
     if (!get().upbitSocket) wsConnect();
   };
 
-export const { Provider: UpbitDataStoreProvider, useStore: useUpbitDataStore } =
-  createContext<IUpbitDataStore>();
-export const createUpbitDataStore = initStore();
+export const useUpbitDataStore = create<IUpbitDataStore>(
+  // persist(
+  devtools((set, get) => ({
+    ...defaultState,
+    setMarketList: (marketList) => {
+      set({ marketList: [...marketList] });
+    },
+    setAccounts: (accounts) => {
+      set({ accounts: [...accounts] });
+    },
+    setMarketSocketData: (data) => {
+      set({ marketSocketData: { ...data } });
+    },
+    connectUpbitSocket: handleConnectUpbitSocket(set, get),
+    disconnectUpbitSocket: () => {
+      const upbitSocket = get().upbitSocket;
+      if (upbitSocket) {
+        if (upbitSocket.readyState === 1) upbitSocket.close();
+        set({ upbitSocket: undefined });
+      }
+    },
+    distroyAll: () => {
+      set({ ...defaultState });
+    }
+  }))
+  //   {
+  //     name: 'upbitData', // unique name
+  //     getStorage: () => localStorage // (optional) by default, 'localStorage' is used
+  //   }
+  // )
+);

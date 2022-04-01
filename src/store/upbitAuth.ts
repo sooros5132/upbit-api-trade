@@ -1,6 +1,5 @@
 import create, { GetState } from 'zustand';
 import { devtools, NamedSet } from 'zustand/middleware';
-import createContext from 'zustand/context';
 import { persist } from 'zustand/middleware';
 import { clientApiUrls } from 'src/utils/clientApiUrls';
 import { IUpbitAccounts } from 'src-server/type/upbit';
@@ -31,39 +30,6 @@ interface AuthStore extends IAuthState {
   deleteKeys: () => void;
 }
 
-export const initStore = () => {
-  const createStore = () =>
-    create<AuthStore>(
-      persist(
-        devtools((set, get) => ({
-          ...defaultState,
-          _hasHydrated: false,
-          registerKey: handleRegisterKey(set, get),
-          deleteKeys: () =>
-            set(() => ({
-              ...defaultState
-            })),
-          setHasHydrated: (state) => {
-            set({
-              _hasHydrated: state
-            });
-          }
-        })),
-        {
-          name: 'upbitAuth', // unique name,
-          onRehydrateStorage: () => (state) => {
-            state?.setHasHydrated(true);
-          },
-          serialize: (state) => window.btoa(JSON.stringify(state)),
-          deserialize: (str) => JSON.parse(window.atob(str)),
-          getStorage: () => localStorage // (optional) by default, 'localStorage' is used
-        }
-      )
-    );
-
-  return createStore;
-};
-
 const handleRegisterKey =
   (set: NamedSet<AuthStore>, get: GetState<AuthStore>) =>
   async (accessKey: string, secretKey: string) => {
@@ -88,6 +54,30 @@ const handleRegisterKey =
     return accounts;
   };
 
-export const { Provider: UpbitAuthStoreProvider, useStore: useUpbitAuthStore } =
-  createContext<AuthStore>();
-export const createUpbitAuthStore = initStore();
+export const useUpbitAuthStore = create<AuthStore>(
+  persist(
+    devtools((set, get) => ({
+      ...defaultState,
+      _hasHydrated: false,
+      registerKey: handleRegisterKey(set, get),
+      deleteKeys: () =>
+        set(() => ({
+          ...defaultState
+        })),
+      setHasHydrated: (state) => {
+        set({
+          _hasHydrated: state
+        });
+      }
+    })),
+    {
+      name: 'upbitAuth', // unique name,
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
+      serialize: (state) => window.btoa(JSON.stringify(state)),
+      deserialize: (str) => JSON.parse(window.atob(str)),
+      getStorage: () => localStorage // (optional) by default, 'localStorage' is used
+    }
+  )
+);

@@ -32,56 +32,47 @@ const defaultState: ISiteSettingState = {
   showMyAccounts: true
 };
 
-export const initStore = () => {
-  const createStore = () =>
-    create<ISiteSettingStore>(
-      persist(
-        devtools((set, get) => ({
-          ...defaultState,
-          setSelectedMarketSymbol: (symbol: ISiteSettingState['selectedMarketSymbol']) =>
-            set(() => ({
-              selectedMarketSymbol: symbol
-            })),
-          setSelectedExchange: (exchange: ISiteSettingState['selectedExchange']) =>
-            set(() => ({
-              selectedExchange: exchange
-            })),
-          setShowMyAccounts: (show: boolean) =>
-            set(() => ({
-              showMyAccounts: show
-            })),
-          changeTheme: (theme: ISiteSettingState['theme']) =>
-            set(() => ({
-              theme
-            })),
-
-          changeFontSize: (fontSize: number) =>
-            set(() => ({
-              fontSize: isNaN(fontSize)
-                ? DEFAULT_FONT_SIZE
-                : fontSize < MIN_FONT_SIZE
-                ? MIN_FONT_SIZE
-                : fontSize > MAX_FONT_SIZE
-                ? MAX_FONT_SIZE
-                : fontSize
-            }))
+export const useSiteSettingStore = create<ISiteSettingStore>(
+  persist(
+    devtools((set, get) => ({
+      ...defaultState,
+      setSelectedMarketSymbol: (symbol: ISiteSettingState['selectedMarketSymbol']) =>
+        set(() => ({
+          selectedMarketSymbol: symbol
         })),
-        {
-          name: 'siteSetting', // unique name
-          getStorage: () => localStorage, // (optional) by default, 'localStorage' is used
-          partialize: (state) =>
-            Object.fromEntries(
-              Object.entries(state).filter(
-                ([key]) => !['selectedMarketSymbol', 'selectedExchange'].includes(key)
-              )
-            )
-        }
-      )
-    );
+      setSelectedExchange: (exchange: ISiteSettingState['selectedExchange']) =>
+        set(() => ({
+          selectedExchange: exchange
+        })),
+      setShowMyAccounts: (show: boolean) =>
+        set(() => ({
+          showMyAccounts: show
+        })),
+      changeTheme: (theme: ISiteSettingState['theme']) =>
+        set(() => ({
+          theme
+        })),
 
-  return createStore;
-};
-
-export const { Provider: SiteSettingStoreProvider, useStore: useSiteSettingStore } =
-  createContext<ISiteSettingStore>();
-export const createSiteSettingStore = initStore();
+      changeFontSize: (fontSize: number) =>
+        set(() => ({
+          fontSize: isNaN(fontSize)
+            ? DEFAULT_FONT_SIZE
+            : fontSize < MIN_FONT_SIZE
+            ? MIN_FONT_SIZE
+            : fontSize > MAX_FONT_SIZE
+            ? MAX_FONT_SIZE
+            : fontSize
+        }))
+    })),
+    {
+      name: 'siteSetting', // unique name
+      getStorage: () => localStorage, // (optional) by default, 'localStorage' is used
+      partialize: (state) =>
+        Object.fromEntries(
+          Object.entries(state).filter(
+            ([key]) => !['selectedMarketSymbol', 'selectedExchange'].includes(key)
+          )
+        )
+    }
+  )
+);
