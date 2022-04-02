@@ -24,13 +24,13 @@ const Inner = styled(FlexSpaceBetweenCenterBox)`
   height: ${({ theme }) => theme.spacing(5.5)};
   font-size: ${({ theme }) => theme.size.px20};
   ${({ theme }) => theme.mediaQuery.desktop} {
-    max-width: 1200px;
+    /* max-width: 1200px; */
     margin: 0 auto;
   }
 `;
 const AccountsConintainer = styled(Box)`
   ${({ theme }) => theme.mediaQuery.desktop} {
-    max-width: 1200px;
+    /* max-width: 1200px; */
     margin: 0 auto;
   }
 `;
