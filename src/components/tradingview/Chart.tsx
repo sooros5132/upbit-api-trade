@@ -4,7 +4,7 @@ import Script from 'next/script';
 import React, { memo, useCallback, useEffect, useState } from 'react';
 import isEqual from 'react-fast-compare';
 import { useSiteSettingStore } from 'src/store/siteSetting';
-import { FlexCenterCenterBox } from '../modules/Box';
+import { FlexAlignItemsCenterBox, FullWidthBox } from '../modules/Box';
 import { HoverUnderLineSpan } from '../modules/Typography';
 
 const Container = styled('div')(({ theme }) => ({
@@ -15,13 +15,14 @@ const Container = styled('div')(({ theme }) => ({
   }
 }));
 
-const UnMountedContainer = styled(FlexCenterCenterBox)(({ theme }) => ({
+const UnMountedContainer = styled(FlexAlignItemsCenterBox)(({ theme }) => ({
   height: '100%',
   fontSize: theme.size.px50,
   fontWeight: 'bold',
   color: theme.color.gray70,
   border: `1px dashed ${theme.color.gray70}`,
   borderRadius: 20,
+  textAlign: 'center',
   [`${theme.breakpoints.down('md')}`]: {
     fontSize: theme.size.px36
   },
@@ -37,13 +38,13 @@ const TradingViewChart: React.FC<TradingViewChartProps> = () => {
   const { selectedMarketSymbol, selectedExchange } = useSiteSettingStore();
   const [isMounted, setMounted] = useState(false);
 
+  const symbol =
+    selectedExchange === 'BINANCE'
+      ? `BINANCE:${selectedMarketSymbol}USDT`
+      : `UPBIT:${selectedMarketSymbol}KRW`;
+
   const handleLoadTradingViewScript = useCallback(() => {
     const TradingView = window?.TradingView;
-
-    const symbol =
-      selectedExchange === 'BINANCE'
-        ? `BINANCE:${selectedMarketSymbol}USDT`
-        : `UPBIT:${selectedMarketSymbol}KRW`;
 
     if (TradingView && TradingView.widget) {
       new TradingView.widget({
@@ -61,7 +62,7 @@ const TradingViewChart: React.FC<TradingViewChartProps> = () => {
         container_id: 'tradingview_4a4c4'
       });
     }
-  }, [selectedExchange, selectedMarketSymbol, theme.color.mainDrakBackground]);
+  }, [symbol, theme.color.mainDrakBackground]);
 
   useEffect(() => {
     handleLoadTradingViewScript();
@@ -79,15 +80,17 @@ const TradingViewChart: React.FC<TradingViewChartProps> = () => {
           <div style={{ height: '100%' }} id={'tradingview_4a4c4'} />
         ) : (
           <UnMountedContainer>
-            <Typography>
-              <a
-                href="https://www.tradingview.com/chart?symbol=BINANCE%3ABTCUSDT"
-                rel="noreferrer"
-                target="_blank"
-              >
-                <HoverUnderLineSpan>TradingView BTCUSDT Chart</HoverUnderLineSpan>
-              </a>
-            </Typography>
+            <FullWidthBox>
+              <Typography>
+                <a
+                  href={`https://www.tradingview.com/chart?symbol=${symbol}`}
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  <HoverUnderLineSpan>TradingView {symbol} Chart</HoverUnderLineSpan>
+                </a>
+              </Typography>
+            </FullWidthBox>
           </UnMountedContainer>
         )}
       </Container>
