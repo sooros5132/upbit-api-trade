@@ -39,7 +39,7 @@ interface HomeProps {
 }
 
 const Home: NextPage<HomeProps> = ({
-  upbitForex,
+  upbitForex: oldUpbitForex,
   upbitMarketList,
   upbitMarketSnapshot,
   binanceMarketSnapshot
@@ -50,20 +50,35 @@ const Home: NextPage<HomeProps> = ({
   );
   // const { setMarketSocketData } = useUpbitDataStore();
   // if (upbitMarketSnapshot) setMarketSocketData(upbitMarketSnapshot);
-  const { data, error } = useSWR(
-    process.env.NEXT_PUBLIC_SOOROS_API + clientApiUrls.upbit.accounts,
-    async () => {
-      if (upbitAuthStore.accessKey && upbitAuthStore.secretKey) {
-        if (await upbitAuthStore.registerKey(upbitAuthStore.accessKey, upbitAuthStore.secretKey)) {
-          // enqueueSnackbar('업비트 API에 연동되었습니다.', {
-          //   variant: 'success'
-          // });
-        } else {
-          // enqueueSnackbar('서버와 연결이 불안정합니다. 업비트 API연동에 실패했습니다.', {
-          //   variant: 'error'
-          // });
-        }
+  const [upbitForex, setUpbitForex] = React.useState(oldUpbitForex);
+  useSWR(process.env.NEXT_PUBLIC_SOOROS_API + clientApiUrls.upbit.accounts, async () => {
+    if (upbitAuthStore.accessKey && upbitAuthStore.secretKey) {
+      if (await upbitAuthStore.registerKey(upbitAuthStore.accessKey, upbitAuthStore.secretKey)) {
+        // enqueueSnackbar('업비트 API에 연동되었습니다.', {
+        //   variant: 'success'
+        // });
+      } else {
+        // enqueueSnackbar('서버와 연결이 불안정합니다. 업비트 API연동에 실패했습니다.', {
+        //   variant: 'error'
+        // });
       }
+    }
+  });
+  const forexUrl =
+    process.env.NEXT_PUBLIC_SOOROS_API + clientApiUrls.upbit.forexRecent + '?codes=FRX.KRWUSD';
+  useSWR(
+    forexUrl,
+    async () => {
+      const forexResult = await (await fetch(forexUrl)).json();
+
+      if (!Array.isArray(forexResult) || !forexResult[0]) return;
+
+      if (upbitForex.basePrice === forexResult[0].basePrice) return;
+
+      setUpbitForex(forexResult[0]);
+    },
+    {
+      refreshInterval: 60 * 1000
     }
   );
 
