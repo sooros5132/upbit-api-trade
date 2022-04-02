@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { memo, useContext, useEffect } from 'react';
 import _ from 'lodash';
 import isEqual from 'react-fast-compare';
 import { BiUpArrowAlt, BiDownArrowAlt } from 'react-icons/bi';
@@ -13,16 +13,15 @@ import {
   TextAlignRightBox
 } from '../modules/Box';
 import { koPriceLabelFormat } from 'src/utils/utils';
-import BinanceWebSocket, { BinanceWebSocketContext } from '../websocket/Binance';
 import { IBinanceSocketMessageTicker } from 'src/types/binance';
 import { NextSeo } from 'next-seo';
 import { styled } from '@mui/material/styles';
 import { Typography } from '@mui/material';
 import { AskBidTypography, MonoFontTypography } from '../modules/Typography';
-import { useUpbitDataStore } from 'src/store/upbitData';
 import { clientApiUrls } from 'src/utils/clientApiUrls';
 import { useSiteSettingStore } from 'src/store/siteSetting';
 import { AiOutlineAreaChart } from 'react-icons/ai';
+import { useExchangeStore } from 'src/store/exchangeSockets';
 
 const TableContainer = styled('div')`
   margin: 0 auto;
@@ -125,63 +124,73 @@ interface MarketTableProps {
   binanceMarketSnapshot?: Record<string, IBinanceSocketMessageTicker>;
 }
 
-const MarketTable: React.FC<MarketTableProps> = ({
-  upbitForex,
-  upbitKrwList,
-  upbitMarketSnapshot,
-  binanceMarketSnapshot
-}) => {
-  const [sortColumnName, setSortColumnName] = React.useState<keyof IMarketTableItem>('atp24h');
-  const [sortType, setSortType] = React.useState<'asc' | 'desc'>('desc');
-  const [stateUpdateDelay] = React.useState(200);
-  const { upbitSocket, disconnectUpbitSocket, connectUpbitSocket } = useUpbitDataStore();
+const MarketTable: React.FC<MarketTableProps> = memo(
+  ({ upbitForex, upbitKrwList, upbitMarketSnapshot, binanceMarketSnapshot }) => {
+    const [sortColumnName, setSortColumnName] = React.useState<keyof IMarketTableItem>('atp24h');
+    const [sortType, setSortType] = React.useState<'asc' | 'desc'>('desc');
+    const [stateUpdateDelay] = React.useState(200);
+    const { upbitSocket, connectUpbitSocket, binanceSocket, connectBinanceSocket } =
+      useExchangeStore();
 
-  useEffect(() => {
-    connectUpbitSocket({
-      marketList: upbitKrwList,
-      stateUpdateDelay,
-      upbitMarketSnapshot: upbitMarketSnapshot
-    });
-  }, [
-    connectUpbitSocket,
-    disconnectUpbitSocket,
-    stateUpdateDelay,
-    upbitKrwList,
-    upbitMarketSnapshot
-  ]);
+    useEffect(() => {
+      connectUpbitSocket({
+        upbitMarkets: upbitKrwList,
+        stateUpdateDelay,
+        upbitMarketSnapshot: upbitMarketSnapshot
+      });
+    }, [connectUpbitSocket, stateUpdateDelay, upbitKrwList, upbitMarketSnapshot]);
 
-  useEffect(() => {
-    const upbitConnectCheck = setInterval(() => {
-      if (!upbitSocket || upbitSocket.readyState === 3) {
-        upbitSocket?.close();
-        connectUpbitSocket({
-          marketList: upbitKrwList,
-          stateUpdateDelay,
-          upbitMarketSnapshot: upbitMarketSnapshot
-        });
+    useEffect(() => {
+      const connectCheck = setInterval(() => {
+        if (!upbitSocket || upbitSocket.readyState === 3) {
+          upbitSocket?.close();
+          connectUpbitSocket({
+            upbitMarkets: upbitKrwList,
+            stateUpdateDelay,
+            upbitMarketSnapshot: upbitMarketSnapshot
+          });
+        }
+      }, 5000);
+
+      return () => clearInterval(connectCheck);
+    }, [connectUpbitSocket, stateUpdateDelay, upbitKrwList, upbitMarketSnapshot, upbitSocket]);
+
+    useEffect(() => {
+      connectBinanceSocket({
+        binanceMarkets: upbitKrwList.map(
+          (m) => m.market.replace(/^krw-/i, '').toLowerCase() + 'usdt@aggTrade'
+        ),
+        stateUpdateDelay
+      });
+    }, [connectBinanceSocket, stateUpdateDelay, upbitKrwList]);
+
+    useEffect(() => {
+      const connectCheck = setInterval(() => {
+        if (!binanceSocket || binanceSocket.readyState === 3) {
+          binanceSocket?.close();
+          connectBinanceSocket({
+            binanceMarkets: upbitKrwList.map(
+              (m) => m.market.replace(/^krw-/i, '').toLowerCase() + 'usdt@aggTrade'
+            ),
+            stateUpdateDelay
+          });
+        }
+      }, 5000);
+
+      return () => clearInterval(connectCheck);
+    }, [binanceSocket, connectBinanceSocket, stateUpdateDelay, upbitKrwList]);
+
+    const handleClickThead = (columnName: keyof IMarketTableItem) => () => {
+      if (columnName === sortColumnName) {
+        setSortType((prevState) => (prevState === 'asc' ? 'desc' : 'asc'));
+        return;
       }
-    }, 5000);
+      setSortType('desc');
+      setSortColumnName(columnName);
+    };
 
-    return () => clearInterval(upbitConnectCheck);
-  }, [connectUpbitSocket, stateUpdateDelay, upbitKrwList, upbitMarketSnapshot, upbitSocket]);
-
-  const handleClickThead = (columnName: keyof IMarketTableItem) => () => {
-    if (columnName === sortColumnName) {
-      setSortType((prevState) => (prevState === 'asc' ? 'desc' : 'asc'));
-      return;
-    }
-    setSortType('desc');
-    setSortColumnName(columnName);
-  };
-
-  return (
-    <BinanceWebSocket marketList={upbitKrwList} stateUpdateDelay={stateUpdateDelay}>
+    return (
       <TableContainer>
-        {/* <Head
-          title={`₿ ${
-            upbitRealtimeMarket["KRW-BTC"]?.trade_price?.toLocaleString() || ""
-          } | SOOROS`}
-        /> */}
         <Table cellSpacing="0" cellPadding="0">
           <Thead>
             <TableHeaderRow>
@@ -279,9 +288,10 @@ const MarketTable: React.FC<MarketTableProps> = ({
           />
         </Table>
       </TableContainer>
-    </BinanceWebSocket>
-  );
-};
+    );
+  },
+  isEqual
+);
 
 const TableBody = React.memo<{
   upbitForex: IUpbitForex;
@@ -290,9 +300,8 @@ const TableBody = React.memo<{
   upbitMarketSnapshot?: Record<string, IMarketTableItem>;
   binanceMarketSnapshot?: Record<string, IBinanceSocketMessageTicker>;
 }>(({ upbitForex, sortColumnName, sortType, upbitMarketSnapshot, binanceMarketSnapshot }) => {
-  const { marketSocketData: upbitRealtimeMarket } = useUpbitDataStore();
+  const { upbitMarketDatas, binanceMarketDatas } = useExchangeStore();
   const { selectedExchange, selectedMarketSymbol } = useSiteSettingStore();
-  const binanceRealtimeMarket = useContext(BinanceWebSocketContext);
 
   const columnSort = React.useCallback(
     (aItem: IMarketTableItem, bItem: IMarketTableItem) => {
@@ -329,8 +338,8 @@ const TableBody = React.memo<{
     },
     [sortColumnName, sortType]
   );
-  const selecteList = Object.keys(upbitRealtimeMarket).length
-    ? upbitRealtimeMarket
+  const selecteList = Object.keys(upbitMarketDatas).length
+    ? upbitMarketDatas
     : upbitMarketSnapshot || {};
   const list = Object.values(selecteList)
     .map((upbitMarket) => {
@@ -339,7 +348,7 @@ const TableBody = React.memo<{
         // binanceMarketSnapshot && selecteList === upbitMarketSnapshot
         //   ? binanceMarketSnapshot[binanceMarketName]
         // :
-        binanceRealtimeMarket[binanceMarketName];
+        binanceMarketDatas[binanceMarketName];
       const binancePrice = binanceMarket
         ? Number(binanceMarket.data.p) * upbitForex.basePrice
         : undefined;
@@ -354,9 +363,9 @@ const TableBody = React.memo<{
     .sort(columnSort);
 
   // let bitcoinPremium: number | undefined;
-  // if (binanceRealtimeMarket["BTCUSDT"] && upbitRealtimeMarket["KRW-BTC"]) {
-  //   const binancePrice = binanceRealtimeMarket["BTCUSDT"]?.data?.p
-  //     ? Number(binanceRealtimeMarket["BTCUSDT"]?.data?.p) * upbitForex.basePrice
+  // if (binanceMarketDatas["BTCUSDT"] && upbitRealtimeMarket["KRW-BTC"]) {
+  //   const binancePrice = binanceMarketDatas["BTCUSDT"]?.data?.p
+  //     ? Number(binanceMarketDatas["BTCUSDT"]?.data?.p) * upbitForex.basePrice
   //     : undefined;
   //   bitcoinPremium =
   //     binancePrice && upbitRealtimeMarket["KRW-BTC"]
@@ -369,9 +378,9 @@ const TableBody = React.memo<{
     case 'BINANCE': {
       const symbol = selectedMarketSymbol + 'USDT';
       title =
-        (binanceRealtimeMarket[symbol]
+        (binanceMarketDatas[symbol]
           ? `${selectedMarketSymbol} ${Number(
-              binanceRealtimeMarket[symbol].data.p
+              binanceMarketDatas[symbol].data.p
             ).toLocaleString()}$ | `
           : '') + title;
       break;
@@ -395,7 +404,7 @@ const TableBody = React.memo<{
           <TableItem
             key={`market-table-${market.cd}`}
             upbitMarket={market}
-            binanceMarket={binanceRealtimeMarket[market.binance_name]}
+            binanceMarket={binanceMarketDatas[market.binance_name]}
             upbitForex={upbitForex}
             // onClickMarketIcon={handleClickMarketIcon}
           />
