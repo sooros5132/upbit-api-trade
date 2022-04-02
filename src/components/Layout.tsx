@@ -20,6 +20,7 @@ import DarkTheme from 'src/styles/DarkTheme';
 import { useSiteSettingStore } from 'src/store/siteSetting';
 
 const LayoutContainer = styled(FlexColumnHeight100Box)`
+  min-width: 250px;
   min-height: 100vh;
 `;
 

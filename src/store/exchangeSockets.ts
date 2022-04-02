@@ -66,7 +66,7 @@ const handleConnectUpbitSocket =
 
     const socketDatas: IExchangeState['upbitMarketDatas'] = { ...upbitMarketSnapshot } || {};
     let unapplied = 0;
-    set({ upbitMarketDatas: socketDatas });
+    // set({ upbitMarketDatas: socketDatas });
 
     const handleMessage = async (e: WebSocketEventMap['message']) => {
       const message = JSON.parse(await e.data.text()) as IUpbitSocketMessageTickerSimple;
@@ -90,8 +90,7 @@ const handleConnectUpbitSocket =
       set({ upbitSocket: ws });
 
       const refreshInterval = setInterval(() => {
-        const upbitSocket = get().upbitSocket;
-        if (upbitSocket?.readyState === 1 && unapplied > 0) {
+        if (unapplied > 0) {
           unapplied = 0;
           set({ upbitMarketDatas: { ...socketDatas } });
         }
@@ -126,6 +125,18 @@ const handleConnectUpbitSocket =
         }, 1000);
       });
     }
+    const connectCheck = setInterval(() => {
+      const { connectUpbitSocket, upbitSocket } = get();
+      if (!upbitSocket || upbitSocket.readyState !== 1) {
+        clearInterval(connectCheck);
+        upbitSocket?.close();
+        connectUpbitSocket({
+          upbitMarkets,
+          stateUpdateDelay,
+          upbitMarketSnapshot: upbitMarketSnapshot
+        });
+      }
+    }, 5000);
     if (!get().upbitSocket) wsConnect();
   };
 const handleConnectBinanceSocket =
@@ -140,9 +151,13 @@ const handleConnectBinanceSocket =
       if (!message?.data?.s) {
         return;
       }
-
-      unapplied++;
-      socketDatas[message.data.s] = message;
+      if (!socketDatas[message.data.s]) {
+        unapplied++;
+        socketDatas[message.data.s] = message;
+      } else if (socketDatas[message.data.s].data.p !== message.data.p) {
+        unapplied++;
+        socketDatas[message.data.s] = message;
+      }
     };
 
     function wsConnect() {
@@ -156,8 +171,7 @@ const handleConnectBinanceSocket =
       set({ binanceSocket: ws });
 
       const refreshInterval = setInterval(() => {
-        const socket = get().binanceSocket;
-        if (socket?.readyState === 1 && unapplied > 0) {
+        if (unapplied > 0) {
           unapplied = 0;
           set({ binanceMarketDatas: { ...socketDatas } });
         }
@@ -197,6 +211,17 @@ const handleConnectBinanceSocket =
         }, 1000);
       });
     }
+    const connectCheck = setInterval(() => {
+      const { connectBinanceSocket, binanceSocket } = get();
+      if (!binanceSocket || binanceSocket.readyState !== 1) {
+        clearInterval(connectCheck);
+        binanceSocket?.close();
+        connectBinanceSocket({
+          binanceMarkets,
+          stateUpdateDelay
+        });
+      }
+    }, 5000);
     if (!get().binanceSocket) wsConnect();
   };
 

@@ -121,7 +121,7 @@ const Header: React.FC = () => {
                 </MenuItem>
               )}
               <MenuItem onClick={handleClickMenuItem('logout')}>
-                <Typography sx={{ color: theme.color.redMain }}>로그아웃</Typography>
+                <Typography sx={{ color: theme.color.redMain }}>연동 해제</Typography>
               </MenuItem>
             </Menu>
           </>

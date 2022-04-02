@@ -261,3 +261,7 @@ export const BackgroundBlueBox = styled(Box)(({ theme }) => ({
   backgroundColor: theme.color.blueBackgroundDark,
   color: theme.color.blueLight
 }));
+
+export const NoWrapBox = styled(Box)`
+  white-space: nowrap;
+`;

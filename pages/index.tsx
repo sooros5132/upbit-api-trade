@@ -2,7 +2,7 @@ import { styled } from '@mui/material/styles';
 import type { GetStaticProps, NextPage } from 'next';
 import React from 'react';
 import { upbitApis } from 'src-server/utils/upbitApis';
-import MarketList, { IMarketTableItem } from 'src/components/market-table/MarketTable';
+import MarketTable, { IMarketTableItem } from 'src/components/market-table/MarketTable';
 import { Width100Box } from 'src/components/modules/Box';
 import TradingView from 'src/components/tradingview/Chart';
 import { IUpbitForex, IUpbitMarket } from 'src/types/upbit';
@@ -18,9 +18,12 @@ const Container = styled('div')`
 
 const Inner = styled(Width100Box)`
   padding: 0 ${({ theme }) => theme.spacing(1.25)};
-  ${({ theme }) => theme.mediaQuery.desktop} {
+  ${({ theme }) => theme.breakpoints.up('lg')} {
     max-width: 1200px;
     margin: 0 auto;
+  }
+  ${({ theme }) => theme.breakpoints.down('sm')} {
+    padding: 0 ${({ theme }) => theme.spacing(0.75)};
   }
 `;
 const TradingViewContainer = styled('div')`
@@ -89,7 +92,7 @@ const Home: NextPage<HomeProps> = ({
           <TradingView />
         </TradingViewContainer>
         <MarketTableContainer>
-          <MarketList
+          <MarketTable
             upbitForex={upbitForex}
             upbitKrwList={upbitKrwList}
             upbitMarketSnapshot={upbitMarketSnapshot}
@@ -125,7 +128,6 @@ export const getStaticProps: GetStaticProps<HomeProps> = async ({ params }) => {
   const binanceSymbols = `["${krwSymbolList
     .map((m: string) => m.replace(/^krw-/i, '') + 'USDT')
     .join('","')}"]`;
-  console.log(binanceSymbols);
 
   const upbitMarketSnapshotList = await fetch(`${upbitApis.ticker}?markets=${upbitSymbols}`).then(
     (res) => res.json()
