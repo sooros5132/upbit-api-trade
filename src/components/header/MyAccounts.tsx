@@ -1,6 +1,6 @@
 import { Box, Tooltip, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { memo, useEffect } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import isEqual from 'react-fast-compare';
 import { IUpbitAccounts } from 'src-server/type/upbit';
 import { FlexAlignItemsCenterBox, FlexBox, GridBox, TextAlignRightBox } from '../modules/Box';
@@ -159,8 +159,18 @@ interface IMyAccountsProps {
 }
 
 const MyAccounts = memo(({ upbitAccounts: upbitAccountsTemp }: IMyAccountsProps) => {
-  const upbitMarketDatas = useExchangeStore((state) => state.upbitMarketDatas);
+  const upbitMarketDatasRef = useRef(useExchangeStore.getState().upbitMarketDatas);
+  const [num, setNum] = useState(0);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      useExchangeStore.subscribe((state) => {
+        upbitMarketDatasRef.current = state.upbitMarketDatas;
+      });
+      setNum((prev) => 1 - prev);
+    }, 300);
+    return () => clearInterval(interval);
+  }, []);
   // useEffect(() => {
   //   createPriceUpdateTrigger();
   //   deletePriceUpdateTrigger();
@@ -172,7 +182,9 @@ const MyAccounts = memo(({ upbitAccounts: upbitAccountsTemp }: IMyAccountsProps)
         ({
           ...account,
           currentPrice:
-            account.currency === 'KRW' ? 1 : upbitMarketDatas['KRW-' + account.currency]?.tp,
+            account.currency === 'KRW'
+              ? 1
+              : upbitMarketDatasRef.current['KRW-' + account.currency]?.tp,
           totalBalance: Number(account.balance) + Number(account.locked)
         } as IAccountItemProps['account'])
     )

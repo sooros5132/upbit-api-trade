@@ -1,6 +1,6 @@
 import { styled } from '@mui/material/styles';
 import type { GetStaticProps, NextPage } from 'next';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { upbitApis } from 'src-server/utils/upbitApis';
 import MarketTable, { IMarketTableItem } from 'src/components/market-table/MarketTable';
 import { Width100Box } from 'src/components/modules/Box';
@@ -10,6 +10,7 @@ import { useUpbitAuthStore } from 'src/store/upbitAuth';
 import { clientApiUrls } from 'src/utils/clientApiUrls';
 import useSWR from 'swr';
 import { IBinanceSocketMessageTicker, IBinanceTickerPrice } from 'src/types/binance';
+import { useExchangeStore } from 'src/store/exchangeSockets';
 
 const Container = styled('div')`
   flex: 1 0 auto;
@@ -51,9 +52,21 @@ const Home: NextPage<HomeProps> = ({
   const [upbitKrwList] = React.useState(
     upbitMarketList.filter((c) => c.market.match(/^KRW-/i), {})
   );
+  const [isMounted, setMounted] = useState(false);
+
+  if (!isMounted && upbitMarketSnapshot)
+    useExchangeStore.setState({ upbitMarketDatas: upbitMarketSnapshot });
+
+  useEffect(() => {
+    if (!isMounted) {
+      setMounted(true);
+    }
+  }, []);
+
   // const { setMarketSocketData } = useUpbitDataStore();
   // if (upbitMarketSnapshot) setMarketSocketData(upbitMarketSnapshot);
   const [upbitForex, setUpbitForex] = React.useState(oldUpbitForex);
+
   useSWR(process.env.NEXT_PUBLIC_SOOROS_API + clientApiUrls.upbit.accounts, async () => {
     if (upbitAuthStore.accessKey && upbitAuthStore.secretKey) {
       if (await upbitAuthStore.registerKey(upbitAuthStore.accessKey, upbitAuthStore.secretKey)) {
@@ -92,12 +105,7 @@ const Home: NextPage<HomeProps> = ({
           <TradingView />
         </TradingViewContainer>
         <MarketTableContainer>
-          <MarketTable
-            upbitForex={upbitForex}
-            upbitKrwList={upbitKrwList}
-            upbitMarketSnapshot={upbitMarketSnapshot}
-            binanceMarketSnapshot={binanceMarketSnapshot}
-          />
+          <MarketTable upbitForex={upbitForex} upbitKrwList={upbitKrwList} />
         </MarketTableContainer>
       </Inner>
     </Container>

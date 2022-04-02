@@ -17,13 +17,10 @@ interface IExchangeState {
   binanceSocket?: WebSocket;
 }
 
-interface IConnectSocketProps {
-  stateUpdateDelay: number;
-}
+interface IConnectSocketProps {}
 
 interface IConnectUpbitSocketProps extends IConnectSocketProps {
   upbitMarkets: Array<IUpbitMarket>;
-  upbitMarketSnapshot?: Record<string, IMarketTableItem>;
 }
 
 interface IConnectBinanceSocketProps extends IConnectSocketProps {
@@ -51,7 +48,7 @@ interface IExchangeStore extends IExchangeState {
 
 const handleConnectUpbitSocket =
   (set: NamedSet<IExchangeStore>, get: GetState<IExchangeStore>) =>
-  ({ upbitMarkets, stateUpdateDelay, upbitMarketSnapshot }: IConnectUpbitSocketProps) => {
+  ({ upbitMarkets }: IConnectUpbitSocketProps) => {
     //? 업빗 소켓 설정
     const ticket = uuidv4(); // * 구분할 값을 넘겨야 함.
     const type = 'ticker'; // * 현재가 -> ticker, 체결 -> trade, 호가 ->orderbook
@@ -64,15 +61,25 @@ const handleConnectUpbitSocket =
 
     const markets = keyBy(upbitMarkets, 'market'); // market으로 키를 지정하고 배열들 값을 넣음.
 
-    const socketDatas: IExchangeState['upbitMarketDatas'] = { ...upbitMarketSnapshot } || {};
     let unapplied = 0;
+    const dataBuffer: IExchangeState['upbitMarketDatas'] = get().upbitMarketDatas || {};
     // set({ upbitMarketDatas: socketDatas });
+
+    setInterval(() => {
+      if (unapplied !== 0) {
+        unapplied = 0;
+        set({
+          upbitMarketDatas: dataBuffer
+        });
+      }
+    }, 100);
+    console.log(1);
 
     const handleMessage = async (e: WebSocketEventMap['message']) => {
       const message = JSON.parse(await e.data.text()) as IUpbitSocketMessageTickerSimple;
 
       unapplied++;
-      socketDatas[message.cd] = {
+      dataBuffer[message.cd] = {
         ...message,
         korean_name: markets[message.cd]?.korean_name || '',
         english_name: markets[message.cd]?.english_name || ''
@@ -89,13 +96,6 @@ const handleConnectUpbitSocket =
       let ws: WebSocket = new WebSocket(clientApiUrls.upbit.websocket);
       set({ upbitSocket: ws });
 
-      const refreshInterval = setInterval(() => {
-        if (unapplied > 0) {
-          unapplied = 0;
-          set({ upbitMarketDatas: { ...socketDatas } });
-        }
-      }, stateUpdateDelay);
-
       ws.binaryType = 'blob';
       ws.addEventListener('open', () => {
         ws.send(
@@ -109,7 +109,6 @@ const handleConnectUpbitSocket =
         console.error('Socket encountered error: ', err, 'Closing socket');
 
         const upbitSocket = get().upbitSocket;
-        if (refreshInterval) clearInterval(refreshInterval);
         if (upbitSocket && upbitSocket.readyState === 1) {
           upbitSocket.close();
         }
@@ -118,7 +117,6 @@ const handleConnectUpbitSocket =
         console.log('Socket is closed. Reconnect will be attempted in 1 second.', e.reason);
         const upbitSocket = get().upbitSocket;
         setTimeout(() => {
-          if (refreshInterval) clearInterval(refreshInterval);
           if (upbitSocket && upbitSocket.readyState === 1) {
             upbitSocket.close();
           }
@@ -126,37 +124,41 @@ const handleConnectUpbitSocket =
       });
     }
     const connectCheck = setInterval(() => {
-      const { connectUpbitSocket, upbitSocket } = get();
+      const { upbitSocket } = get();
       if (!upbitSocket || upbitSocket.readyState !== 1) {
         clearInterval(connectCheck);
         upbitSocket?.close();
-        connectUpbitSocket({
-          upbitMarkets,
-          stateUpdateDelay,
-          upbitMarketSnapshot: upbitMarketSnapshot
-        });
+        wsConnect();
       }
     }, 5000);
     if (!get().upbitSocket) wsConnect();
   };
 const handleConnectBinanceSocket =
   (set: NamedSet<IExchangeStore>, get: GetState<IExchangeStore>) =>
-  ({ binanceMarkets, stateUpdateDelay }: IConnectBinanceSocketProps) => {
-    const socketDatas: IExchangeState['binanceMarketDatas'] = {};
+  ({ binanceMarkets }: IConnectBinanceSocketProps) => {
+    const dataBuffer: IExchangeState['binanceMarketDatas'] = get().binanceMarketDatas || {};
     let unapplied = 0;
-    set({ binanceMarketDatas: socketDatas });
+
+    setInterval(() => {
+      if (unapplied !== 0) {
+        unapplied = 0;
+        set({
+          binanceMarketDatas: dataBuffer
+        });
+      }
+    }, 100);
 
     const handleMessage = async (e: WebSocketEventMap['message']) => {
       const message = JSON.parse(e.data) as IBinanceSocketMessageTicker;
       if (!message?.data?.s) {
         return;
       }
-      if (!socketDatas[message.data.s]) {
+      if (!dataBuffer[message.data.s]) {
         unapplied++;
-        socketDatas[message.data.s] = message;
-      } else if (socketDatas[message.data.s].data.p !== message.data.p) {
+        dataBuffer[message.data.s] = message;
+      } else if (dataBuffer[message.data.s].data.p !== message.data.p) {
         unapplied++;
-        socketDatas[message.data.s] = message;
+        dataBuffer[message.data.s] = message;
       }
     };
 
@@ -169,13 +171,6 @@ const handleConnectBinanceSocket =
       }
       let ws: WebSocket = new WebSocket(clientApiUrls.binance.websocket);
       set({ binanceSocket: ws });
-
-      const refreshInterval = setInterval(() => {
-        if (unapplied > 0) {
-          unapplied = 0;
-          set({ binanceMarketDatas: { ...socketDatas } });
-        }
-      }, stateUpdateDelay);
 
       ws.binaryType = 'blob';
       ws.addEventListener('open', () => {
@@ -195,7 +190,6 @@ const handleConnectBinanceSocket =
         console.error('Socket encountered error: ', err, 'Closing socket');
 
         const socket = get().binanceSocket;
-        if (refreshInterval) clearInterval(refreshInterval);
         if (socket && socket.readyState === 1) {
           socket.close();
         }
@@ -204,7 +198,6 @@ const handleConnectBinanceSocket =
         console.log('Socket is closed. Reconnect will be attempted in 1 second.', e.reason);
         const socket = get().binanceSocket;
         setTimeout(() => {
-          if (refreshInterval) clearInterval(refreshInterval);
           if (socket && socket.readyState === 1) {
             socket.close();
           }
@@ -212,14 +205,11 @@ const handleConnectBinanceSocket =
       });
     }
     const connectCheck = setInterval(() => {
-      const { connectBinanceSocket, binanceSocket } = get();
+      const { binanceSocket } = get();
       if (!binanceSocket || binanceSocket.readyState !== 1) {
         clearInterval(connectCheck);
         binanceSocket?.close();
-        connectBinanceSocket({
-          binanceMarkets,
-          stateUpdateDelay
-        });
+        wsConnect();
       }
     }, 5000);
     if (!get().binanceSocket) wsConnect();
