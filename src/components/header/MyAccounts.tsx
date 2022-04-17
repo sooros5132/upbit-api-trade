@@ -168,7 +168,7 @@ const MyAccounts = memo(({ upbitAccounts: upbitAccountsTemp }: IMyAccountsProps)
         upbitMarketDatasRef.current = state.upbitMarketDatas;
       });
       setNum((prev) => 1 - prev);
-    }, 300);
+    }, 1000);
     return () => clearInterval(interval);
   }, []);
   // useEffect(() => {

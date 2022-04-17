@@ -2,13 +2,16 @@ import create, { GetState } from 'zustand';
 import { devtools, NamedSet } from 'zustand/middleware';
 import { IUpbitAccounts } from 'src-server/type/upbit';
 import { IMarketTableItem } from 'src/components/market-table/MarketTable';
-import { IUpbitMarket, IUpbitSocketMessageTickerSimple } from 'src/types/upbit';
+import { IUpbitForex, IUpbitMarket, IUpbitSocketMessageTickerSimple } from 'src/types/upbit';
 import { clientApiUrls } from 'src/utils/clientApiUrls';
 import { v4 as uuidv4 } from 'uuid';
 import { keyBy } from 'lodash';
 import { IBinanceSocketMessageTicker } from 'src/types/binance';
+import { krwRegex } from 'src/utils/regex';
 
 interface IExchangeState {
+  sortedUpbitMarketSymbolList: Array<string>;
+  upbitForex?: IUpbitForex;
   upbitMarkets: Array<IUpbitMarket>;
   upbitMarketDatas: Record<string, IMarketTableItem>;
   binanceMarkets: Array<IUpbitMarket>;
@@ -28,10 +31,14 @@ interface IConnectBinanceSocketProps extends IConnectSocketProps {
 }
 
 const defaultState: IExchangeState = {
+  upbitForex: undefined,
+  sortedUpbitMarketSymbolList: [],
   upbitMarkets: [],
   upbitMarketDatas: {},
   binanceMarkets: [],
-  binanceMarketDatas: {}
+  binanceMarketDatas: {},
+  upbitSocket: undefined,
+  binanceSocket: undefined
 };
 
 interface IExchangeStore extends IExchangeState {
@@ -44,6 +51,7 @@ interface IExchangeStore extends IExchangeState {
   disconnectUpbitSocket: () => void;
   connectBinanceSocket: (props: IConnectBinanceSocketProps) => void;
   disconnectBinanceSocket: () => void;
+  sortSymbolList: (sortColumn: keyof IMarketTableItem, sortType: 'ASC' | 'DESC') => void;
 }
 
 const handleConnectUpbitSocket =
@@ -73,17 +81,32 @@ const handleConnectUpbitSocket =
         });
       }
     }, 100);
-    console.log(1);
 
     const handleMessage = async (e: WebSocketEventMap['message']) => {
       const message = JSON.parse(await e.data.text()) as IUpbitSocketMessageTickerSimple;
 
       unapplied++;
-      dataBuffer[message.cd] = {
-        ...message,
-        korean_name: markets[message.cd]?.korean_name || '',
-        english_name: markets[message.cd]?.english_name || ''
-      };
+
+      const { upbitForex, binanceMarketDatas } = get();
+      const binanceMarketSymbol = message.cd.replace(krwRegex, '') + 'USDT';
+      const binanceMarket = binanceMarketDatas[binanceMarketSymbol];
+
+      if (!upbitForex || !binanceMarket) {
+        dataBuffer[message.cd] = { ...dataBuffer[message.cd], ...message };
+      } else {
+        const binanceKrwPrice = binanceMarket
+          ? Number(binanceMarket.data.c) * upbitForex.basePrice
+          : undefined;
+        const premium = binanceKrwPrice ? (1 - binanceKrwPrice / message.tp) * 100 : undefined;
+
+        dataBuffer[message.cd] = {
+          ...dataBuffer[message.cd],
+          ...message,
+          binance_price: binanceMarket.data.c,
+          binance_volume: binanceMarket.data.q,
+          premium: premium
+        };
+      }
     };
 
     function wsConnect() {
@@ -153,13 +176,8 @@ const handleConnectBinanceSocket =
       if (!message?.data?.s) {
         return;
       }
-      if (!dataBuffer[message.data.s]) {
-        unapplied++;
-        dataBuffer[message.data.s] = message;
-      } else if (dataBuffer[message.data.s].data.p !== message.data.p) {
-        unapplied++;
-        dataBuffer[message.data.s] = message;
-      }
+      unapplied++;
+      dataBuffer[message.data.s] = message;
     };
 
     function wsConnect() {
@@ -219,20 +237,20 @@ const useExchangeStore = create<IExchangeStore>(
   // persist(
   devtools((set, get) => ({
     ...defaultState,
-    setUpbitMarkets: (markets) => {
+    setUpbitMarkets(markets) {
       set({ upbitMarkets: [...markets] });
     },
-    setUpbitMarketDatas: (marketDatas) => {
+    setUpbitMarketDatas(marketDatas) {
       set({ upbitMarketDatas: { ...marketDatas } });
     },
-    setBinanceMarkets: (markets) => {
+    setBinanceMarkets(markets) {
       set({ binanceMarkets: [...markets] });
     },
-    setBinanceMarketDatas: (marketDatas) => {
+    setBinanceMarketDatas(marketDatas) {
       set({ binanceMarketDatas: { ...marketDatas } });
     },
     connectUpbitSocket: handleConnectUpbitSocket(set, get),
-    disconnectUpbitSocket: () => {
+    disconnectUpbitSocket() {
       const socket = get().upbitSocket;
       if (socket) {
         if (socket.readyState === 1) socket.close();
@@ -240,14 +258,70 @@ const useExchangeStore = create<IExchangeStore>(
       }
     },
     connectBinanceSocket: handleConnectBinanceSocket(set, get),
-    disconnectBinanceSocket: () => {
+    disconnectBinanceSocket() {
       const socket = get().binanceSocket;
       if (socket) {
         if (socket.readyState === 1) socket.close();
         set({ binanceSocket: undefined });
       }
     },
-    distroyAll: () => {
+    sortSymbolList(sortColumn, sortType) {
+      const upbitForex = get().upbitForex;
+      if (!upbitForex) return;
+      set((state) => {
+        const upbitMarketDatas = Object.values(state.upbitMarketDatas);
+        const mergeMarkets = upbitMarketDatas.map((upbitMarket) => {
+          return {
+            ...upbitMarket
+          };
+        });
+
+        mergeMarkets.sort((aItem: IMarketTableItem, bItem: IMarketTableItem) => {
+          const a = aItem[sortColumn];
+          const b = bItem[sortColumn];
+          if (a === undefined) return 1;
+          if (b === undefined) return -1;
+
+          if (typeof a === 'number' && typeof b === 'number') {
+            if (sortType === 'ASC') {
+              return a - b;
+            }
+            return b - a;
+          } else if (typeof a === 'string' && typeof b === 'string') {
+            const aValue = a.toUpperCase();
+            const bValue = b.toUpperCase();
+            if (sortType === 'ASC') {
+              if (aValue < bValue) {
+                return 1;
+              }
+              if (aValue > bValue) {
+                return -1;
+              }
+              return 0;
+            }
+            if (aValue < bValue) {
+              return -1;
+            }
+            if (aValue > bValue) {
+              return 1;
+            }
+            return 0;
+          }
+          return 0;
+        });
+        const newUpbitMarketDatas = { ...state.upbitMarketDatas };
+        const sortedSymbolList = mergeMarkets.map((m) => {
+          newUpbitMarketDatas[m.cd] = m;
+          return m.cd;
+        });
+
+        return {
+          sortedUpbitMarketSymbolList: sortedSymbolList,
+          upbitMarketDatas: newUpbitMarketDatas
+        };
+      });
+    },
+    distroyAll() {
       set({ ...defaultState });
     }
   }))

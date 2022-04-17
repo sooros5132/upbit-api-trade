@@ -11,6 +11,9 @@ import { clientApiUrls } from 'src/utils/clientApiUrls';
 import useSWR from 'swr';
 import { IBinanceSocketMessageTicker, IBinanceTickerPrice } from 'src/types/binance';
 import { useExchangeStore } from 'src/store/exchangeSockets';
+import { krwRegex } from 'src/utils/regex';
+import { binanceApis } from 'src-server/utils/binanceApis';
+import _ from 'lodash';
 
 const Container = styled('div')`
   flex: 1 0 auto;
@@ -50,21 +53,42 @@ const Home: NextPage<HomeProps> = ({
 }) => {
   const upbitAuthStore = useUpbitAuthStore();
   const [upbitKrwList] = React.useState(
-    upbitMarketList.filter((c) => c.market.match(/^KRW-/i), {})
+    upbitMarketList.filter((c) => c.market.match(krwRegex), {})
   );
   const [isMounted, setMounted] = useState(false);
 
-  if (!isMounted && upbitMarketSnapshot)
-    useExchangeStore.setState({ upbitMarketDatas: upbitMarketSnapshot });
+  if (!isMounted && upbitMarketSnapshot) {
+    useExchangeStore.setState({ upbitForex: oldUpbitForex });
+    if (upbitMarketSnapshot) useExchangeStore.setState({ upbitMarketDatas: upbitMarketSnapshot });
+    if (upbitMarketList) {
+      useExchangeStore.setState({
+        upbitMarkets: upbitMarketList,
+        sortedUpbitMarketSymbolList: upbitKrwList.map((market) => market.market)
+      });
+    }
+  }
 
   useEffect(() => {
-    if (!isMounted) {
-      setMounted(true);
-    }
+    setMounted(true);
   }, []);
+
+  useEffect(() => {
+    useExchangeStore.getState().connectUpbitSocket({
+      upbitMarkets: upbitKrwList
+    });
+  }, [upbitKrwList]);
+
+  useEffect(() => {
+    useExchangeStore.getState().connectBinanceSocket({
+      binanceMarkets: upbitKrwList.map(
+        (m) => m.market.replace(krwRegex, '').toLowerCase() + 'usdt@ticker'
+      )
+    });
+  }, [upbitKrwList]);
 
   // const { setMarketSocketData } = useUpbitDataStore();
   // if (upbitMarketSnapshot) setMarketSocketData(upbitMarketSnapshot);
+
   const [upbitForex, setUpbitForex] = React.useState(oldUpbitForex);
 
   useSWR(process.env.NEXT_PUBLIC_SOOROS_API + clientApiUrls.upbit.accounts, async () => {
@@ -80,8 +104,10 @@ const Home: NextPage<HomeProps> = ({
       }
     }
   });
+
   const forexUrl =
     process.env.NEXT_PUBLIC_SOOROS_API + clientApiUrls.upbit.forexRecent + '?codes=FRX.KRWUSD';
+
   useSWR(
     forexUrl,
     async () => {
@@ -104,9 +130,7 @@ const Home: NextPage<HomeProps> = ({
         <TradingViewContainer>
           <TradingView />
         </TradingViewContainer>
-        <MarketTableContainer>
-          <MarketTable upbitForex={upbitForex} upbitKrwList={upbitKrwList} />
-        </MarketTableContainer>
+        <MarketTable upbitForex={upbitForex} />
       </Inner>
     </Container>
   );
@@ -126,7 +150,7 @@ export const getStaticProps: GetStaticProps<HomeProps> = async ({ params }) => {
 
   const krwSymbolList = upbitMarketList
     ?.filter((m: IUpbitMarket) => {
-      if (Boolean(m.market.match(/^krw-/i))) {
+      if (Boolean(m.market.match(krwRegex))) {
         upbitMarketRecord[m.market] = m;
         return true;
       }
@@ -134,34 +158,46 @@ export const getStaticProps: GetStaticProps<HomeProps> = async ({ params }) => {
     .map((m: IUpbitMarket) => m.market);
   const upbitSymbols = krwSymbolList.join(',');
   const binanceSymbols = `["${krwSymbolList
-    .map((m: string) => m.replace(/^krw-/i, '') + 'USDT')
+    .map((m: string) => m.replace(krwRegex, '') + 'USDT')
     .join('","')}"]`;
 
-  const upbitMarketSnapshotList = await fetch(`${upbitApis.ticker}?markets=${upbitSymbols}`).then(
-    (res) => res.json()
-  );
+  // const upbitMarketSnapshotList = await fetch(`${upbitApis.ticker}?markets=${upbitSymbols}`).then(
+  //   (res) => res.json()
+  // );
 
-  // 바이낸스는 해당 마켓이 없을 경우 에러를 냄
+  // 바이낸스는 해당 마켓이 없을 경우 에러를 냄 -> 전체 리스트를 가져와서 정렬.
+  const [upbitMarketSnapshotList, binanceMarketSnapshotList] = await Promise.all([
+    fetch(`${upbitApis.ticker}?markets=${upbitSymbols}`).then((res) => res.json()),
+    // fetch(`${binanceApis.tickerPrice}?symbols=${binanceSymbols}`).then((res) => res.json())
+    fetch(binanceApis.tickerPrice).then((res) => res.json())
+  ]);
 
-  // const [upbitMarketSnapshotList, binanceMarketSnapshotList] = await Promise.all([
-  //   fetch(`${upbitApis.ticker}?markets=${upbitSymbols}`).then((res) => res.json()),
-  //   fetch(`${binanceApis.tickerPrice}?symbols=${binanceSymbols}`).then((res) => res.json())
-  // ]);
+  const binanceSnapshotkeyByList = _.keyBy(binanceMarketSnapshotList, 'symbol');
 
   const upbitMarketSnapshot: Record<string, IMarketTableItem> = {};
-  // const binanceMarketSnapshot: Record<string, IBinanceSocketMessageTicker> = {};
+  const binanceMarketSnapshot: Record<string, IBinanceSocketMessageTicker> = {};
 
-  // for (const m of binanceMarketSnapshotList) {
-  //   binanceMarketSnapshot[m.symbol] = {
-  //     data: {
-  //       p: m.price,
-  //       s: m.symbol
-  //     },
-  //     stream: ''
-  //   } as IBinanceSocketMessageTicker;
-  // }
+  for (const m of binanceMarketSnapshotList) {
+    binanceMarketSnapshot[m.symbol] = {
+      data: {
+        p: m.price,
+        s: m.symbol
+      },
+      stream: ''
+    } as IBinanceSocketMessageTicker;
+  }
 
   for (const t of upbitMarketSnapshotList) {
+    const symbol = t.market?.replace(krwRegex, '');
+    let binanceSymbol: string | undefined = symbol + 'USDT';
+    switch (symbol) {
+      case 'BTT': {
+        binanceSymbol = 'BTTCUSDT';
+      }
+      case 'NU': {
+        binanceSymbol = undefined;
+      }
+    }
     upbitMarketSnapshot[t.market] = {
       ty: 'ticker',
       cd: t.market,
@@ -199,6 +235,14 @@ export const getStaticProps: GetStaticProps<HomeProps> = async ({ params }) => {
       english_name: upbitMarketRecord[t.market].english_name,
       korean_name: upbitMarketRecord[t.market].korean_name
     };
+
+    if (binanceSymbol && binanceSnapshotkeyByList[binanceSymbol]) {
+      const binanceMarket = binanceSnapshotkeyByList[binanceSymbol];
+      const binanceKrwPrice = Number(binanceMarket.price) * upbitForex[0].basePrice;
+      const premium = (1 - binanceKrwPrice / t.trade_price) * 100;
+      upbitMarketSnapshot[t.market].binance_price = binanceSnapshotkeyByList[binanceSymbol]?.price;
+      upbitMarketSnapshot[t.market].premium = premium;
+    }
   }
 
   return {
@@ -206,7 +250,6 @@ export const getStaticProps: GetStaticProps<HomeProps> = async ({ params }) => {
       upbitForex: upbitForex[0],
       upbitMarketList,
       upbitMarketSnapshot
-      // binanceMarketSnapshot
     },
     revalidate: 5
   };

@@ -34,7 +34,3 @@ export function koPriceLabelFormat(price: number) {
     scaledValue.toFixed().length === 1 ? scaledValue.toFixed(2) : scaledValue.toFixed()
   ).toLocaleString()}${units[unitIndex]}`;
 }
-
-export const krwRegex = /^krw-/i;
-export const usdtRegex = /^usdt-/i;
-export const btcRegex = /^btc-/i;
