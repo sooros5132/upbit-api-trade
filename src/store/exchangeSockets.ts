@@ -300,9 +300,10 @@ const useExchangeStore = create<IExchangeStore>(
       if (!upbitForex) return;
       set((state) => {
         const favoriteSymbols = useMarketTableSettingStore.getState().favoriteSymbols;
+        const { searchedSymbols, upbitMarketDatas } = state;
         const favoriteList: IMarketTableItem[] = [];
-        const normalList = state.searchedSymbols
-          .map((symbol) => state.upbitMarketDatas[symbol])
+        const normalList = searchedSymbols
+          .map((symbol) => upbitMarketDatas[symbol])
           .filter((m) => {
             const favorite = favoriteSymbols[m.cd];
             if (favorite) {
@@ -353,7 +354,7 @@ const useExchangeStore = create<IExchangeStore>(
 
         favoriteList.sort(handleSort);
         normalList.sort(handleSort);
-        const newUpbitMarketDatas = { ...state.upbitMarketDatas };
+        const newUpbitMarketDatas = { ...upbitMarketDatas };
         const sortedSymbolList = [...favoriteList, ...normalList].map((m) => {
           newUpbitMarketDatas[m.cd] = m;
           return m.cd;

@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { memo, useCallback, useEffect, useState } from 'react';
 import _ from 'lodash';
 import isEqual from 'react-fast-compare';
 import { BiUpArrowAlt, BiDownArrowAlt } from 'react-icons/bi';
@@ -146,6 +146,7 @@ interface MarketTableProps {
 }
 
 const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex }) => {
+  const theme = useTheme();
   const { sortColumn, sortType, setSortColumn, setSortType } = useMarketTableSettingStore();
   const [searchValue, setSearchValue] = useState('');
 
@@ -171,7 +172,7 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex }) => {
       <SearchInputContainer>
         <TextField
           variant="outlined"
-          placeholder="BTC, 비트, ㅂㅌ, Bitcoin"
+          placeholder="BTC, 비트, Bitcoin"
           value={searchValue}
           onChange={handleChangeMarketSearchInput}
         />
@@ -463,6 +464,7 @@ const TableItem = React.memo<{
                 <AiFillStar />
               </ChartIconBox>
             )}
+            &nbsp;
             <a
               href={clientApiUrls.upbit.marketHref + upbitMarket.cd}
               target="_blank"
