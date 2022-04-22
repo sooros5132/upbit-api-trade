@@ -8,6 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { keyBy } from 'lodash';
 import { IBinanceSocketMessageTicker } from 'src/types/binance';
 import { krwRegex } from 'src/utils/regex';
+import { useMarketTableSettingStore } from './marketTableSetting';
 
 interface IExchangeState {
   sortedUpbitMarketSymbolList: Array<string>;
@@ -75,7 +76,6 @@ const handleConnectUpbitSocket =
     let unapplied = 0;
     const dataBuffer: IExchangeState['upbitMarketDatas'] = get().upbitMarketDatas || {};
     // set({ upbitMarketDatas: socketDatas });
-    console.log(dataBuffer);
 
     setInterval(() => {
       if (unapplied !== 0) {
@@ -299,16 +299,25 @@ const useExchangeStore = create<IExchangeStore>(
       const upbitForex = get().upbitForex;
       if (!upbitForex) return;
       set((state) => {
-        const upbitMarketDatas = state.searchedSymbols.map(
-          (symbol) => state.upbitMarketDatas[symbol]
-        );
+        const favoriteSymbols = useMarketTableSettingStore.getState().favoriteSymbols;
+        const favoriteList: IMarketTableItem[] = [];
+        const normalList = state.searchedSymbols
+          .map((symbol) => state.upbitMarketDatas[symbol])
+          .filter((m) => {
+            const favorite = favoriteSymbols[m.cd];
+            if (favorite) {
+              favoriteList.push(m);
+            } else {
+              return true;
+            }
+          });
+
         // const mergeMarkets = upbitMarketDatas.map((upbitMarket) => {
         //   return {
         //     ...upbitMarket
         //   };
         // });
-
-        upbitMarketDatas.sort((aItem: IMarketTableItem, bItem: IMarketTableItem) => {
+        const handleSort = (aItem: IMarketTableItem, bItem: IMarketTableItem) => {
           const a = aItem[sortColumn];
           const b = bItem[sortColumn];
           if (a === undefined) return 1;
@@ -340,9 +349,12 @@ const useExchangeStore = create<IExchangeStore>(
             return 0;
           }
           return 0;
-        });
+        };
+
+        favoriteList.sort(handleSort);
+        normalList.sort(handleSort);
         const newUpbitMarketDatas = { ...state.upbitMarketDatas };
-        const sortedSymbolList = upbitMarketDatas.map((m) => {
+        const sortedSymbolList = [...favoriteList, ...normalList].map((m) => {
           newUpbitMarketDatas[m.cd] = m;
           return m.cd;
         });

@@ -100,7 +100,11 @@ const ExchangeImage = styled('img')`
 
 const ChartIconBox = styled(CursorPointerBox)(({ theme }) => ({
   color: theme.color.black,
-  opacity: 0.4
+  opacity: 0.5
+}));
+
+const FavoriteIconBox = styled(CursorPointerBox)(({ theme }) => ({
+  color: theme.color.yellowMain
 }));
 
 const IconCell = styled(TableCell)`
@@ -159,6 +163,7 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex }) => {
     setSearchValue(value);
 
     useExchangeStore.getState().searchSymbols(value);
+    useExchangeStore.getState().sortSymbolList(sortColumn, sortType);
   };
 
   return (
@@ -328,9 +333,11 @@ const TableBody = React.memo<{
   // binanceMarketSnapshot?: Record<string, IBinanceSocketMessageTicker>;
 }>(({ upbitForex, sortColumn, sortType }) => {
   const searchedSymbols = useExchangeStore().searchedSymbols;
+  const favoriteSymbols = useMarketTableSettingStore.getState().favoriteSymbols;
+
+  useEffect(() => {}, [sortColumn, sortType]);
 
   useEffect(() => {
-    console.log(2);
     useExchangeStore.getState().sortSymbolList(sortColumn, sortType);
     const interval = setInterval(() => {
       useExchangeStore.getState().sortSymbolList(sortColumn, sortType);
@@ -343,7 +350,16 @@ const TableBody = React.memo<{
     <Tbody>
       {searchedSymbols.map((krwSymbol, index) => {
         const upbitMarket = useExchangeStore.getState().upbitMarketDatas[krwSymbol];
-        return <TableItem key={krwSymbol} upbitMarket={upbitMarket} upbitForex={upbitForex} />;
+        const favorite = Boolean(favoriteSymbols[krwSymbol]);
+
+        return (
+          <TableItem
+            key={krwSymbol}
+            upbitMarket={upbitMarket}
+            upbitForex={upbitForex}
+            favorite={favorite}
+          />
+        );
       })}
     </Tbody>
   );
@@ -355,13 +371,14 @@ const TableItem = React.memo<{
   // upbitMarketSymbol: string;
   upbitMarket: IMarketTableItem;
   upbitForex: IUpbitForex;
-}>(({ upbitMarket, upbitForex }) => {
+  favorite: boolean;
+}>(({ upbitMarket, upbitForex, favorite }) => {
   const theme = useTheme();
 
   const { selectedMarketSymbol, selectedExchange } = useTradingViewSettingStore();
 
   const handleClickMarketIcon = useCallback(
-    (symbol: string, exchange: 'BINANCE' | 'UPBIT') => (event: React.MouseEvent<HTMLDivElement>) => {
+    (symbol: string, exchange: 'BINANCE' | 'UPBIT') => () => {
       useTradingViewSettingStore.getState().setSelectedMarketSymbol(symbol);
       useTradingViewSettingStore.getState().setSelectedExchange(exchange);
       window.scrollTo(0, 0);
@@ -369,11 +386,17 @@ const TableItem = React.memo<{
     []
   );
   const handleClickStarIcon = useCallback(
-    (symbol: string) => (event: React.MouseEvent<HTMLDivElement>) => {
-      useTradingViewSettingStore.getState().setSelectedMarketSymbol(symbol);
-      window.scrollTo(0, 0);
+    (symbol: string) => () => {
+      if (!favorite) {
+        useMarketTableSettingStore.getState().addFavoriteSymbol(symbol);
+      } else {
+        useMarketTableSettingStore.getState().removeFavoriteSymbol(symbol);
+      }
+      const { sortColumn, sortType } = useMarketTableSettingStore.getState();
+      const { sortSymbolList } = useExchangeStore.getState();
+      sortSymbolList(sortColumn, sortType);
     },
-    []
+    [favorite]
   );
 
   const upbitChangeRate = upbitMarket.scr * 100;
@@ -403,6 +426,7 @@ const TableItem = React.memo<{
   // ).length;
 
   const priceDecimalLength = String(upbitMarket.tp).replace(/^[0-9]+\.?/, '').length;
+
   return (
     <TableRow>
       {selectedMarketSymbol === marketSymbol && (
@@ -425,9 +449,20 @@ const TableItem = React.memo<{
         <TableCellInnerBox>
           <Typography>{upbitMarket.korean_name}</Typography>
           <FlexBox>
-            <ChartIconBox onClick={handleClickStarIcon(marketSymbol)}>
-              <AiFillStar />
-            </ChartIconBox>
+            {favorite ? (
+              <FavoriteIconBox onClick={handleClickStarIcon(upbitMarket.cd)}>
+                <AiFillStar />
+              </FavoriteIconBox>
+            ) : (
+              <ChartIconBox
+                onClick={handleClickStarIcon(upbitMarket.cd)}
+                sx={{
+                  color: favorite ? theme.color.yellowMain : undefined
+                }}
+              >
+                <AiFillStar />
+              </ChartIconBox>
+            )}
             <a
               href={clientApiUrls.upbit.marketHref + upbitMarket.cd}
               target="_blank"
