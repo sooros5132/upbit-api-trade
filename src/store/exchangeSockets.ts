@@ -101,7 +101,7 @@ const handleConnectUpbitSocket =
         const binanceKrwPrice = binanceMarket
           ? Number(binanceMarket.data.c) * upbitForex.basePrice
           : undefined;
-        const premium = binanceKrwPrice ? (1 - binanceKrwPrice / message.tp) * 200 : undefined;
+        const premium = binanceKrwPrice ? (1 - binanceKrwPrice / message.tp) * 100 : undefined;
 
         dataBuffer[message.cd] = {
           ...dataBuffer[message.cd],
