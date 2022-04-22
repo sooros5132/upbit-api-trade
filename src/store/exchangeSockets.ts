@@ -13,7 +13,7 @@ interface IExchangeState {
   sortedUpbitMarketSymbolList: Array<string>;
   upbitForex?: IUpbitForex;
   upbitMarkets: Array<IUpbitMarket>;
-  upbitFilterdMarkets: Array<IUpbitMarket>;
+  searchedSymbols: Array<string>;
   upbitMarketDatas: Record<string, IMarketTableItem>;
   binanceMarkets: Array<IUpbitMarket>;
   binanceMarketDatas: Record<string, IBinanceSocketMessageTicker>;
@@ -35,7 +35,7 @@ const defaultState: IExchangeState = {
   upbitForex: undefined,
   sortedUpbitMarketSymbolList: [],
   upbitMarkets: [],
-  upbitFilterdMarkets: [],
+  searchedSymbols: [],
   upbitMarketDatas: {},
   binanceMarkets: [],
   binanceMarketDatas: {},
@@ -53,6 +53,7 @@ interface IExchangeStore extends IExchangeState {
   disconnectUpbitSocket: () => void;
   connectBinanceSocket: (props: IConnectBinanceSocketProps) => void;
   disconnectBinanceSocket: () => void;
+  searchSymbols: (searchValue: string) => void;
   sortSymbolList: (sortColumn: keyof IMarketTableItem, sortType: 'ASC' | 'DESC') => void;
 }
 
@@ -268,18 +269,46 @@ const useExchangeStore = create<IExchangeStore>(
         set({ binanceSocket: undefined });
       }
     },
+    searchSymbols(searchValue: string) {
+      const { upbitMarkets } = get();
+      if (searchValue) {
+        const filterdMarketSymbols = upbitMarkets
+          .filter((m) => {
+            // KRW 마켓 확인
+            if (krwRegex.test(m.market)) {
+              // korean, eng, symbol 매칭 확인
+              return Boolean(
+                Object.values(m).filter((value: string) =>
+                  value.toLocaleUpperCase().match(searchValue.toLocaleUpperCase())
+                ).length
+              );
+            }
+          })
+          .map((market) => market.market);
+
+        set({
+          searchedSymbols: filterdMarketSymbols
+        });
+      } else {
+        set({
+          searchedSymbols: upbitMarkets.filter((m) => krwRegex.test(m.market)).map((m) => m.market)
+        });
+      }
+    },
     sortSymbolList(sortColumn, sortType) {
       const upbitForex = get().upbitForex;
       if (!upbitForex) return;
       set((state) => {
-        const upbitMarketDatas = Object.values(state.upbitMarketDatas);
-        const mergeMarkets = upbitMarketDatas.map((upbitMarket) => {
-          return {
-            ...upbitMarket
-          };
-        });
+        const upbitMarketDatas = state.searchedSymbols.map(
+          (symbol) => state.upbitMarketDatas[symbol]
+        );
+        // const mergeMarkets = upbitMarketDatas.map((upbitMarket) => {
+        //   return {
+        //     ...upbitMarket
+        //   };
+        // });
 
-        mergeMarkets.sort((aItem: IMarketTableItem, bItem: IMarketTableItem) => {
+        upbitMarketDatas.sort((aItem: IMarketTableItem, bItem: IMarketTableItem) => {
           const a = aItem[sortColumn];
           const b = bItem[sortColumn];
           if (a === undefined) return 1;
@@ -313,13 +342,13 @@ const useExchangeStore = create<IExchangeStore>(
           return 0;
         });
         const newUpbitMarketDatas = { ...state.upbitMarketDatas };
-        const sortedSymbolList = mergeMarkets.map((m) => {
+        const sortedSymbolList = upbitMarketDatas.map((m) => {
           newUpbitMarketDatas[m.cd] = m;
           return m.cd;
         });
 
         return {
-          sortedUpbitMarketSymbolList: sortedSymbolList,
+          searchedSymbols: sortedSymbolList,
           upbitMarketDatas: newUpbitMarketDatas
         };
       });

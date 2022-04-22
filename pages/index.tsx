@@ -53,8 +53,9 @@ const Home: NextPage<HomeProps> = ({
   binanceMarketSnapshot
 }) => {
   const upbitAuthStore = useUpbitAuthStore();
-  const [upbitKrwList] = React.useState(
-    upbitMarketList.filter((c) => c.market.match(krwRegex), {})
+  const upbitKrwList = React.useMemo(
+    () => upbitMarketList.filter((c) => krwRegex.test(c.market)),
+    [upbitMarketList]
   );
   const [isMounted, setMounted] = useState(false);
 
@@ -62,10 +63,12 @@ const Home: NextPage<HomeProps> = ({
     useExchangeStore.setState({ upbitForex: oldUpbitForex });
     if (upbitMarketSnapshot) useExchangeStore.setState({ upbitMarketDatas: upbitMarketSnapshot });
     if (upbitMarketList) {
+      const symbolList = upbitKrwList.map((m) => m.market);
+
       useExchangeStore.setState({
         upbitMarkets: upbitMarketList,
-        upbitFilterdMarkets: upbitMarketList,
-        sortedUpbitMarketSymbolList: upbitKrwList.map((market) => market.market)
+        searchedSymbols: symbolList,
+        sortedUpbitMarketSymbolList: symbolList
       });
       useMarketTableSettingStore.getState().setSortColumn('tp');
       useMarketTableSettingStore.getState().setSortType('DESC');

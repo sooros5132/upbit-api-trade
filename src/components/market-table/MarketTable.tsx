@@ -143,6 +143,7 @@ interface MarketTableProps {
 
 const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex }) => {
   const { sortColumn, sortType, setSortColumn, setSortType } = useMarketTableSettingStore();
+  const [searchValue, setSearchValue] = useState('');
 
   const handleClickThead = (columnName: keyof IMarketTableItem) => () => {
     if (columnName === sortColumn) {
@@ -153,7 +154,12 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex }) => {
     setSortColumn(columnName);
   };
 
-  const handleChangeMarketSearchInput = (event: React.ChangeEvent<HTMLInputElement>) => {};
+  const handleChangeMarketSearchInput = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setSearchValue(value);
+
+    useExchangeStore.getState().searchSymbols(value);
+  };
 
   return (
     <TableContainer>
@@ -161,6 +167,7 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex }) => {
         <TextField
           variant="outlined"
           placeholder="BTC, 비트, ㅂㅌ, Bitcoin"
+          value={searchValue}
           onChange={handleChangeMarketSearchInput}
         />
       </SearchInputContainer>
@@ -320,7 +327,7 @@ const TableBody = React.memo<{
   // upbitMarketSnapshot?: Record<string, IMarketTableItem>;
   // binanceMarketSnapshot?: Record<string, IBinanceSocketMessageTicker>;
 }>(({ upbitForex, sortColumn, sortType }) => {
-  const soltedSymbolList = useExchangeStore().sortedUpbitMarketSymbolList;
+  const searchedSymbols = useExchangeStore().searchedSymbols;
 
   useEffect(() => {
     console.log(2);
@@ -334,7 +341,7 @@ const TableBody = React.memo<{
 
   return (
     <Tbody>
-      {soltedSymbolList.map((krwSymbol, index) => {
+      {searchedSymbols.map((krwSymbol, index) => {
         const upbitMarket = useExchangeStore.getState().upbitMarketDatas[krwSymbol];
         return <TableItem key={krwSymbol} upbitMarket={upbitMarket} upbitForex={upbitForex} />;
       })}
