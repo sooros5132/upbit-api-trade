@@ -1,3 +1,4 @@
+import { IMarketTableItem } from 'src/components/market-table/MarketTable';
 import create from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { persist } from 'zustand/middleware';
@@ -9,14 +10,10 @@ const MAX_FONT_SIZE = 18;
 interface ISiteSettingState {
   theme: 'dark' | 'light';
   fontSize: number;
-  selectedMarketSymbol: string;
-  selectedExchange: 'BINANCE' | 'UPBIT';
   showMyAccounts: boolean;
 }
 
 interface ISiteSettingStore extends ISiteSettingState {
-  setSelectedMarketSymbol: (symbol: string) => void;
-  setSelectedExchange: (exchange: ISiteSettingState['selectedExchange']) => void;
   setShowMyAccounts: (show: boolean) => void;
   changeTheme: (mode: ISiteSettingState['theme']) => void;
   changeFontSize: (fontSize: number) => void;
@@ -25,8 +22,6 @@ interface ISiteSettingStore extends ISiteSettingState {
 const defaultState: ISiteSettingState = {
   theme: 'dark',
   fontSize: 14,
-  selectedMarketSymbol: 'BTC',
-  selectedExchange: 'BINANCE',
   showMyAccounts: true
 };
 
@@ -34,23 +29,15 @@ export const useSiteSettingStore = create<ISiteSettingStore>(
   persist(
     devtools((set, get) => ({
       ...defaultState,
-      setSelectedMarketSymbol: (symbol: ISiteSettingState['selectedMarketSymbol']) =>
-        set(() => ({
-          selectedMarketSymbol: symbol
-        })),
-      setSelectedExchange: (exchange: ISiteSettingState['selectedExchange']) =>
-        set(() => ({
-          selectedExchange: exchange
-        })),
-      setShowMyAccounts: (show: boolean) =>
+      setShowMyAccounts(show: boolean) {
         set(() => ({
           showMyAccounts: show
-        })),
+        }));
+      },
       changeTheme: (theme: ISiteSettingState['theme']) =>
         set(() => ({
           theme
         })),
-
       changeFontSize: (fontSize: number) =>
         set(() => ({
           fontSize: isNaN(fontSize)
@@ -64,13 +51,13 @@ export const useSiteSettingStore = create<ISiteSettingStore>(
     })),
     {
       name: 'siteSetting', // unique name
-      getStorage: () => localStorage, // (optional) by default, 'localStorage' is used
-      partialize: (state) =>
-        Object.fromEntries(
-          Object.entries(state).filter(
-            ([key]) => !['selectedMarketSymbol', 'selectedExchange'].includes(key)
-          )
-        )
+      getStorage: () => localStorage // (optional) by default, 'localStorage' is used
+      // partialize: (state) =>
+      //   Object.fromEntries(
+      //     Object.entries(state).filter(
+      //       ([key]) => !['selectedMarketSymbol', 'selectedExchange'].includes(key)
+      //     )
+      //   )
     }
   )
 );

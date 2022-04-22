@@ -2,7 +2,7 @@ import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from '
 import _ from 'lodash';
 import isEqual from 'react-fast-compare';
 import { BiUpArrowAlt, BiDownArrowAlt } from 'react-icons/bi';
-import { IUpbitForex, IUpbitMarket, IUpbitSocketMessageTickerSimple } from 'src/types/upbit';
+import { IUpbitForex, IUpbitSocketMessageTickerSimple } from 'src/types/upbit';
 import {
   CursorPointerBox,
   FlexAlignItemsCenterBox,
@@ -14,21 +14,26 @@ import {
   TextAlignRightBox
 } from '../modules/Box';
 import { koPriceLabelFormat } from 'src/utils/utils';
-import { IBinanceSocketMessageTicker } from 'src/types/binance';
 import { NextSeo } from 'next-seo';
 import { styled, useTheme } from '@mui/material/styles';
-import { Box, Tooltip, Typography } from '@mui/material';
-import { AskBidTypography, MonoFontTypography } from '../modules/Typography';
+import { Box, TextField, Tooltip, Typography } from '@mui/material';
+import { AskBidTypography } from '../modules/Typography';
 import { clientApiUrls } from 'src/utils/clientApiUrls';
-import { useSiteSettingStore } from 'src/store/siteSetting';
-import { AiOutlineAreaChart } from 'react-icons/ai';
+import { AiOutlineAreaChart, AiFillStar } from 'react-icons/ai';
 import { useExchangeStore } from 'src/store/exchangeSockets';
 import { krwRegex } from 'src/utils/regex';
+import { useMarketTableSettingStore } from 'src/store/marketTableSetting';
+import { useTradingViewSettingStore } from 'src/store/tradingViewSetting';
 
 const TableContainer = styled('div')`
   margin: 0 auto;
   max-width: 1280px;
 `;
+
+const SearchInputContainer = styled(FlexJustifyContentFlexEndBox)`
+  margin: ${({ theme }) => theme.spacing(2)} 0;
+`;
+
 const Table = styled('table')`
   width: 100%;
   border-spacing: 0;
@@ -137,20 +142,28 @@ interface MarketTableProps {
 }
 
 const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex }) => {
-  const [sortColumnName, setSortColumnName] = React.useState<keyof IMarketTableItem>('atp24h');
-  const [sortType, setSortType] = React.useState<'ASC' | 'DESC'>('DESC');
+  const { sortColumn, sortType, setSortColumn, setSortType } = useMarketTableSettingStore();
 
   const handleClickThead = (columnName: keyof IMarketTableItem) => () => {
-    if (columnName === sortColumnName) {
-      setSortType((prevState) => (prevState === 'ASC' ? 'DESC' : 'ASC'));
+    if (columnName === sortColumn) {
+      setSortType(sortType === 'ASC' ? 'DESC' : 'ASC');
       return;
     }
     setSortType('DESC');
-    setSortColumnName(columnName);
+    setSortColumn(columnName);
   };
+
+  const handleChangeMarketSearchInput = (event: React.ChangeEvent<HTMLInputElement>) => {};
 
   return (
     <TableContainer>
+      <SearchInputContainer>
+        <TextField
+          variant="outlined"
+          placeholder="BTC, 비트, ㅂㅌ, Bitcoin"
+          onChange={handleChangeMarketSearchInput}
+        />
+      </SearchInputContainer>
       <Table cellSpacing="0" cellPadding="0">
         <Thead>
           <TableHeaderRow>
@@ -172,7 +185,7 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex }) => {
                   <FlexCursorPointerBox onClick={handleClickThead('korean_name')}>
                     <Typography component="span">이름</Typography>
                     <TableHeaderSortIcon>
-                      {sortColumnName === 'korean_name' ? (
+                      {sortColumn === 'korean_name' ? (
                         sortType === 'ASC' ? (
                           <BiDownArrowAlt />
                         ) : (
@@ -199,7 +212,7 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex }) => {
                   <FlexCursorPointerBox onClick={handleClickThead('tp')}>
                     <Typography component="span">현재가</Typography>
                     <TableHeaderSortIcon>
-                      {sortColumnName === 'tp' ? (
+                      {sortColumn === 'tp' ? (
                         sortType === 'ASC' ? (
                           <BiDownArrowAlt />
                         ) : (
@@ -226,7 +239,7 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex }) => {
                   <FlexCursorPointerBox onClick={handleClickThead('scr')}>
                     <Typography component="span">변동</Typography>
                     <TableHeaderSortIcon>
-                      {sortColumnName === 'scr' ? (
+                      {sortColumn === 'scr' ? (
                         sortType === 'ASC' ? (
                           <BiDownArrowAlt />
                         ) : (
@@ -253,7 +266,7 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex }) => {
                   <FlexCursorPointerBox onClick={handleClickThead('premium')}>
                     <Typography component="span">김프</Typography>
                     <TableHeaderSortIcon>
-                      {sortColumnName === 'premium' ? (
+                      {sortColumn === 'premium' ? (
                         sortType === 'ASC' ? (
                           <BiDownArrowAlt />
                         ) : (
@@ -280,7 +293,7 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex }) => {
                   <FlexCursorPointerBox onClick={handleClickThead('atp24h')}>
                     <Typography component="span">거래량</Typography>
                     <TableHeaderSortIcon>
-                      {sortColumnName === 'atp24h' ? (
+                      {sortColumn === 'atp24h' ? (
                         sortType === 'ASC' ? (
                           <BiDownArrowAlt />
                         ) : (
@@ -294,7 +307,7 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex }) => {
             </VolumeCell>
           </TableHeaderRow>
         </Thead>
-        <TableBody upbitForex={upbitForex} sortColumnName={sortColumnName} sortType={sortType} />
+        <TableBody upbitForex={upbitForex} sortColumn={sortColumn} sortType={sortType} />
       </Table>
     </TableContainer>
   );
@@ -302,37 +315,30 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex }) => {
 
 const TableBody = React.memo<{
   upbitForex: IUpbitForex;
-  sortColumnName: keyof IMarketTableItem;
+  sortColumn: keyof IMarketTableItem;
   sortType: 'ASC' | 'DESC';
   // upbitMarketSnapshot?: Record<string, IMarketTableItem>;
   // binanceMarketSnapshot?: Record<string, IBinanceSocketMessageTicker>;
-}>(({ upbitForex, sortColumnName, sortType }) => {
+}>(({ upbitForex, sortColumn, sortType }) => {
   const soltedSymbolList = useExchangeStore().sortedUpbitMarketSymbolList;
 
   useEffect(() => {
-    useExchangeStore.getState().sortSymbolList(sortColumnName, sortType);
+    console.log(2);
+    useExchangeStore.getState().sortSymbolList(sortColumn, sortType);
     const interval = setInterval(() => {
-      useExchangeStore.getState().sortSymbolList(sortColumnName, sortType);
+      useExchangeStore.getState().sortSymbolList(sortColumn, sortType);
       // setNum((prev) => 1 - prev);
     }, 1000);
     return () => clearInterval(interval);
-  }, [sortColumnName, sortType]);
+  }, [sortColumn, sortType]);
 
   return (
-    <>
-      <Tbody>
-        {soltedSymbolList.map((krwSymbol, index) => {
-          const upbitMarket = useExchangeStore.getState().upbitMarketDatas[krwSymbol];
-          return (
-            <TableItem
-              key={`market-table-${krwSymbol}`}
-              upbitMarket={upbitMarket}
-              upbitForex={upbitForex}
-            />
-          );
-        })}
-      </Tbody>
-    </>
+    <Tbody>
+      {soltedSymbolList.map((krwSymbol, index) => {
+        const upbitMarket = useExchangeStore.getState().upbitMarketDatas[krwSymbol];
+        return <TableItem key={krwSymbol} upbitMarket={upbitMarket} upbitForex={upbitForex} />;
+      })}
+    </Tbody>
   );
 }, isEqual);
 
@@ -345,12 +351,19 @@ const TableItem = React.memo<{
 }>(({ upbitMarket, upbitForex }) => {
   const theme = useTheme();
 
-  const { selectedMarketSymbol, selectedExchange } = useSiteSettingStore();
+  const { selectedMarketSymbol, selectedExchange } = useTradingViewSettingStore();
 
   const handleClickMarketIcon = useCallback(
     (symbol: string, exchange: 'BINANCE' | 'UPBIT') => (event: React.MouseEvent<HTMLDivElement>) => {
-      useSiteSettingStore.getState().setSelectedMarketSymbol(symbol);
-      useSiteSettingStore.getState().setSelectedExchange(exchange);
+      useTradingViewSettingStore.getState().setSelectedMarketSymbol(symbol);
+      useTradingViewSettingStore.getState().setSelectedExchange(exchange);
+      window.scrollTo(0, 0);
+    },
+    []
+  );
+  const handleClickStarIcon = useCallback(
+    (symbol: string) => (event: React.MouseEvent<HTMLDivElement>) => {
+      useTradingViewSettingStore.getState().setSelectedMarketSymbol(symbol);
       window.scrollTo(0, 0);
     },
     []
@@ -405,6 +418,9 @@ const TableItem = React.memo<{
         <TableCellInnerBox>
           <Typography>{upbitMarket.korean_name}</Typography>
           <FlexBox>
+            <ChartIconBox onClick={handleClickStarIcon(marketSymbol)}>
+              <AiFillStar />
+            </ChartIconBox>
             <a
               href={clientApiUrls.upbit.marketHref + upbitMarket.cd}
               target="_blank"
@@ -441,7 +457,7 @@ const TableItem = React.memo<{
                 <AskBidTypography state={upbitMarket.scp}>
                   {upbitMarket.tp.toLocaleString()}
                 </AskBidTypography>
-                <AskBidTypography state={upbitMarket.scp} opacity={0.6}>
+                <AskBidTypography state={upbitMarket.scp} opacity={0.7}>
                   {upbitMarket.binance_price &&
                     Number(
                       (Number(upbitMarket.binance_price) * upbitForex.basePrice).toFixed(
@@ -462,7 +478,7 @@ const TableItem = React.memo<{
                 <AskBidTypography state={upbitMarket.scp}>
                   {upbitChangeRate.toFixed(2)}%
                 </AskBidTypography>
-                <AskBidTypography state={upbitMarket.scp} opacity={0.6}>
+                <AskBidTypography state={upbitMarket.scp} opacity={0.7}>
                   {upbitMarket.scp.toLocaleString()}
                   {/* {binanceChangeRate && binanceChangeRate.toFixed(2) + '%'} */}
                 </AskBidTypography>
@@ -480,7 +496,7 @@ const TableItem = React.memo<{
                   <AskBidTypography state={upbitMarket.premium}>
                     {upbitMarket.premium.toFixed(2).padStart(2, '0')}%
                   </AskBidTypography>
-                  <AskBidTypography state={upbitMarket.premium} opacity={0.6}>
+                  <AskBidTypography state={upbitMarket.premium} opacity={0.7}>
                     {upbitMarket.binance_price &&
                       Number(
                         (

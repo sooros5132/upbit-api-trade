@@ -3,7 +3,7 @@ import { styled, useTheme } from '@mui/material/styles';
 import Script from 'next/script';
 import React, { memo, useCallback, useEffect, useState } from 'react';
 import isEqual from 'react-fast-compare';
-import { useSiteSettingStore } from 'src/store/siteSetting';
+import { useTradingViewSettingStore } from 'src/store/tradingViewSetting';
 import { FlexAlignItemsCenterBox, FullWidthBox } from '../modules/Box';
 import { HoverUnderLineSpan } from '../modules/Typography';
 
@@ -35,7 +35,7 @@ interface TradingViewChartProps {}
 
 const TradingViewChart: React.FC<TradingViewChartProps> = () => {
   const theme = useTheme();
-  const { selectedMarketSymbol, selectedExchange } = useSiteSettingStore();
+  const { selectedMarketSymbol, selectedExchange } = useTradingViewSettingStore();
   const [isMounted, setMounted] = useState(false);
 
   const symbol =

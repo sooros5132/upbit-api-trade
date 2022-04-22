@@ -13,6 +13,7 @@ interface IExchangeState {
   sortedUpbitMarketSymbolList: Array<string>;
   upbitForex?: IUpbitForex;
   upbitMarkets: Array<IUpbitMarket>;
+  upbitFilterdMarkets: Array<IUpbitMarket>;
   upbitMarketDatas: Record<string, IMarketTableItem>;
   binanceMarkets: Array<IUpbitMarket>;
   binanceMarketDatas: Record<string, IBinanceSocketMessageTicker>;
@@ -34,6 +35,7 @@ const defaultState: IExchangeState = {
   upbitForex: undefined,
   sortedUpbitMarketSymbolList: [],
   upbitMarkets: [],
+  upbitFilterdMarkets: [],
   upbitMarketDatas: {},
   binanceMarkets: [],
   binanceMarketDatas: {},
@@ -72,6 +74,7 @@ const handleConnectUpbitSocket =
     let unapplied = 0;
     const dataBuffer: IExchangeState['upbitMarketDatas'] = get().upbitMarketDatas || {};
     // set({ upbitMarketDatas: socketDatas });
+    console.log(dataBuffer);
 
     setInterval(() => {
       if (unapplied !== 0) {
@@ -80,7 +83,7 @@ const handleConnectUpbitSocket =
           upbitMarketDatas: dataBuffer
         });
       }
-    }, 100);
+    }, 200);
 
     const handleMessage = async (e: WebSocketEventMap['message']) => {
       const message = JSON.parse(await e.data.text()) as IUpbitSocketMessageTickerSimple;
@@ -97,7 +100,7 @@ const handleConnectUpbitSocket =
         const binanceKrwPrice = binanceMarket
           ? Number(binanceMarket.data.c) * upbitForex.basePrice
           : undefined;
-        const premium = binanceKrwPrice ? (1 - binanceKrwPrice / message.tp) * 100 : undefined;
+        const premium = binanceKrwPrice ? (1 - binanceKrwPrice / message.tp) * 200 : undefined;
 
         dataBuffer[message.cd] = {
           ...dataBuffer[message.cd],

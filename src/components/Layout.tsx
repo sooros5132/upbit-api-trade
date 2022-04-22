@@ -31,7 +31,10 @@ const MainBox = styled('main')`
 interface LayoutProps {}
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-  const { theme: themeMode, fontSize: siteFontSize } = useSiteSettingStore();
+  const { theme: themeMode, fontSize: siteFontSize } = useSiteSettingStore((state) => ({
+    fontSize: state.fontSize,
+    theme: state.theme
+  }));
   const themes = useTheme();
 
   const theme = React.useMemo(() => {

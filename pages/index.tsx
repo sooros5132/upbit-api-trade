@@ -14,6 +14,7 @@ import { useExchangeStore } from 'src/store/exchangeSockets';
 import { krwRegex } from 'src/utils/regex';
 import { binanceApis } from 'src-server/utils/binanceApis';
 import _ from 'lodash';
+import { useMarketTableSettingStore } from 'src/store/marketTableSetting';
 
 const Container = styled('div')`
   flex: 1 0 auto;
@@ -31,11 +32,11 @@ const Inner = styled(Width100Box)`
   }
 `;
 const TradingViewContainer = styled('div')`
-  margin: ${({ theme }) => theme.spacing(2)} 0;
+  /* margin: ${({ theme }) => theme.spacing(2)} 0; */
 `;
 
 const MarketTableContainer = styled('div')`
-  margin-bottom: ${({ theme }) => theme.spacing(2)};
+  /* margin-bottom: ${({ theme }) => theme.spacing(2)}; */
 `;
 
 interface HomeProps {
@@ -63,8 +64,12 @@ const Home: NextPage<HomeProps> = ({
     if (upbitMarketList) {
       useExchangeStore.setState({
         upbitMarkets: upbitMarketList,
+        upbitFilterdMarkets: upbitMarketList,
         sortedUpbitMarketSymbolList: upbitKrwList.map((market) => market.market)
       });
+      useMarketTableSettingStore.getState().setSortColumn('tp');
+      useMarketTableSettingStore.getState().setSortType('DESC');
+      useExchangeStore.getState().sortSymbolList('tp', 'DESC');
     }
   }
 

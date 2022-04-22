@@ -50,7 +50,9 @@ const HeaderIconButton = styled(IconButton)(({ theme }) => ({
 const Header: React.FC = () => {
   const theme = useTheme();
   const upbitAuth = useUpbitAuthStore();
-  const { showMyAccounts, setShowMyAccounts } = useSiteSettingStore();
+  const { showMyAccounts, setShowMyAccounts } = useSiteSettingStore(
+    ({ setShowMyAccounts, showMyAccounts }) => ({ setShowMyAccounts, showMyAccounts })
+  );
   const [accountEl, setAccountEl] = useState<null | HTMLElement>(null);
   const [openRegisterUpbitApiDialog, setOpenRegisterUpbitApiDialog] = useState(false);
   const [isMounted, setMounted] = useState(false);

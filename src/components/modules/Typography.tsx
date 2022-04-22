@@ -82,8 +82,8 @@ export const AskBidTypography = styled(MonoFontTypography)<{
     !state || state === 0
       ? theme.color.gray30
       : state > 0
-      ? theme.color.greenLight
-      : theme.color.redLight,
+      ? theme.color.bidMain
+      : theme.color.askMain,
   opacity
 }));
 
@@ -95,7 +95,7 @@ export const AskBidSpanTypography = styled(MonoFontSpanTypography)<{
     !state || state === 0
       ? theme.color.gray30
       : state > 0
-      ? theme.color.greenLight
-      : theme.color.redLight,
+      ? theme.color.bidMain
+      : theme.color.askMain,
   opacity
 }));
