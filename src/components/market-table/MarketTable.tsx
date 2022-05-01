@@ -8,9 +8,11 @@ import {
   FlexAlignItemsCenterBox,
   FlexBox,
   FlexCursorPointerBox,
+  FlexJustifyContentCenterBox,
   FlexJustifyContentFlexEndBox,
   MonoFontBox,
   NoWrapBox,
+  TextAlignCenterBox,
   TextAlignRightBox
 } from '../modules/Box';
 import { koPriceLabelFormat } from 'src/utils/utils';
@@ -62,6 +64,7 @@ const TableHeaderRow = styled(TableRow)`
   background-color: ${({ theme }) => theme.color.black + '05'};
 `;
 const TableHeaderCell = styled(TableCell)(({ theme }) => ({
+  color: theme.color.gray20,
   padding: `${theme.spacing(1)} ${theme.spacing(0.5)}`,
   [`${theme.breakpoints.down('sm')}`]: {
     padding: `${theme.spacing(0.75)} ${theme.spacing(0.25)}`
@@ -79,9 +82,13 @@ const TableCellInnerBox = styled('div')(({ theme }) => ({
   }
 }));
 
+const ButtonContainer = styled(FlexBox)(({ theme }) => ({
+  fontSize: theme.size.px16
+}));
+
 const MarketIconImage = styled('img')(({ theme }) => ({
-  width: 20,
-  height: 20,
+  width: 16,
+  height: 16,
   objectFit: 'contain',
   backgroundColor: theme.color.absolutlyWhite,
   borderRadius: '50%',
@@ -336,7 +343,7 @@ const TableBody = React.memo<{
   const searchedSymbols = useExchangeStore().searchedSymbols;
   const favoriteSymbols = useMarketTableSettingStore.getState().favoriteSymbols;
 
-  useEffect(() => {}, [sortColumn, sortType]);
+  // TODO favorite SSR 적용 에러
 
   useEffect(() => {
     useExchangeStore.getState().sortSymbolList(sortColumn, sortType);
@@ -438,33 +445,36 @@ const TableItem = React.memo<{
       )}
       <TableCell>
         <TableCellInnerBox>
-          <FlexAlignItemsCenterBox>
+          <TextAlignCenterBox>
             <MarketIconImage
               src={`/asset/upbit/logos/${marketSymbol}.png`}
               alt={`${upbitMarket.cd}-icon`}
             />
-          </FlexAlignItemsCenterBox>
+          </TextAlignCenterBox>
+          <FlexJustifyContentCenterBox>
+            <ButtonContainer>
+              {favorite ? (
+                <FavoriteIconBox onClick={handleClickStarIcon(upbitMarket.cd)}>
+                  <AiFillStar />
+                </FavoriteIconBox>
+              ) : (
+                <ChartIconBox
+                  onClick={handleClickStarIcon(upbitMarket.cd)}
+                  sx={{
+                    color: favorite ? theme.color.yellowMain : undefined
+                  }}
+                >
+                  <AiFillStar />
+                </ChartIconBox>
+              )}
+            </ButtonContainer>
+          </FlexJustifyContentCenterBox>
         </TableCellInnerBox>
       </TableCell>
       <TableCell>
         <TableCellInnerBox>
           <Typography>{upbitMarket.korean_name}</Typography>
-          <FlexBox>
-            {favorite ? (
-              <FavoriteIconBox onClick={handleClickStarIcon(upbitMarket.cd)}>
-                <AiFillStar />
-              </FavoriteIconBox>
-            ) : (
-              <ChartIconBox
-                onClick={handleClickStarIcon(upbitMarket.cd)}
-                sx={{
-                  color: favorite ? theme.color.yellowMain : undefined
-                }}
-              >
-                <AiFillStar />
-              </ChartIconBox>
-            )}
-            &nbsp;
+          <ButtonContainer>
             <a
               href={clientApiUrls.upbit.marketHref + upbitMarket.cd}
               target="_blank"
@@ -490,7 +500,7 @@ const TableItem = React.memo<{
                 </ChartIconBox>
               </>
             )}
-          </FlexBox>
+          </ButtonContainer>
         </TableCellInnerBox>
       </TableCell>
       <TableCell>
