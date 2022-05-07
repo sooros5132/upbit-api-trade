@@ -131,21 +131,19 @@ const AccountItem = memo(({ account }: IAccountItemProps) => {
                 <Typography>총 잔고</Typography>
                 <TextAlignRightBox>
                   <MonoFontTypography>
-                    {Math.round(totalBalance + locked - balance).toLocaleString()}
+                    {Math.round(balance + locked).toLocaleString()}
                   </MonoFontTypography>
                 </TextAlignRightBox>
                 <Typography>주문 가능</Typography>
                 <TextAlignRightBox>
-                  <MonoFontTypography>
-                    {Math.round(totalBalance - locked).toLocaleString()}
-                  </MonoFontTypography>
+                  <MonoFontTypography>{Math.round(balance).toLocaleString()}</MonoFontTypography>
                 </TextAlignRightBox>
               </GridBox>
             }
           >
             <AskBidTypography state={profitAndLoss}>
               &nbsp;
-              {`${Math.round(totalBalance + locked - balance).toLocaleString()}₩`}
+              {`${Math.round(balance + locked).toLocaleString()}₩`}
             </AskBidTypography>
           </Tooltip>
         )}
