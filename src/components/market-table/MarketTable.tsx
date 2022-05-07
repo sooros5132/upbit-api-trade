@@ -26,6 +26,7 @@ import { useExchangeStore } from 'src/store/exchangeSockets';
 import { krwRegex } from 'src/utils/regex';
 import { useMarketTableSettingStore } from 'src/store/marketTableSetting';
 import { useTradingViewSettingStore } from 'src/store/tradingViewSetting';
+import shallow from 'zustand/shallow';
 
 const TableContainer = styled('div')`
   margin: 0 auto;
@@ -340,7 +341,7 @@ const TableBody = React.memo<{
   // upbitMarketSnapshot?: Record<string, IMarketTableItem>;
   // binanceMarketSnapshot?: Record<string, IBinanceSocketMessageTicker>;
 }>(({ upbitForex, sortColumn, sortType }) => {
-  const searchedSymbols = useExchangeStore().searchedSymbols;
+  const searchedSymbols = useExchangeStore((state) => state.searchedSymbols, shallow);
   const favoriteSymbols = useMarketTableSettingStore.getState().favoriteSymbols;
 
   // TODO favorite SSR 적용 에러
@@ -350,20 +351,20 @@ const TableBody = React.memo<{
     const interval = setInterval(() => {
       useExchangeStore.getState().sortSymbolList(sortColumn, sortType);
       // setNum((prev) => 1 - prev);
-    }, 1000);
+    }, 3000);
     return () => clearInterval(interval);
   }, [sortColumn, sortType]);
 
   return (
     <Tbody>
       {searchedSymbols.map((krwSymbol, index) => {
-        const upbitMarket = useExchangeStore.getState().upbitMarketDatas[krwSymbol];
         const favorite = Boolean(favoriteSymbols[krwSymbol]);
 
         return (
           <TableItem
             key={krwSymbol}
-            upbitMarket={upbitMarket}
+            // upbitMarket={upbitMarket}
+            krwSymbol={krwSymbol}
             upbitForex={upbitForex}
             favorite={favorite}
           />
@@ -376,19 +377,22 @@ const TableBody = React.memo<{
 TableBody.displayName = 'TableBody';
 
 const TableItem = React.memo<{
-  // upbitMarketSymbol: string;
-  upbitMarket: IMarketTableItem;
+  krwSymbol: string;
+  // upbitMarket: IMarketTableItem;
   upbitForex: IUpbitForex;
   favorite: boolean;
-}>(({ upbitMarket, upbitForex, favorite }) => {
+}>(({ krwSymbol, upbitForex, favorite }) => {
   const theme = useTheme();
+  const upbitMarket = useExchangeStore((state) => state.upbitMarketDatas[krwSymbol], shallow);
 
   const { selectedMarketSymbol, selectedExchange } = useTradingViewSettingStore();
 
   const handleClickMarketIcon = useCallback(
     (symbol: string, exchange: 'BINANCE' | 'UPBIT') => () => {
-      useTradingViewSettingStore.getState().setSelectedMarketSymbol(symbol);
-      useTradingViewSettingStore.getState().setSelectedExchange(exchange);
+      const { setSelectedMarketSymbol, setSelectedExchange } =
+        useTradingViewSettingStore.getState();
+      setSelectedMarketSymbol(symbol);
+      setSelectedExchange(exchange);
       window.scrollTo(0, 0);
     },
     []
@@ -401,8 +405,7 @@ const TableItem = React.memo<{
         useMarketTableSettingStore.getState().removeFavoriteSymbol(symbol);
       }
       const { sortColumn, sortType } = useMarketTableSettingStore.getState();
-      const { sortSymbolList } = useExchangeStore.getState();
-      sortSymbolList(sortColumn, sortType);
+      useExchangeStore.getState().sortSymbolList(sortColumn, sortType);
     },
     [favorite]
   );
