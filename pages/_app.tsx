@@ -1,11 +1,13 @@
 import type { AppProps } from 'next/app';
 import { NextSeo } from 'next-seo';
 import Layout from 'src/components/Layout';
-import CommonTheme, { CommonCustomTheme } from 'src/styles/CommomTheme';
+import { CommonCustomTheme } from 'src/styles/CommomTheme';
 import { SnackbarKey, SnackbarProvider } from 'notistack';
 import { createRef } from 'react';
 import { Button } from '@mui/material';
 import Script from 'next/script';
+import Head from 'next/head';
+import { useTradingViewSettingStore } from 'src/store/tradingViewSetting';
 
 // xs, extra-small: 0px
 // sm, small: 600px
@@ -78,11 +80,14 @@ function MyApp({ Component, pageProps }: AppProps) {
           type: 'website'
         }}
         description="실시간 업비트 - 바이낸스 프리미엄 시세를 볼 수 있습니다."
-      >
-        <link rel="icon" href="/favicon.ico" />
-        <meta charSet="utf-8" />
+      />
+      <Head>
         <meta name="viewport" content="initial-scale=1, width=device-width" />
-      </NextSeo>
+      </Head>
+      <Script
+        src="https://s3.tradingview.com/tv.js"
+        onLoad={() => useTradingViewSettingStore.setState({ scriptLoaded: true })}
+      />
       <Script
         src="https://www.googletagmanager.com/gtag/js?id=G-VYNSSXH1VE"
         strategy="beforeInteractive"
