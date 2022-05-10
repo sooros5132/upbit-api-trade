@@ -22,8 +22,9 @@ import { Box, TextField, Tooltip, Typography } from '@mui/material';
 import { AskBidTypography } from '../modules/Typography';
 import { clientApiUrls } from 'src/utils/clientApiUrls';
 import { AiOutlineAreaChart, AiFillStar } from 'react-icons/ai';
+import { RiExchangeLine } from 'react-icons/ri';
 import { useExchangeStore } from 'src/store/exchangeSockets';
-import { krwRegex } from 'src/utils/regex';
+import { marketRegex } from 'src/utils/regex';
 import { useMarketTableSettingStore } from 'src/store/marketTableSetting';
 import { useTradingViewSettingStore } from 'src/store/tradingViewSetting';
 import shallow from 'zustand/shallow';
@@ -384,6 +385,13 @@ const TableItem = React.memo<{
 }>(({ krwSymbol, upbitForex, favorite }) => {
   const theme = useTheme();
   const upbitMarket = useExchangeStore((state) => state.upbitMarketDatas[krwSymbol], shallow);
+  const marketSymbol = upbitMarket.cd.replace(marketRegex, '');
+
+  // const upbitBtcMarket = useExchangeStore(
+  //   (state) => state.upbitMarketDatas['BTC-' + marketSymbol],
+  //   shallow
+  // );
+  // const upbitBtcPrice = useExchangeStore.getState().upbitMarketDatas['KRW-BTC'];
 
   const { selectedMarketSymbol, selectedExchange } = useTradingViewSettingStore();
 
@@ -411,7 +419,6 @@ const TableItem = React.memo<{
   );
 
   const upbitChangeRate = upbitMarket.scr * 100;
-  const marketSymbol = upbitMarket.cd.replace(krwRegex, '');
 
   let title = 'SOOROS';
   if (selectedMarketSymbol === marketSymbol) {
@@ -476,7 +483,15 @@ const TableItem = React.memo<{
       </TableCell>
       <TableCell>
         <TableCellInnerBox>
-          <Typography>{upbitMarket.korean_name}</Typography>
+          <FlexAlignItemsCenterBox>
+            <a href={'/trade/' + upbitMarket.cd}>
+              <ChartIconBox fontSize={theme.size.px16}>
+                <RiExchangeLine />
+              </ChartIconBox>
+            </a>
+            &nbsp;
+            <Typography>{upbitMarket.korean_name}</Typography>
+          </FlexAlignItemsCenterBox>
           <ButtonContainer>
             <a
               href={clientApiUrls.upbit.marketHref + upbitMarket.cd}
@@ -513,6 +528,12 @@ const TableItem = React.memo<{
               <TextAlignRightBox>
                 <AskBidTypography state={upbitMarket.scp}>
                   {upbitMarket.tp.toLocaleString()}
+                  {/* <br />
+                  {upbitBtcMarket && upbitBtcPrice
+                    ? Number(
+                        (upbitBtcMarket.tp * upbitBtcPrice.tp).toFixed(priceDecimalLength)
+                      ).toLocaleString()
+                    : ''} */}
                 </AskBidTypography>
                 <AskBidTypography state={upbitMarket.scp} opacity={0.7}>
                   {upbitMarket.binance_price &&
