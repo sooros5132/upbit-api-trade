@@ -8,8 +8,10 @@ import {
   FlexAlignItemsCenterBox,
   FlexBox,
   FlexCursorPointerBox,
+  FlexHoverUnderlineBox,
   FlexJustifyContentCenterBox,
   FlexJustifyContentFlexEndBox,
+  HoverUnderlineBox,
   MonoFontBox,
   NoWrapBox,
   TextAlignCenterBox,
@@ -19,7 +21,7 @@ import { koPriceLabelFormat } from 'src/utils/utils';
 import { NextSeo } from 'next-seo';
 import { styled, useTheme } from '@mui/material/styles';
 import { Box, TextField, Tooltip, Typography } from '@mui/material';
-import { AskBidTypography } from '../modules/Typography';
+import { AskBidTypography, HoverUnderLineSpan } from '../modules/Typography';
 import { clientApiUrls } from 'src/utils/clientApiUrls';
 import { AiOutlineAreaChart, AiFillStar } from 'react-icons/ai';
 import { RiExchangeLine } from 'react-icons/ri';
@@ -28,6 +30,7 @@ import { marketRegex } from 'src/utils/regex';
 import { useMarketTableSettingStore } from 'src/store/marketTableSetting';
 import { useTradingViewSettingStore } from 'src/store/tradingViewSetting';
 import shallow from 'zustand/shallow';
+import Link from 'next/link';
 
 const TableContainer = styled('div')`
   margin: 0 auto;
@@ -483,15 +486,20 @@ const TableItem = React.memo<{
       </TableCell>
       <TableCell>
         <TableCellInnerBox>
-          <FlexAlignItemsCenterBox>
-            <a href={'/trade/' + upbitMarket.cd}>
-              <ChartIconBox fontSize={theme.size.px16}>
-                <RiExchangeLine />
-              </ChartIconBox>
-            </a>
-            &nbsp;
-            <Typography>{upbitMarket.korean_name}</Typography>
-          </FlexAlignItemsCenterBox>
+          <FlexBox>
+            <HoverUnderlineBox>
+              <Link href={'/trade/' + upbitMarket.cd}>
+                <a>
+                  <FlexAlignItemsCenterBox>
+                    <ChartIconBox fontSize={theme.size.px16} mr={0.5}>
+                      <RiExchangeLine />
+                    </ChartIconBox>
+                    <Typography>{upbitMarket.korean_name}</Typography>
+                  </FlexAlignItemsCenterBox>
+                </a>
+              </Link>
+            </HoverUnderlineBox>
+          </FlexBox>
           <ButtonContainer>
             <a
               href={clientApiUrls.upbit.marketHref + upbitMarket.cd}
