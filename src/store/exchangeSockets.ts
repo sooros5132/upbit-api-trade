@@ -133,33 +133,39 @@ const handleConnectUpbitSocket =
       ws.addEventListener('message', handleMessage);
 
       ws.addEventListener('error', (err: WebSocketEventMap['error']) => {
-        console.error('Socket encountered error: ', err, 'Closing socket');
+        // console.error('Socket encountered error: ', err, 'Closing socket');
 
-        const upbitSocket = get().upbitSocket;
+        const { upbitMarkets, connectUpbitSocket, upbitSocket } = get();
         if (upbitSocket && upbitSocket.readyState === 1) {
           upbitSocket.close();
         }
+        connectUpbitSocket({ upbitMarkets });
       });
       ws.addEventListener('close', (e: WebSocketEventMap['close']) => {
-        console.log('Socket is closed. Reconnect will be attempted in 1 second.', e.reason);
-        const upbitSocket = get().upbitSocket;
-        setTimeout(() => {
-          if (upbitSocket && upbitSocket.readyState === 1) {
-            upbitSocket.close();
-          }
-        }, 1000);
+        // console.log('Socket is closed. Reconnect will be attempted in 1 second.', e.reason);
+
+        const { upbitMarkets, connectUpbitSocket, upbitSocket } = get();
+        if (upbitSocket && upbitSocket.readyState === 1) {
+          upbitSocket.close();
+        }
+        connectUpbitSocket({ upbitMarkets });
       });
     }
     const connectCheck = setInterval(() => {
-      const { upbitSocket } = get();
+      const { upbitMarkets, connectUpbitSocket, upbitSocket } = get();
       if (!upbitSocket || upbitSocket.readyState !== 1) {
         clearInterval(connectCheck);
         upbitSocket?.close();
-        wsConnect();
+        connectUpbitSocket({ upbitMarkets });
       }
-    }, 5000);
-    if (!get().upbitSocket) wsConnect();
+    }, 1000);
+    const { upbitSocket } = get();
+    if (!upbitSocket || upbitSocket.readyState !== 1) {
+      upbitSocket?.close();
+      wsConnect();
+    }
   };
+
 const handleConnectBinanceSocket =
   (set: NamedSet<IExchangeStore>, get: GetState<IExchangeStore>) =>
   ({ binanceMarkets }: IConnectBinanceSocketProps) => {
@@ -209,32 +215,52 @@ const handleConnectBinanceSocket =
       ws.addEventListener('message', handleMessage);
 
       ws.addEventListener('error', (err: WebSocketEventMap['error']) => {
-        console.error('Socket encountered error: ', err, 'Closing socket');
+        // console.error('Socket encountered error: ', err, 'Closing socket');
 
-        const socket = get().binanceSocket;
-        if (socket && socket.readyState === 1) {
-          socket.close();
+        const { upbitMarkets, connectBinanceSocket, binanceSocket } = get();
+        if (binanceSocket && binanceSocket.readyState === 1) {
+          binanceSocket.close();
         }
+        connectBinanceSocket({
+          binanceMarkets: upbitMarkets.map(
+            (m) => m.market.replace(krwRegex, '').toLowerCase() + 'usdt@ticker'
+          )
+        });
       });
       ws.addEventListener('close', (e: WebSocketEventMap['close']) => {
-        console.log('Socket is closed. Reconnect will be attempted in 1 second.', e.reason);
-        const socket = get().binanceSocket;
-        setTimeout(() => {
-          if (socket && socket.readyState === 1) {
-            socket.close();
-          }
-        }, 1000);
+        // console.log('Socket is closed. Reconnect will be attempted in 1 second.', e.reason);
+        const { upbitMarkets, connectBinanceSocket, binanceSocket } = get();
+        if (binanceSocket && binanceSocket.readyState === 1) {
+          binanceSocket.close();
+        }
+        connectBinanceSocket({
+          binanceMarkets: upbitMarkets.map(
+            (m) => m.market.replace(krwRegex, '').toLowerCase() + 'usdt@ticker'
+          )
+        });
       });
     }
+
     const connectCheck = setInterval(() => {
-      const { binanceSocket } = get();
+      const { upbitMarkets, connectBinanceSocket, binanceSocket } = get();
+
       if (!binanceSocket || binanceSocket.readyState !== 1) {
         clearInterval(connectCheck);
         binanceSocket?.close();
-        wsConnect();
+        connectBinanceSocket({
+          binanceMarkets: upbitMarkets.map(
+            (m) => m.market.replace(krwRegex, '').toLowerCase() + 'usdt@ticker'
+          )
+        });
       }
-    }, 5000);
-    if (!get().binanceSocket) wsConnect();
+    }, 10000);
+
+    const { binanceSocket } = get();
+
+    if (!binanceSocket || binanceSocket.readyState !== 1) {
+      binanceSocket?.close();
+      wsConnect();
+    }
   };
 
 const useExchangeStore = create<IExchangeStore>(

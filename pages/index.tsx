@@ -116,18 +116,16 @@ const Home: NextPage<HomeProps> = ({
   }, []);
 
   useEffect(() => {
-    useExchangeStore.getState().connectUpbitSocket({
-      upbitMarkets: upbitMarketList
+    const { connectBinanceSocket, connectUpbitSocket, upbitMarkets } = useExchangeStore.getState();
+    connectUpbitSocket({
+      upbitMarkets: upbitMarkets
     });
-  }, [upbitMarketList]);
-
-  useEffect(() => {
-    useExchangeStore.getState().connectBinanceSocket({
-      binanceMarkets: upbitMarketList.map(
+    connectBinanceSocket({
+      binanceMarkets: upbitMarkets.map(
         (m) => m.market.replace(krwRegex, '').toLowerCase() + 'usdt@ticker'
       )
     });
-  }, [upbitMarketList]);
+  }, []);
 
   return (
     <Container>
