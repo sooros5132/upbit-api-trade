@@ -1,4 +1,3 @@
-import { IMarketTableItem } from 'src/components/market-table/MarketTable';
 import create from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { persist } from 'zustand/middleware';

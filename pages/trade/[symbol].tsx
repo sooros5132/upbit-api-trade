@@ -64,7 +64,7 @@ const Trade: NextPage<TradeProps> = ({ symbol }) => {
           </Typography>
         </Box>
         <Box>
-          <TradingViewChart key={'trade-trading-view-chart'} chart={chart}></TradingViewChart>
+          <TradingViewChart chart={chart} />
         </Box>
       </Inner>
     </Container>

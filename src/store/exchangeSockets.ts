@@ -1,6 +1,5 @@
 import create, { GetState } from 'zustand';
 import { devtools, NamedSet } from 'zustand/middleware';
-import { IUpbitAccounts } from 'src-server/type/upbit';
 import { IMarketTableItem } from 'src/components/market-table/MarketTable';
 import { IUpbitForex, IUpbitMarket, IUpbitSocketMessageTickerSimple } from 'src/types/upbit';
 import { clientApiUrls } from 'src/utils/clientApiUrls';
@@ -135,33 +134,28 @@ const handleConnectUpbitSocket =
       ws.addEventListener('error', (err: WebSocketEventMap['error']) => {
         // console.error('Socket encountered error: ', err, 'Closing socket');
 
-        const { upbitMarkets, connectUpbitSocket, upbitSocket } = get();
-        if (upbitSocket && upbitSocket.readyState === 1) {
-          upbitSocket.close();
-        }
-        connectUpbitSocket({ upbitMarkets });
+        setTimeout(() => {
+          wsConnect();
+        }, 3000);
       });
       ws.addEventListener('close', (e: WebSocketEventMap['close']) => {
         // console.log('Socket is closed. Reconnect will be attempted in 1 second.', e.reason);
 
-        const { upbitMarkets, connectUpbitSocket, upbitSocket } = get();
-        if (upbitSocket && upbitSocket.readyState === 1) {
-          upbitSocket.close();
-        }
-        connectUpbitSocket({ upbitMarkets });
+        setTimeout(() => {
+          wsConnect();
+        }, 3000);
       });
     }
     const connectCheck = setInterval(() => {
-      const { upbitMarkets, connectUpbitSocket, upbitSocket } = get();
+      const { upbitSocket } = get();
       if (!upbitSocket || upbitSocket.readyState !== 1) {
-        clearInterval(connectCheck);
-        upbitSocket?.close();
-        connectUpbitSocket({ upbitMarkets });
+        setTimeout(() => {
+          wsConnect();
+        }, 3000);
       }
-    }, 1000);
-    const { upbitSocket } = get();
-    if (!upbitSocket || upbitSocket.readyState !== 1) {
-      upbitSocket?.close();
+    }, 10000);
+
+    if (!get().upbitSocket) {
       wsConnect();
     }
   };
@@ -216,49 +210,29 @@ const handleConnectBinanceSocket =
 
       ws.addEventListener('error', (err: WebSocketEventMap['error']) => {
         // console.error('Socket encountered error: ', err, 'Closing socket');
-
-        const { upbitMarkets, connectBinanceSocket, binanceSocket } = get();
-        if (binanceSocket && binanceSocket.readyState === 1) {
-          binanceSocket.close();
-        }
-        connectBinanceSocket({
-          binanceMarkets: upbitMarkets.map(
-            (m) => m.market.replace(krwRegex, '').toLowerCase() + 'usdt@ticker'
-          )
-        });
+        setTimeout(() => {
+          wsConnect();
+        }, 3000);
       });
       ws.addEventListener('close', (e: WebSocketEventMap['close']) => {
         // console.log('Socket is closed. Reconnect will be attempted in 1 second.', e.reason);
-        const { upbitMarkets, connectBinanceSocket, binanceSocket } = get();
-        if (binanceSocket && binanceSocket.readyState === 1) {
-          binanceSocket.close();
-        }
-        connectBinanceSocket({
-          binanceMarkets: upbitMarkets.map(
-            (m) => m.market.replace(krwRegex, '').toLowerCase() + 'usdt@ticker'
-          )
-        });
+        setTimeout(() => {
+          wsConnect();
+        }, 3000);
       });
     }
 
     const connectCheck = setInterval(() => {
-      const { upbitMarkets, connectBinanceSocket, binanceSocket } = get();
+      const { binanceSocket } = get();
 
       if (!binanceSocket || binanceSocket.readyState !== 1) {
-        clearInterval(connectCheck);
-        binanceSocket?.close();
-        connectBinanceSocket({
-          binanceMarkets: upbitMarkets.map(
-            (m) => m.market.replace(krwRegex, '').toLowerCase() + 'usdt@ticker'
-          )
-        });
+        setTimeout(() => {
+          wsConnect();
+        }, 3000);
       }
     }, 10000);
 
-    const { binanceSocket } = get();
-
-    if (!binanceSocket || binanceSocket.readyState !== 1) {
-      binanceSocket?.close();
+    if (!get().binanceSocket) {
       wsConnect();
     }
   };
@@ -405,3 +379,4 @@ const useExchangeStore = create<IExchangeStore>(
 
 export type { IExchangeState };
 export { useExchangeStore };
+1;

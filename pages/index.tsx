@@ -131,7 +131,7 @@ const Home: NextPage<HomeProps> = ({
     <Container>
       <Inner>
         <TradingViewContainer>
-          <TradingView key={'market-list-trading-view-chart'} />
+          <TradingView />
         </TradingViewContainer>
         <MarketTable upbitForex={upbitForex} />
       </Inner>
