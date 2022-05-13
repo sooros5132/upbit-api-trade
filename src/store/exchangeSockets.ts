@@ -115,7 +115,7 @@ const handleConnectUpbitSocket =
     function wsConnect() {
       {
         const upbitSocket = get().upbitSocket;
-        if (upbitSocket) {
+        if (upbitSocket && upbitSocket.readyState !== 1) {
           upbitSocket.close();
         }
       }
@@ -133,25 +133,15 @@ const handleConnectUpbitSocket =
 
       ws.addEventListener('error', (err: WebSocketEventMap['error']) => {
         // console.error('Socket encountered error: ', err, 'Closing socket');
-
-        setTimeout(() => {
-          wsConnect();
-        }, 3000);
       });
       ws.addEventListener('close', (e: WebSocketEventMap['close']) => {
         // console.log('Socket is closed. Reconnect will be attempted in 1 second.', e.reason);
-
-        setTimeout(() => {
-          wsConnect();
-        }, 3000);
       });
     }
     const connectCheck = setInterval(() => {
       const { upbitSocket } = get();
       if (!upbitSocket || upbitSocket.readyState !== 1) {
-        setTimeout(() => {
-          wsConnect();
-        }, 3000);
+        wsConnect();
       }
     }, 10000);
 
@@ -187,7 +177,7 @@ const handleConnectBinanceSocket =
     function wsConnect() {
       {
         const socket = get().binanceSocket;
-        if (socket) {
+        if (socket && socket.readyState !== 1) {
           socket.close();
         }
       }
@@ -210,15 +200,9 @@ const handleConnectBinanceSocket =
 
       ws.addEventListener('error', (err: WebSocketEventMap['error']) => {
         // console.error('Socket encountered error: ', err, 'Closing socket');
-        setTimeout(() => {
-          wsConnect();
-        }, 3000);
       });
       ws.addEventListener('close', (e: WebSocketEventMap['close']) => {
         // console.log('Socket is closed. Reconnect will be attempted in 1 second.', e.reason);
-        setTimeout(() => {
-          wsConnect();
-        }, 3000);
       });
     }
 
@@ -226,9 +210,7 @@ const handleConnectBinanceSocket =
       const { binanceSocket } = get();
 
       if (!binanceSocket || binanceSocket.readyState !== 1) {
-        setTimeout(() => {
-          wsConnect();
-        }, 3000);
+        wsConnect();
       }
     }, 10000);
 
