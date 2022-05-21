@@ -356,10 +356,13 @@ const TableBody = React.memo<{
     }),
     shallow
   );
-
   const symbols = hydrated ? searchedSymbols : sortedUpbitMarketSymbolList;
 
-  // TODO favorite SSR 적용 에러
+  useEffect(() => {
+    const { hydrated, setHydrated } = useMarketTableSettingStore.getState();
+
+    if (!hydrated) setHydrated();
+  });
 
   useEffect(() => {
     useExchangeStore.getState().sortSymbolList(sortColumn, sortType);
@@ -458,9 +461,6 @@ const TableItem = React.memo<{
   // ).length;
 
   const priceDecimalLength = String(upbitMarket.tp).replace(/^[0-9]+\.?/, '').length;
-  useEffect(() => {
-    console.log(krwSymbol, favorite);
-  }, []);
 
   return (
     <TableRow>
