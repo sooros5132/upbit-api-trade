@@ -345,8 +345,19 @@ const TableBody = React.memo<{
   // upbitMarketSnapshot?: Record<string, IMarketTableItem>;
   // binanceMarketSnapshot?: Record<string, IBinanceSocketMessageTicker>;
 }>(({ upbitForex, sortColumn, sortType }) => {
-  const searchedSymbols = useExchangeStore((state) => state.searchedSymbols, shallow);
-  const favoriteSymbols = useMarketTableSettingStore.getState().favoriteSymbols;
+  const { hydrated, favoriteSymbols } = useMarketTableSettingStore(
+    ({ hydrated, favoriteSymbols }) => ({ hydrated, favoriteSymbols }),
+    shallow
+  );
+  const { searchedSymbols, sortedUpbitMarketSymbolList } = useExchangeStore(
+    ({ searchedSymbols, sortedUpbitMarketSymbolList }) => ({
+      searchedSymbols,
+      sortedUpbitMarketSymbolList
+    }),
+    shallow
+  );
+
+  const symbols = hydrated ? searchedSymbols : sortedUpbitMarketSymbolList;
 
   // TODO favorite SSR 적용 에러
 
@@ -361,8 +372,8 @@ const TableBody = React.memo<{
 
   return (
     <Tbody>
-      {searchedSymbols.map((krwSymbol, index) => {
-        const favorite = Boolean(favoriteSymbols[krwSymbol]);
+      {symbols.map((krwSymbol, index) => {
+        const favorite = hydrated ? Boolean(favoriteSymbols[krwSymbol]) : false;
 
         return (
           <TableItem
@@ -447,6 +458,9 @@ const TableItem = React.memo<{
   // ).length;
 
   const priceDecimalLength = String(upbitMarket.tp).replace(/^[0-9]+\.?/, '').length;
+  useEffect(() => {
+    console.log(krwSymbol, favorite);
+  }, []);
 
   return (
     <TableRow>
