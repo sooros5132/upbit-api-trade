@@ -2,7 +2,7 @@ import { Box, Tooltip, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { memo, useEffect, useRef, useState } from 'react';
 import isEqual from 'react-fast-compare';
-import { IUpbitAccounts } from 'src-server/type/upbit';
+import { IUpbitAccounts } from 'src-server/types/upbit';
 import { FlexAlignItemsCenterBox, FlexBox, GridBox, TextAlignRightBox } from '../modules/Box';
 import {
   AskBidSpanTypography,
