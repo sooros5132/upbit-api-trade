@@ -486,20 +486,20 @@ const TableItem = React.memo<{
       </TableCell>
       <TableCell>
         <TableCellInnerBox>
-          <FlexBox>
+          {/* <FlexBox>
             <HoverUnderlineBox>
               <Link href={'/trade/' + upbitMarket.cd}>
-                <a>
-                  <FlexAlignItemsCenterBox>
-                    <ChartIconBox fontSize={theme.size.px16} mr={0.5}>
+                <a> */}
+          <FlexAlignItemsCenterBox>
+            {/* <ChartIconBox fontSize={theme.size.px16} mr={0.5}>
                       <RiExchangeLine />
-                    </ChartIconBox>
-                    <Typography>{upbitMarket.korean_name}</Typography>
-                  </FlexAlignItemsCenterBox>
-                </a>
+                    </ChartIconBox> */}
+            <Typography>{upbitMarket.korean_name}</Typography>
+          </FlexAlignItemsCenterBox>
+          {/* </a>
               </Link>
             </HoverUnderlineBox>
-          </FlexBox>
+          </FlexBox> */}
           <ButtonContainer>
             <a
               href={clientApiUrls.upbit.marketHref + upbitMarket.cd}
