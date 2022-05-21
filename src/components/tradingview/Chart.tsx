@@ -1,7 +1,7 @@
-import { Typography } from '@mui/material';
+import { Box, NoSsr, Typography } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
 import Script from 'next/script';
-import React, { memo, useCallback, useEffect, useState } from 'react';
+import React, { memo, useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import isEqual from 'react-fast-compare';
 import { useTradingViewSettingStore } from 'src/store/tradingViewSetting';
 import { FlexAlignItemsCenterBox, FullWidthBox } from '../modules/Box';
@@ -31,15 +31,20 @@ const UnMountedContainer = styled(FlexAlignItemsCenterBox)(({ theme }) => ({
   }
 }));
 
-interface TradingViewChartProps {}
+interface TradingViewChartProps {
+  chart?: {
+    symbol: string;
+    exchange: string;
+  };
+}
 
-const TradingViewChart: React.FC<TradingViewChartProps> = () => {
+const TradingViewChart: React.FC<TradingViewChartProps> = ({ chart }) => {
   const theme = useTheme();
-  const { selectedMarketSymbol, selectedExchange } = useTradingViewSettingStore();
-  const [isMounted, setMounted] = useState(false);
-
+  const { selectedMarketSymbol, selectedExchange, scriptLoaded } = useTradingViewSettingStore();
   const symbol =
-    selectedExchange === 'BINANCE'
+    chart?.exchange && chart?.symbol
+      ? `${chart.exchange}:${chart.symbol}`
+      : selectedExchange === 'BINANCE'
       ? `BINANCE:${selectedMarketSymbol}USDT`
       : `UPBIT:${selectedMarketSymbol}KRW`;
 
@@ -65,18 +70,15 @@ const TradingViewChart: React.FC<TradingViewChartProps> = () => {
   }, [symbol, theme.color.mainDrakBackground]);
 
   useEffect(() => {
-    handleLoadTradingViewScript();
-  }, [handleLoadTradingViewScript, selectedMarketSymbol]);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+    if (scriptLoaded) {
+      handleLoadTradingViewScript();
+    }
+  }, [handleLoadTradingViewScript, scriptLoaded]);
 
   return (
     <>
-      <Script src="https://s3.tradingview.com/tv.js" onLoad={() => handleLoadTradingViewScript()} />
       <Container>
-        {isMounted ? (
+        {scriptLoaded ? (
           <div style={{ height: '100%' }} id={'tradingview_4a4c4'} />
         ) : (
           <UnMountedContainer>

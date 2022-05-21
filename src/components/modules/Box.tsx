@@ -265,3 +265,16 @@ export const BackgroundBlueBox = styled(Box)(({ theme }) => ({
 export const NoWrapBox = styled(Box)`
   white-space: nowrap;
 `;
+
+export const HoverUnderlineBox = styled(Box)`
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+export const FlexHoverUnderlineBox = styled(Box)`
+  display: flex;
+
+  &:hover {
+    text-decoration: underline;
+  }
+`;

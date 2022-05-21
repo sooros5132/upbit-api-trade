@@ -38,6 +38,8 @@ class CustomDocument extends Document {
     return (
       <Html lang="ko">
         <Head>
+          <meta charSet="utf-8" />
+          <link rel="icon" href="/favicon.ico" />
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
           <link

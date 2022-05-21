@@ -1,4 +1,3 @@
-import { IMarketTableItem } from 'src/components/market-table/MarketTable';
 import create from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { persist } from 'zustand/middleware';
@@ -10,6 +9,7 @@ const MAX_FONT_SIZE = 18;
 interface ITradingViewSettingState {
   selectedMarketSymbol: string;
   selectedExchange: 'BINANCE' | 'UPBIT';
+  scriptLoaded: boolean;
 }
 
 interface ITradingViewSettingStore extends ITradingViewSettingState {
@@ -19,7 +19,8 @@ interface ITradingViewSettingStore extends ITradingViewSettingState {
 
 const defaultState: ITradingViewSettingState = {
   selectedMarketSymbol: 'BTC',
-  selectedExchange: 'BINANCE'
+  selectedExchange: 'BINANCE',
+  scriptLoaded: false
 };
 
 export const useTradingViewSettingStore = create<ITradingViewSettingStore>(
@@ -39,7 +40,9 @@ export const useTradingViewSettingStore = create<ITradingViewSettingStore>(
     })),
     {
       name: 'tradingViewSetting', // unique name
-      getStorage: () => localStorage // (optional) by default, 'localStorage' is used
+      getStorage: () => localStorage, // (optional) by default, 'localStorage' is used
+      partialize: (state) =>
+        Object.fromEntries(Object.entries(state).filter(([key]) => !['scriptLoaded'].includes(key)))
     }
   )
 );

@@ -11,7 +11,7 @@ import { clientApiUrls } from 'src/utils/clientApiUrls';
 import useSWR from 'swr';
 import { IBinanceSocketMessageTicker, IBinanceTickerPrice } from 'src/types/binance';
 import { useExchangeStore } from 'src/store/exchangeSockets';
-import { krwRegex } from 'src/utils/regex';
+import { krwRegex, usdtRegex } from 'src/utils/regex';
 import { binanceApis } from 'src-server/utils/binanceApis';
 import _ from 'lodash';
 import { useMarketTableSettingStore } from 'src/store/marketTableSetting';
@@ -47,7 +47,7 @@ interface HomeProps {
 }
 
 const Home: NextPage<HomeProps> = ({
-  upbitForex: oldUpbitForex,
+  upbitForex,
   upbitMarketList,
   upbitMarketSnapshot,
   binanceMarketSnapshot
@@ -60,7 +60,8 @@ const Home: NextPage<HomeProps> = ({
   const [isMounted, setMounted] = useState(false);
 
   if (!isMounted && upbitMarketSnapshot) {
-    useExchangeStore.setState({ upbitForex: oldUpbitForex });
+    useExchangeStore.setState({ upbitForex });
+
     if (upbitMarketSnapshot) useExchangeStore.setState({ upbitMarketDatas: upbitMarketSnapshot });
     if (upbitMarketList) {
       const symbolList = upbitKrwList.map((m) => m.market);
@@ -75,29 +76,8 @@ const Home: NextPage<HomeProps> = ({
       useExchangeStore.getState().sortSymbolList('tp', 'DESC');
     }
   }
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    useExchangeStore.getState().connectUpbitSocket({
-      upbitMarkets: upbitKrwList
-    });
-  }, [upbitKrwList]);
-
-  useEffect(() => {
-    useExchangeStore.getState().connectBinanceSocket({
-      binanceMarkets: upbitKrwList.map(
-        (m) => m.market.replace(krwRegex, '').toLowerCase() + 'usdt@ticker'
-      )
-    });
-  }, [upbitKrwList]);
-
   // const { setMarketSocketData } = useUpbitDataStore();
   // if (upbitMarketSnapshot) setMarketSocketData(upbitMarketSnapshot);
-
-  const [upbitForex, setUpbitForex] = React.useState(oldUpbitForex);
 
   useSWR(process.env.NEXT_PUBLIC_SOOROS_API + clientApiUrls.upbit.accounts, async () => {
     if (upbitAuthStore.accessKey && upbitAuthStore.secretKey) {
@@ -125,12 +105,27 @@ const Home: NextPage<HomeProps> = ({
 
       if (upbitForex.basePrice === forexResult[0].basePrice) return;
 
-      setUpbitForex(forexResult[0]);
+      useExchangeStore.setState({ upbitForex: forexResult[0] });
     },
     {
       refreshInterval: 60 * 1000
     }
   );
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    const { connectBinanceSocket, connectUpbitSocket, upbitMarkets } = useExchangeStore.getState();
+    connectUpbitSocket({
+      upbitMarkets: upbitMarkets
+    });
+    connectBinanceSocket({
+      binanceMarkets: upbitMarkets.map(
+        (m) => m.market.replace(krwRegex, '').toLowerCase() + 'usdt@ticker'
+      )
+    });
+  }, []);
 
   return (
     <Container>
@@ -145,27 +140,31 @@ const Home: NextPage<HomeProps> = ({
 };
 
 export const getStaticProps: GetStaticProps<HomeProps> = async ({ params }) => {
+  const upbitMarketRecord: Record<string, IUpbitMarket> = {};
   const [resUpbitForex, resUpbitMarketList] = await Promise.all([
     fetch(upbitApis.forexRecent + '?codes=FRX.KRWUSD'),
     fetch(upbitApis.marketAll + '?isDetails=false')
   ]);
   const [upbitForex, upbitMarketList] = await Promise.all([
     resUpbitForex.json(),
-    resUpbitMarketList.json()
+    resUpbitMarketList.json().then((data: Array<IUpbitMarket>) =>
+      data.filter((m) => {
+        if (Boolean(m.market.match(krwRegex))) {
+          upbitMarketRecord[m.market] = m;
+          return true;
+        }
+        // BTC 마켓은 아래 코드 사용
+        // if (!Boolean(m.market.match(usdtRegex))) {
+        //   upbitMarketRecord[m.market] = m;
+        //   return true;
+        // }
+      })
+    )
   ]);
 
-  const upbitMarketRecord: Record<string, IUpbitMarket> = {};
-
-  const krwSymbolList = upbitMarketList
-    ?.filter((m: IUpbitMarket) => {
-      if (Boolean(m.market.match(krwRegex))) {
-        upbitMarketRecord[m.market] = m;
-        return true;
-      }
-    })
-    .map((m: IUpbitMarket) => m.market);
-  const upbitSymbols = krwSymbolList.join(',');
-  const binanceSymbols = `["${krwSymbolList
+  const symbolList = upbitMarketList?.map((m: IUpbitMarket) => m.market);
+  const upbitSymbols = symbolList.join(',');
+  const binanceSymbols = `["${symbolList
     .map((m: string) => m.replace(krwRegex, '') + 'USDT')
     .join('","')}"]`;
 

@@ -2,7 +2,7 @@ import create, { GetState } from 'zustand';
 import { devtools, NamedSet } from 'zustand/middleware';
 import { persist } from 'zustand/middleware';
 import { clientApiUrls } from 'src/utils/clientApiUrls';
-import { IUpbitAccounts } from 'src-server/type/upbit';
+import { IUpbitAccounts } from 'src-server/types/upbit';
 import { v4 as uuidv4 } from 'uuid';
 import { sign } from 'jsonwebtoken';
 import { IUpbitErrorMessage } from 'src/types/upbit';
@@ -30,41 +30,39 @@ interface AuthStore extends IAuthState {
   deleteKeys: () => void;
 }
 
-const handleRegisterKey =
-  (set: NamedSet<AuthStore>, get: GetState<AuthStore>) =>
-  async (accessKey: string, secretKey: string) => {
-    const payload = {
-      access_key: accessKey,
-      nonce: uuidv4()
-    };
-    const res = await fetch(process.env.NEXT_PUBLIC_SOOROS_API + clientApiUrls.upbit.accounts, {
-      headers: {
-        Authorization: `Bearer ${sign(payload, secretKey)}`
-      }
-    });
-
-    const accounts = (await res.json()) as Array<IUpbitAccounts> | IUpbitErrorMessage;
-    if (Array.isArray(accounts)) {
-      set({
-        accessKey,
-        secretKey,
-        accounts
-      });
-    }
-    return accounts;
-  };
-
 export const useUpbitAuthStore = create<AuthStore>(
   persist(
     devtools((set, get) => ({
       ...defaultState,
       _hasHydrated: false,
-      registerKey: handleRegisterKey(set, get),
-      deleteKeys: () =>
+
+      async registerKey(accessKey: string, secretKey: string) {
+        const payload = {
+          access_key: accessKey,
+          nonce: uuidv4()
+        };
+        const res = await fetch(process.env.NEXT_PUBLIC_SOOROS_API + clientApiUrls.upbit.accounts, {
+          headers: {
+            Authorization: `Bearer ${sign(payload, secretKey)}`
+          }
+        });
+
+        const accounts = (await res.json()) as Array<IUpbitAccounts> | IUpbitErrorMessage;
+        if (Array.isArray(accounts)) {
+          set({
+            accessKey,
+            secretKey,
+            accounts
+          });
+        }
+        return accounts;
+      },
+      deleteKeys() {
         set(() => ({
           ...defaultState
-        })),
-      setHasHydrated: (state) => {
+        }));
+      },
+      setHasHydrated(state) {
         set({
           _hasHydrated: state
         });
