@@ -62,15 +62,7 @@ const TradingViewChart: React.FC<TradingViewChartProps> = ({ chart }) => {
         toolbar_bg: theme.color.mainDrakBackground,
         enable_publishing: false,
         allow_symbol_change: true,
-        studies: [
-          'BB@tv-basicstudies',
-          {
-            id: 'MASimple@tv-basicstudies',
-            inputs: {
-              length: '9'
-            }
-          }
-        ],
+        studies: ['MASimple@tv-basicstudies'], // 'BB@tv-basicstudies'
         container_id: 'tradingview_4a4c4',
         withdateranges: true,
         overrides: {
