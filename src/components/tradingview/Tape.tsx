@@ -52,8 +52,8 @@ const TradingViewTapeWidget: React.FC = () => {
 
   return (
     <>
-      <div ref={tapeWidgetRef} className="tradingview-widget-container">
-        <div className="tradingview-widget-container__widget"></div>
+      <div ref={tapeWidgetRef} className="tradingview-widget-tape-container">
+        <div className="tradingview-widget-tape-container__widget"></div>
       </div>
     </>
   );

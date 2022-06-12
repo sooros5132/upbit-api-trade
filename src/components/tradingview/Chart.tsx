@@ -1,6 +1,5 @@
-import { Box, NoSsr, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
-import Script from 'next/script';
 import React, { memo, useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import isEqual from 'react-fast-compare';
 import { useTradingViewSettingStore } from 'src/store/tradingViewSetting';
@@ -63,8 +62,25 @@ const TradingViewChart: React.FC<TradingViewChartProps> = ({ chart }) => {
         toolbar_bg: theme.color.mainDrakBackground,
         enable_publishing: false,
         allow_symbol_change: true,
-        studies: ['MASimple@tv-basicstudies'],
-        container_id: 'tradingview_4a4c4'
+        studies: [
+          'BB@tv-basicstudies',
+          {
+            id: 'MASimple@tv-basicstudies',
+            inputs: {
+              length: '9'
+            }
+          }
+        ],
+        container_id: 'tradingview_4a4c4',
+        withdateranges: true,
+        overrides: {
+          'paneProperties.background': theme.color.mainDrakBackground,
+          'paneProperties.vertGridProperties.color': '#363c4e',
+          'paneProperties.horzGridProperties.color': '#363c4e',
+          'scalesProperties.textColor': '#AAA',
+          'mainSeriesProperties.candleStyle.wickUpColor': '#336854',
+          'mainSeriesProperties.candleStyle.wickDownColor': '#7f323f'
+        }
       });
     }
   }, [symbol, theme.color.mainDrakBackground]);

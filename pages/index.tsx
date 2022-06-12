@@ -1,10 +1,10 @@
 import { styled } from '@mui/material/styles';
-import type { GetStaticProps, NextPage } from 'next';
+import type { GetServerSideProps, GetStaticProps, NextPage } from 'next';
 import React, { useEffect, useState } from 'react';
 import { upbitApis } from 'src-server/utils/upbitApis';
 import MarketTable, { IMarketTableItem } from 'src/components/market-table/MarketTable';
 import { Width100Box } from 'src/components/modules/Box';
-import TradingView from 'src/components/tradingview/Chart';
+import TradingViewChart from 'src/components/tradingview/Chart';
 import { IUpbitForex, IUpbitMarket } from 'src/types/upbit';
 import { useUpbitAuthStore } from 'src/store/upbitAuth';
 import { clientApiUrls } from 'src/utils/clientApiUrls';
@@ -15,6 +15,7 @@ import { krwRegex, usdtRegex } from 'src/utils/regex';
 import { binanceApis } from 'src-server/utils/binanceApis';
 import _ from 'lodash';
 import { useMarketTableSettingStore } from 'src/store/marketTableSetting';
+import TradingViewTickers from 'src/components/tradingview/Tickers';
 
 const Container = styled('div')`
   flex: 1 0 auto;
@@ -130,8 +131,9 @@ const Home: NextPage<HomeProps> = ({
   return (
     <Container>
       <Inner>
+        <TradingViewTickers />
         <TradingViewContainer>
-          <TradingView />
+          <TradingViewChart />
         </TradingViewContainer>
         <MarketTable upbitForex={upbitForex} />
       </Inner>
