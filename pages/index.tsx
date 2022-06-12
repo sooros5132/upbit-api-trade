@@ -1,5 +1,5 @@
 import { styled } from '@mui/material/styles';
-import type { GetServerSideProps, GetStaticProps, NextPage } from 'next';
+import type { GetServerSideProps, NextPage } from 'next';
 import React, { useEffect, useState } from 'react';
 import { upbitApis } from 'src-server/utils/upbitApis';
 import MarketTable, { IMarketTableItem } from 'src/components/market-table/MarketTable';
@@ -9,7 +9,7 @@ import { IUpbitForex, IUpbitMarket } from 'src/types/upbit';
 import { useUpbitAuthStore } from 'src/store/upbitAuth';
 import { clientApiUrls } from 'src/utils/clientApiUrls';
 import useSWR from 'swr';
-import { IBinanceSocketMessageTicker, IBinanceTickerPrice } from 'src/types/binance';
+import { IBinanceSocketMessageTicker } from 'src/types/binance';
 import { useExchangeStore } from 'src/store/exchangeSockets';
 import { krwRegex, usdtRegex } from 'src/utils/regex';
 import { binanceApis } from 'src-server/utils/binanceApis';
@@ -35,6 +35,17 @@ const Inner = styled(Width100Box)`
 const TradingViewContainer = styled('div')`
   /* margin: ${({ theme }) => theme.spacing(2)} 0; */
 `;
+const TradingViewTickersContainer = styled('div')(({ theme }) => ({
+  overflowX: 'auto',
+  overflowY: 'hidden'
+}));
+
+const TradingViewTickersInner = styled('div')(({ theme }) => ({
+  width: 1200,
+  [`${theme.breakpoints.up('lg')}`]: {
+    maxWidth: '100%'
+  }
+}));
 
 const MarketTableContainer = styled('div')`
   /* margin-bottom: ${({ theme }) => theme.spacing(2)}; */
@@ -131,7 +142,11 @@ const Home: NextPage<HomeProps> = ({
   return (
     <Container>
       <Inner>
-        <TradingViewTickers />
+        <TradingViewTickersContainer>
+          <TradingViewTickersInner>
+            <TradingViewTickers />
+          </TradingViewTickersInner>
+        </TradingViewTickersContainer>
         <TradingViewContainer>
           <TradingViewChart />
         </TradingViewContainer>
