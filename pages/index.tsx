@@ -139,7 +139,7 @@ const Home: NextPage<HomeProps> = ({
   );
 };
 
-export const getStaticProps: GetStaticProps<HomeProps> = async ({ params }) => {
+export const getServerSideProps: GetServerSideProps<HomeProps> = async ({ params }) => {
   const upbitMarketRecord: Record<string, IUpbitMarket> = {};
   const [resUpbitForex, resUpbitMarketList] = await Promise.all([
     fetch(upbitApis.forexRecent + '?codes=FRX.KRWUSD'),
@@ -257,8 +257,8 @@ export const getStaticProps: GetStaticProps<HomeProps> = async ({ params }) => {
       upbitForex: upbitForex[0],
       upbitMarketList,
       upbitMarketSnapshot
-    },
-    revalidate: 5
+    }
+    // revalidate: 5
   };
 };
 
