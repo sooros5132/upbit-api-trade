@@ -20,7 +20,17 @@ import {
 import { koPriceLabelFormat } from 'src/utils/utils';
 import { NextSeo } from 'next-seo';
 import { styled, useTheme } from '@mui/material/styles';
-import { Box, TextField, Tooltip, Typography } from '@mui/material';
+import {
+  Box,
+  FormControl,
+  IconButton,
+  Input,
+  InputAdornment,
+  OutlinedInput,
+  TextField,
+  Tooltip,
+  Typography
+} from '@mui/material';
 import { AskBidTypography, HoverUnderLineSpan } from '../modules/Typography';
 import { clientApiUrls } from 'src/utils/clientApiUrls';
 import { AiOutlineAreaChart, AiFillStar } from 'react-icons/ai';
@@ -31,6 +41,7 @@ import { useMarketTableSettingStore } from 'src/store/marketTableSetting';
 import { useTradingViewSettingStore } from 'src/store/tradingViewSetting';
 import shallow from 'zustand/shallow';
 import Link from 'next/link';
+import { RiCloseCircleLine } from 'react-icons/ri';
 
 const TableContainer = styled('div')`
   margin: 0 auto;
@@ -175,19 +186,39 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex }) => {
     const value = event.target.value;
     setSearchValue(value);
 
-    useExchangeStore.getState().searchSymbols(value);
-    useExchangeStore.getState().sortSymbolList(sortColumn, sortType);
+    const { searchSymbols, sortSymbolList } = useExchangeStore.getState();
+    searchSymbols(value);
+    sortSymbolList(sortColumn, sortType);
+  };
+
+  const handleClickClearSearchInputButton = () => {
+    setSearchValue('');
+
+    const { searchSymbols, sortSymbolList } = useExchangeStore.getState();
+    searchSymbols('');
+    sortSymbolList(sortColumn, sortType);
   };
 
   return (
     <TableContainer>
       <SearchInputContainer>
-        <TextField
-          variant="outlined"
-          placeholder="BTC, 비트, Bitcoin"
-          value={searchValue}
-          onChange={handleChangeMarketSearchInput}
-        />
+        <FormControl sx={{ m: 1, width: '25ch' }} variant="standard">
+          <OutlinedInput
+            placeholder="BTC, 비트, Bitcoin"
+            value={searchValue}
+            onChange={handleChangeMarketSearchInput}
+            endAdornment={
+              <InputAdornment position="end">
+                <IconButton
+                  onClick={handleClickClearSearchInputButton}
+                  sx={{ color: theme.color.gray70 }}
+                >
+                  <RiCloseCircleLine />
+                </IconButton>
+              </InputAdornment>
+            }
+          />
+        </FormControl>
       </SearchInputContainer>
       <Table cellSpacing="0" cellPadding="0">
         <Thead>
