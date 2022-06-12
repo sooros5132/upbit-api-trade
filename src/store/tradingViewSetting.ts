@@ -1,5 +1,4 @@
 import create from 'zustand';
-import { devtools } from 'zustand/middleware';
 import { persist } from 'zustand/middleware';
 
 const DEFAULT_FONT_SIZE = 14;
@@ -25,7 +24,7 @@ const defaultState: ITradingViewSettingState = {
 
 export const useTradingViewSettingStore = create<ITradingViewSettingStore>(
   persist(
-    devtools((set, get) => ({
+    (set, get) => ({
       ...defaultState,
       setSelectedMarketSymbol(symbol: ITradingViewSettingState['selectedMarketSymbol']) {
         set(() => ({
@@ -37,7 +36,7 @@ export const useTradingViewSettingStore = create<ITradingViewSettingStore>(
           selectedExchange: exchange
         }));
       }
-    })),
+    }),
     {
       name: 'tradingViewSetting', // unique name
       getStorage: () => localStorage, // (optional) by default, 'localStorage' is used

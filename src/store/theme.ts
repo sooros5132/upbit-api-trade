@@ -1,5 +1,4 @@
 import create from 'zustand';
-import { devtools } from 'zustand/middleware';
 import createContext from 'zustand/context';
 import { persist } from 'zustand/middleware';
 
@@ -26,7 +25,7 @@ export const initStore = () => {
   const createStore = () =>
     create<Theme>(
       persist(
-        devtools((set, get) => ({
+        (set, get) => ({
           ...initialState,
           useDarkTheme: () =>
             set(() => ({
@@ -46,7 +45,7 @@ export const initStore = () => {
                 ? MAX_FONT_SIZE
                 : fontSize
             }))
-        })),
+        }),
         {
           name: 'theme', // unique name
           getStorage: () => localStorage // (optional) by default, 'localStorage' is used

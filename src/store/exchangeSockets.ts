@@ -1,5 +1,5 @@
 import create, { GetState } from 'zustand';
-import { devtools, NamedSet } from 'zustand/middleware';
+import { NamedSet } from 'zustand/middleware';
 import { IMarketTableItem } from 'src/components/market-table/MarketTable';
 import { IUpbitForex, IUpbitMarket, IUpbitSocketMessageTickerSimple } from 'src/types/upbit';
 import { clientApiUrls } from 'src/utils/clientApiUrls';
@@ -221,7 +221,8 @@ const handleConnectBinanceSocket =
 
 const useExchangeStore = create<IExchangeStore>(
   // persist(
-  devtools((set, get) => ({
+  // devtools(
+  (set, get) => ({
     ...defaultState,
     setUpbitMarkets(markets) {
       set({ upbitMarkets: [...markets] });
@@ -351,12 +352,13 @@ const useExchangeStore = create<IExchangeStore>(
     distroyAll() {
       set({ ...defaultState });
     }
-  }))
+  })
+  // )
+  // ),
   //   {
   //     name: 'upbitData', // unique name
   //     getStorage: () => localStorage // (optional) by default, 'localStorage' is used
   //   }
-  // )
 );
 
 export type { IExchangeState };

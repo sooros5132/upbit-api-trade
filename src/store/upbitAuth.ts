@@ -1,5 +1,4 @@
-import create, { GetState } from 'zustand';
-import { devtools, NamedSet } from 'zustand/middleware';
+import create from 'zustand';
 import { persist } from 'zustand/middleware';
 import { clientApiUrls } from 'src/utils/clientApiUrls';
 import { IUpbitAccounts } from 'src-server/types/upbit';
@@ -32,7 +31,7 @@ interface AuthStore extends IAuthState {
 
 export const useUpbitAuthStore = create<AuthStore>(
   persist(
-    devtools((set, get) => ({
+    (set, get) => ({
       ...defaultState,
       _hasHydrated: false,
 
@@ -67,7 +66,7 @@ export const useUpbitAuthStore = create<AuthStore>(
           _hasHydrated: state
         });
       }
-    })),
+    }),
     {
       name: 'upbitAuth', // unique name,
       onRehydrateStorage: () => (state) => {

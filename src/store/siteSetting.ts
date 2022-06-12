@@ -1,5 +1,4 @@
 import create from 'zustand';
-import { devtools } from 'zustand/middleware';
 import { persist } from 'zustand/middleware';
 
 const DEFAULT_FONT_SIZE = 14;
@@ -26,7 +25,7 @@ const defaultState: ISiteSettingState = {
 
 export const useSiteSettingStore = create<ISiteSettingStore>(
   persist(
-    devtools((set, get) => ({
+    (set, get) => ({
       ...defaultState,
       setShowMyAccounts(show: boolean) {
         set(() => ({
@@ -47,7 +46,7 @@ export const useSiteSettingStore = create<ISiteSettingStore>(
             ? MAX_FONT_SIZE
             : fontSize
         }))
-    })),
+    }),
     {
       name: 'siteSetting', // unique name
       getStorage: () => localStorage // (optional) by default, 'localStorage' is used

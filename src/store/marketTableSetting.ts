@@ -1,6 +1,5 @@
 import { IMarketTableItem } from 'src/components/market-table/MarketTable';
 import create from 'zustand';
-import { devtools } from 'zustand/middleware';
 import { persist } from 'zustand/middleware';
 
 interface IMarketTableSettingState {
@@ -27,7 +26,7 @@ const defaultState: IMarketTableSettingState = {
 
 export const useMarketTableSettingStore = create<IMarketTableSettingStore>(
   persist(
-    devtools((set, get) => ({
+    (set, get) => ({
       ...defaultState,
       setHydrated: () => set({ hydrated: true }),
       setSortColumn(column) {
@@ -50,7 +49,7 @@ export const useMarketTableSettingStore = create<IMarketTableSettingStore>(
           return { favoriteSymbols: newFavoriteSymbols || {} };
         });
       }
-    })),
+    }),
     {
       name: 'marketTableSetting', // unique name
       getStorage: () => localStorage, // (optional) by default, 'localStorage' is used
