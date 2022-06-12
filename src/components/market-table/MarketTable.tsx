@@ -208,15 +208,20 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex }) => {
             value={searchValue}
             onChange={handleChangeMarketSearchInput}
             endAdornment={
-              <InputAdornment position="end">
-                <IconButton
-                  onClick={handleClickClearSearchInputButton}
-                  sx={{ color: theme.color.gray70 }}
-                >
-                  <RiCloseCircleLine />
-                </IconButton>
-              </InputAdornment>
+              searchValue && (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={handleClickClearSearchInputButton}
+                    sx={{ color: theme.color.gray70 }}
+                  >
+                    <RiCloseCircleLine />
+                  </IconButton>
+                </InputAdornment>
+              )
             }
+            sx={{
+              pr: 0
+            }}
           />
         </FormControl>
       </SearchInputContainer>
