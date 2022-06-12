@@ -8,10 +8,10 @@ import {
   FlexAlignItemsCenterBox,
   FlexBox,
   FlexCursorPointerBox,
-  FlexHoverUnderlineBox,
   FlexJustifyContentCenterBox,
   FlexJustifyContentFlexEndBox,
-  HoverUnderlineBox,
+  FlexNoWrapBox,
+  FlexSpaceBetweenCenterBox,
   MonoFontBox,
   NoWrapBox,
   TextAlignCenterBox,
@@ -24,24 +24,22 @@ import {
   Box,
   FormControl,
   IconButton,
-  Input,
   InputAdornment,
   OutlinedInput,
-  TextField,
   Tooltip,
   Typography
 } from '@mui/material';
-import { AskBidTypography, HoverUnderLineSpan } from '../modules/Typography';
+import { useSnackbar } from 'notistack';
+import { AskBidTypography } from '../modules/Typography';
 import { clientApiUrls } from 'src/utils/clientApiUrls';
 import { AiOutlineAreaChart, AiFillStar } from 'react-icons/ai';
-import { RiExchangeLine } from 'react-icons/ri';
 import { useExchangeStore } from 'src/store/exchangeSockets';
-import { marketRegex } from 'src/utils/regex';
+import { krwRegex, marketRegex } from 'src/utils/regex';
 import { useMarketTableSettingStore } from 'src/store/marketTableSetting';
 import { useTradingViewSettingStore } from 'src/store/tradingViewSetting';
 import shallow from 'zustand/shallow';
-import Link from 'next/link';
 import { RiCloseCircleLine } from 'react-icons/ri';
+import { GoPrimitiveDot } from 'react-icons/go';
 
 const TableContainer = styled('div')`
   margin: 0 auto;
@@ -156,6 +154,10 @@ const VolumeCell = styled(TableHeaderCell)`
   }
 `;
 
+const DotContainer = styled(FlexAlignItemsCenterBox)(({ theme }) => ({
+  fontSize: theme.size.px20
+}));
+
 export interface IMarketTableItem extends IUpbitSocketMessageTickerSimple {
   korean_name?: string;
   english_name?: string;
@@ -170,7 +172,25 @@ interface MarketTableProps {
 
 const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex }) => {
   const theme = useTheme();
+  const { enqueueSnackbar } = useSnackbar();
   const { sortColumn, sortType, setSortColumn, setSortType } = useMarketTableSettingStore();
+  const { connectedUpbit, connectedBinance } = useExchangeStore(
+    ({ upbitSocket, binanceSocket }) => {
+      let connectedUpbit = false;
+      let connectedBinance = false;
+      if (upbitSocket?.readyState === 1) {
+        connectedUpbit = true;
+      }
+      if (binanceSocket?.readyState === 1) {
+        connectedBinance = true;
+      }
+      return {
+        connectedUpbit,
+        connectedBinance
+      };
+    },
+    shallow
+  );
   const [searchValue, setSearchValue] = useState('');
 
   const handleClickThead = (columnName: keyof IMarketTableItem) => () => {
@@ -199,32 +219,98 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex }) => {
     sortSymbolList(sortColumn, sortType);
   };
 
+  const handleClickConnectSocket = (prop: 'upbit' | 'binance') => () => {
+    switch (prop) {
+      case 'upbit': {
+        const { connectUpbitSocket, upbitMarkets } = useExchangeStore.getState();
+        if (!connectedUpbit) {
+          enqueueSnackbar('업비트 서버에 다시 연결을 시도합니다.', {
+            variant: 'success'
+          });
+          useExchangeStore.setState({ upbitSocket: undefined });
+          connectUpbitSocket({
+            upbitMarkets: upbitMarkets
+          });
+        }
+        break;
+      }
+      case 'binance': {
+        const { connectBinanceSocket, upbitMarkets } = useExchangeStore.getState();
+        if (!connectedBinance) {
+          enqueueSnackbar('바이낸스 서버에 다시 연결을 시도합니다.', {
+            variant: 'success'
+          });
+          useExchangeStore.setState({ binanceSocket: undefined });
+          const markets = upbitMarkets.map(
+            (m) => m.market.replace(krwRegex, '').toLowerCase() + 'usdt@ticker'
+          );
+          connectBinanceSocket({
+            binanceMarkets: markets
+          });
+        }
+
+        break;
+      }
+    }
+  };
+
   return (
     <TableContainer>
-      <SearchInputContainer>
-        <FormControl sx={{ m: 1, width: '25ch' }} variant="standard">
-          <OutlinedInput
-            placeholder="BTC, 비트, Bitcoin"
-            value={searchValue}
-            onChange={handleChangeMarketSearchInput}
-            endAdornment={
-              searchValue && (
-                <InputAdornment position="end">
-                  <IconButton
-                    onClick={handleClickClearSearchInputButton}
-                    sx={{ color: theme.color.gray70 }}
-                  >
-                    <RiCloseCircleLine />
-                  </IconButton>
-                </InputAdornment>
-              )
-            }
-            sx={{
-              pr: 0
-            }}
-          />
-        </FormControl>
-      </SearchInputContainer>
+      <FlexSpaceBetweenCenterBox>
+        <FlexNoWrapBox>
+          <Tooltip title={connectedUpbit ? '연결 됨' : '재연결'} arrow>
+            <FlexAlignItemsCenterBox
+              onClick={handleClickConnectSocket('upbit')}
+              sx={connectedBinance ? undefined : { cursor: 'pointer' }}
+            >
+              <Typography component="span">업비트</Typography>
+              <DotContainer
+                sx={{ color: connectedUpbit ? theme.color.greenMain : theme.color.redMain }}
+              >
+                <GoPrimitiveDot />
+              </DotContainer>
+            </FlexAlignItemsCenterBox>
+          </Tooltip>
+          <Box mx={0.5} />
+          <Tooltip title={connectedBinance ? '연결 됨' : '재연결'} arrow>
+            <FlexAlignItemsCenterBox
+              onClick={handleClickConnectSocket('binance')}
+              sx={connectedBinance ? undefined : { cursor: 'pointer' }}
+            >
+              <Typography component="span">바이낸스</Typography>
+              <DotContainer
+                sx={{ color: connectedBinance ? theme.color.greenMain : theme.color.redMain }}
+              >
+                <GoPrimitiveDot />
+              </DotContainer>
+            </FlexAlignItemsCenterBox>
+          </Tooltip>
+        </FlexNoWrapBox>
+        <SearchInputContainer>
+          <FormControl sx={{ width: 170 }} variant="standard">
+            <OutlinedInput
+              placeholder="BTC, 비트, Bitcoin"
+              value={searchValue}
+              onChange={handleChangeMarketSearchInput}
+              endAdornment={
+                searchValue && (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={handleClickClearSearchInputButton}
+                      sx={{ color: theme.color.gray70 }}
+                    >
+                      <RiCloseCircleLine />
+                    </IconButton>
+                  </InputAdornment>
+                )
+              }
+              sx={{
+                pr: 0
+              }}
+            />
+          </FormControl>
+        </SearchInputContainer>
+      </FlexSpaceBetweenCenterBox>
       <Table cellSpacing="0" cellPadding="0">
         <Thead>
           <TableHeaderRow>

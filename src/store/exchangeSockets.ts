@@ -136,14 +136,14 @@ const handleConnectUpbitSocket =
       });
       ws.addEventListener('close', (e: WebSocketEventMap['close']) => {
         // console.log('Socket is closed. Reconnect will be attempted in 1 second.', e.reason);
+        setTimeout(() => {
+          const { upbitSocket } = get();
+          if (!upbitSocket || upbitSocket.readyState !== 1) {
+            wsConnect();
+          }
+        }, 1000);
       });
     }
-    const connectCheck = setInterval(() => {
-      const { upbitSocket } = get();
-      if (!upbitSocket || upbitSocket.readyState !== 1) {
-        wsConnect();
-      }
-    }, 10000);
 
     if (!get().upbitSocket) {
       wsConnect();
@@ -203,16 +203,15 @@ const handleConnectBinanceSocket =
       });
       ws.addEventListener('close', (e: WebSocketEventMap['close']) => {
         // console.log('Socket is closed. Reconnect will be attempted in 1 second.', e.reason);
+        setTimeout(() => {
+          const { binanceSocket } = get();
+
+          if (!binanceSocket || binanceSocket.readyState !== 1) {
+            wsConnect();
+          }
+        }, 1000);
       });
     }
-
-    const connectCheck = setInterval(() => {
-      const { binanceSocket } = get();
-
-      if (!binanceSocket || binanceSocket.readyState !== 1) {
-        wsConnect();
-      }
-    }, 10000);
 
     if (!get().binanceSocket) {
       wsConnect();
