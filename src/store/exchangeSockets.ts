@@ -19,6 +19,7 @@ interface IExchangeState {
   binanceMarketDatas: Record<string, IBinanceSocketMessageTicker>;
   upbitSocket?: WebSocket;
   binanceSocket?: WebSocket;
+  lastUpdatedAt: Date;
 }
 
 interface IConnectSocketProps {}
@@ -40,7 +41,8 @@ const defaultState: IExchangeState = {
   binanceMarkets: [],
   binanceMarketDatas: {},
   upbitSocket: undefined,
-  binanceSocket: undefined
+  binanceSocket: undefined,
+  lastUpdatedAt: new Date()
 };
 
 interface IExchangeStore extends IExchangeState {

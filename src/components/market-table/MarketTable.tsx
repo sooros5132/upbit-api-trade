@@ -4,6 +4,7 @@ import isEqual from 'react-fast-compare';
 import { BiUpArrowAlt, BiDownArrowAlt } from 'react-icons/bi';
 import { IUpbitForex, IUpbitSocketMessageTickerSimple } from 'src/types/upbit';
 import {
+  BackgroundRedBox,
   CursorPointerBox,
   FlexAlignItemsCenterBox,
   FlexBox,
@@ -17,7 +18,7 @@ import {
   TextAlignCenterBox,
   TextAlignRightBox
 } from '../modules/Box';
-import { koPriceLabelFormat } from 'src/utils/utils';
+import { koPriceLabelFormat, timeForToday } from 'src/utils/utils';
 import { NextSeo } from 'next-seo';
 import { styled, useTheme } from '@mui/material/styles';
 import {
@@ -40,6 +41,7 @@ import { useTradingViewSettingStore } from 'src/store/tradingViewSetting';
 import shallow from 'zustand/shallow';
 import { RiCloseCircleLine } from 'react-icons/ri';
 import { GoPrimitiveDot } from 'react-icons/go';
+import dateAndTime from 'date-and-time';
 
 const TableContainer = styled('div')`
   margin: 0 auto;
@@ -174,8 +176,8 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex }) => {
   const theme = useTheme();
   const { enqueueSnackbar } = useSnackbar();
   const { sortColumn, sortType, setSortColumn, setSortType } = useMarketTableSettingStore();
-  const { connectedUpbit, connectedBinance } = useExchangeStore(
-    ({ upbitSocket, binanceSocket }) => {
+  const { connectedUpbit, connectedBinance, lastUpdatedAt } = useExchangeStore(
+    ({ upbitSocket, binanceSocket, lastUpdatedAt }) => {
       let connectedUpbit = false;
       let connectedBinance = false;
       if (upbitSocket?.readyState === 1) {
@@ -186,7 +188,8 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex }) => {
       }
       return {
         connectedUpbit,
-        connectedBinance
+        connectedBinance,
+        lastUpdatedAt
       };
     },
     shallow
@@ -256,6 +259,32 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex }) => {
 
   return (
     <TableContainer>
+      <noscript>
+        <TextAlignCenterBox>
+          <BackgroundRedBox sx={{ mt: 2, mb: 0 }}>
+            <p>
+              현재 사용중인 브라우저에서 자바스크립트가 비활성화 되어있습니다. 자바스크립트를
+              활성화하고 새로고침 해주세요.
+              <br />
+              <a
+                href="https://support.google.com/adsense/answer/12654?hl=ko"
+                style={{
+                  textDecoration: 'underline',
+                  color: 'lightyellow'
+                }}
+                target="_blank"
+                rel="noreferrer"
+              >
+                활성화 방법 보기
+              </a>
+            </p>
+            <p>
+              마지막 시세 업데이트: {timeForToday(lastUpdatedAt)}
+              <br />({dateAndTime.format(lastUpdatedAt, 'YYYY-MM-DD HH:mm:ss')})
+            </p>
+          </BackgroundRedBox>
+        </TextAlignCenterBox>
+      </noscript>
       <FlexSpaceBetweenCenterBox>
         <FlexNoWrapBox>
           <Tooltip title={connectedUpbit ? '연결 됨' : '재연결'} arrow>
@@ -286,6 +315,7 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex }) => {
             </FlexAlignItemsCenterBox>
           </Tooltip>
         </FlexNoWrapBox>
+
         <SearchInputContainer>
           <FormControl sx={{ width: 170 }} variant="standard">
             <OutlinedInput

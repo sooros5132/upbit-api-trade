@@ -1,5 +1,5 @@
 import { styled } from '@mui/material/styles';
-import type { GetServerSideProps, NextPage } from 'next';
+import type { GetStaticProps, NextPage } from 'next';
 import React, { useEffect, useState } from 'react';
 import { upbitApis } from 'src-server/utils/upbitApis';
 import MarketTable, { IMarketTableItem } from 'src/components/market-table/MarketTable';
@@ -11,7 +11,7 @@ import { clientApiUrls } from 'src/utils/clientApiUrls';
 import useSWR from 'swr';
 import { IBinanceSocketMessageTicker } from 'src/types/binance';
 import { useExchangeStore } from 'src/store/exchangeSockets';
-import { krwRegex, usdtRegex } from 'src/utils/regex';
+import { krwRegex } from 'src/utils/regex';
 import { binanceApis } from 'src-server/utils/binanceApis';
 import _ from 'lodash';
 import { useMarketTableSettingStore } from 'src/store/marketTableSetting';
@@ -56,13 +56,15 @@ interface HomeProps {
   upbitMarketList: Array<IUpbitMarket>;
   upbitMarketSnapshot?: Record<string, IMarketTableItem>;
   binanceMarketSnapshot?: Record<string, IBinanceSocketMessageTicker>;
+  lastUpdatedAt: string;
 }
 
 const Home: NextPage<HomeProps> = ({
   upbitForex,
   upbitMarketList,
   upbitMarketSnapshot,
-  binanceMarketSnapshot
+  binanceMarketSnapshot,
+  lastUpdatedAt
 }) => {
   const upbitAuthStore = useUpbitAuthStore();
   const upbitKrwList = React.useMemo(
@@ -72,7 +74,9 @@ const Home: NextPage<HomeProps> = ({
   const [isMounted, setMounted] = useState(false);
 
   if (!isMounted && upbitMarketSnapshot) {
-    useExchangeStore.setState({ upbitForex });
+    console.log(lastUpdatedAt);
+
+    useExchangeStore.setState({ upbitForex, lastUpdatedAt: new Date(lastUpdatedAt) });
 
     if (upbitMarketSnapshot) useExchangeStore.setState({ upbitMarketDatas: upbitMarketSnapshot });
     if (upbitMarketList) {
@@ -156,7 +160,7 @@ const Home: NextPage<HomeProps> = ({
   );
 };
 
-export const getServerSideProps: GetServerSideProps<HomeProps> = async ({ params }) => {
+export const getStaticProps: GetStaticProps<HomeProps> = async ({ params }) => {
   const upbitMarketRecord: Record<string, IUpbitMarket> = {};
   const [resUpbitForex, resUpbitMarketList] = await Promise.all([
     fetch(upbitApis.forexRecent + '?codes=FRX.KRWUSD'),
@@ -181,9 +185,9 @@ export const getServerSideProps: GetServerSideProps<HomeProps> = async ({ params
 
   const symbolList = upbitMarketList?.map((m: IUpbitMarket) => m.market);
   const upbitSymbols = symbolList.join(',');
-  const binanceSymbols = `["${symbolList
-    .map((m: string) => m.replace(krwRegex, '') + 'USDT')
-    .join('","')}"]`;
+  // const binanceSymbols = `["${symbolList
+  //   .map((m: string) => m.replace(krwRegex, '') + 'USDT')
+  //   .join('","')}"]`;
 
   // const upbitMarketSnapshotList = await fetch(`${upbitApis.ticker}?markets=${upbitSymbols}`).then(
   //   (res) => res.json()
@@ -268,14 +272,15 @@ export const getServerSideProps: GetServerSideProps<HomeProps> = async ({ params
       upbitMarketSnapshot[t.market].premium = premium;
     }
   }
-
+  const lastUpdatedAt = new Date().toISOString();
   return {
     props: {
       upbitForex: upbitForex[0],
       upbitMarketList,
-      upbitMarketSnapshot
-    }
-    // revalidate: 5
+      upbitMarketSnapshot,
+      lastUpdatedAt
+    },
+    revalidate: 5
   };
 };
 
