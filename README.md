@@ -6,4 +6,4 @@
 - pre-rendering 기능을 이용해서 자바스크립트, 소켓을 지원하지 않는 브라우저에서도 현재 시세를 알 수 있습니다.
 - 아이콘을 클릭해서 차트 변경이나 거래소로 바로 이동할 수 있습니다.
 
-[미리보기 - sooros.com](https://sooros.com/)
+[미리보기 - crypto.sooros.com](https://crypto.sooros.com/)
