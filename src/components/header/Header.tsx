@@ -5,11 +5,13 @@ import { AiFillApi, AiFillSetting } from 'react-icons/ai';
 import Link from 'next/link';
 import TradingViewTapeWidget from '../tradingview/Tape';
 import { styled, useTheme } from '@mui/material/styles';
-import { Box, IconButton, Menu, MenuItem, Tooltip, Typography } from '@mui/material';
+import { Box, Divider, IconButton, Menu, MenuItem, Switch, Typography } from '@mui/material';
 import { useUpbitAuthStore } from 'src/store/upbitAuth';
 import MyAccounts from './MyAccounts';
 import RegisterUpbitApiFormDialog from './RegisterUpbitApiFormDialog';
 import { useSiteSettingStore } from 'src/store/siteSetting';
+import { useMarketTableSettingStore } from 'src/store/marketTableSetting';
+import shallow from 'zustand/shallow';
 
 const Container = styled('header')`
   position: sticky;
@@ -47,14 +49,21 @@ const HeaderIconButton = styled(IconButton)(({ theme }) => ({
   color: theme.color.mainLightText
 }));
 
+const MenuItemInner = styled(FlexSpaceBetweenCenterBox)({
+  width: '100%',
+  minWidth: 120
+});
+
 const Header: React.FC = () => {
   const theme = useTheme();
   const upbitAuth = useUpbitAuthStore();
   const { showMyAccounts, setShowMyAccounts } = useSiteSettingStore(
-    ({ setShowMyAccounts, showMyAccounts }) => ({ setShowMyAccounts, showMyAccounts })
+    ({ setShowMyAccounts, showMyAccounts }) => ({ setShowMyAccounts, showMyAccounts }),
+    shallow
   );
-  const [accountEl, setAccountEl] = useState<null | HTMLElement>(null);
+  const highlight = useMarketTableSettingStore((state) => state.highlight, shallow);
   const [openRegisterUpbitApiDialog, setOpenRegisterUpbitApiDialog] = useState(false);
+  const [accountEl, setAccountEl] = useState<null | HTMLElement>(null);
   const [isMounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -62,7 +71,7 @@ const Header: React.FC = () => {
   }, []);
 
   const handleClickMenuItem =
-    (prop: 'logout' | 'hideAccounts' | 'showAccounts') =>
+    (prop: 'logout' | 'showMyAccounts' | 'highlight' | 'upbitApiConnect') =>
     (event: React.MouseEvent<HTMLLIElement>) => {
       switch (prop) {
         case 'logout': {
@@ -70,14 +79,18 @@ const Header: React.FC = () => {
           setAccountEl(null);
           break;
         }
-        case 'showAccounts': {
-          setShowMyAccounts(true);
-          setAccountEl(null);
+        case 'showMyAccounts': {
+          setShowMyAccounts(!showMyAccounts);
           break;
         }
-        case 'hideAccounts': {
-          setShowMyAccounts(false);
-          setAccountEl(null);
+        case 'highlight': {
+          useMarketTableSettingStore.setState((state) => ({
+            highlight: !state.highlight
+          }));
+          break;
+        }
+        case 'upbitApiConnect': {
+          setOpenRegisterUpbitApiDialog(true);
           break;
         }
       }
@@ -102,38 +115,48 @@ const Header: React.FC = () => {
         <TapeWidget>
           <TradingViewTapeWidget />
         </TapeWidget>
-        {isMounted && upbitAuth.secretKey ? (
-          <>
-            <HeaderIconButton onClick={handleClickOpenMenu}>
-              <AiFillSetting />
-            </HeaderIconButton>
-            <Menu
-              anchorEl={accountEl}
-              keepMounted
-              open={Boolean(accountEl)}
-              onClose={() => setAccountEl(null)}
-            >
-              {showMyAccounts ? (
-                <MenuItem onClick={handleClickMenuItem('hideAccounts')}>
-                  <Typography>잔고 숨기기</Typography>
+        <HeaderIconButton onClick={handleClickOpenMenu}>
+          <AiFillSetting />
+        </HeaderIconButton>
+        <Menu
+          anchorEl={accountEl}
+          keepMounted
+          open={Boolean(accountEl)}
+          onClose={() => setAccountEl(null)}
+        >
+          <MenuItem onClick={handleClickMenuItem('highlight')}>
+            <MenuItemInner>
+              <Typography>하이라이트</Typography>
+              <Switch size="small" checked={highlight} />
+            </MenuItemInner>
+          </MenuItem>
+          {isMounted && upbitAuth.secretKey
+            ? [
+                ,
+                <MenuItem
+                  key={'header-menu-showMyAccounts'}
+                  onClick={handleClickMenuItem('showMyAccounts')}
+                >
+                  <MenuItemInner>
+                    <Typography>잔고 표시</Typography>
+                    <Switch size="small" checked={showMyAccounts} />
+                  </MenuItemInner>
+                </MenuItem>,
+                <Divider key={'header-menu-divider'} />,
+                <MenuItem key={'header-menu-logout'} onClick={handleClickMenuItem('logout')}>
+                  <Typography sx={{ color: theme.color.redMain }}>upbit API 끊기</Typography>
                 </MenuItem>
-              ) : (
-                <MenuItem onClick={handleClickMenuItem('showAccounts')}>
-                  <Typography>잔고 보기</Typography>
+              ]
+            : [
+                <Divider key={'header-menu-divider'} />,
+                <MenuItem
+                  key={'header-menu-api-connect'}
+                  onClick={handleClickMenuItem('upbitApiConnect')}
+                >
+                  <Typography>upbit API 연결</Typography>
                 </MenuItem>
-              )}
-              <MenuItem onClick={handleClickMenuItem('logout')}>
-                <Typography sx={{ color: theme.color.redMain }}>연동 해제</Typography>
-              </MenuItem>
-            </Menu>
-          </>
-        ) : (
-          <Tooltip title="API 연결" arrow>
-            <HeaderIconButton onClick={() => setOpenRegisterUpbitApiDialog(true)}>
-              <AiFillApi />
-            </HeaderIconButton>
-          </Tooltip>
-        )}
+              ]}
+        </Menu>
       </Inner>
       {isMounted && showMyAccounts && upbitAuth.accounts.length ? (
         <AccountsConintainer>

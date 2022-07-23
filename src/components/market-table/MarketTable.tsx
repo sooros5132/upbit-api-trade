@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useState } from 'react';
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import _ from 'lodash';
 import isEqual from 'react-fast-compare';
 import { BiUpArrowAlt, BiDownArrowAlt } from 'react-icons/bi';
@@ -31,7 +31,7 @@ import {
   Typography
 } from '@mui/material';
 import { useSnackbar } from 'notistack';
-import { AskBidTypography } from '../modules/Typography';
+import { AskBidTypography, HighlightSpanTypography } from '../modules/Typography';
 import { clientApiUrls } from 'src/utils/clientApiUrls';
 import { AiOutlineAreaChart, AiFillStar } from 'react-icons/ai';
 import { useExchangeStore } from 'src/store/exchangeSockets';
@@ -553,6 +553,9 @@ const TableItem = React.memo<{
   favorite: boolean;
 }>(({ krwSymbol, upbitForex, favorite }) => {
   const theme = useTheme();
+  const krwPriceRef = useRef<HTMLSpanElement>(null);
+  const usdPriceRef = useRef<HTMLSpanElement>(null);
+  const highlight = useMarketTableSettingStore((state) => state.highlight, shallow);
   const upbitMarket = useExchangeStore((state) => state.upbitMarketDatas[krwSymbol], shallow);
   const marketSymbol = upbitMarket.cd.replace(marketRegex, '');
 
@@ -587,6 +590,71 @@ const TableItem = React.memo<{
     [favorite]
   );
 
+  //
+  useEffect(() => {
+    if (!highlight || !krwPriceRef?.current) {
+      return;
+    }
+    const node = krwPriceRef.current;
+    const callback: MutationCallback = (e) => {
+      for (const mutationNode of e) {
+        mutationNode.target.parentElement?.classList.remove('highlight');
+        setTimeout(() => {
+          mutationNode.target.parentElement?.classList.add('highlight');
+        }, 0);
+      }
+      // const animations = mutationNode.target.parentElement?.getAnimations()
+      // if(animations){
+      //   for(const animation of animations){
+      //     if (node.contains((animation.effect as KeyframeEffect).target)) {
+      //       animation.cancel();
+      //       animation.play();
+      //     }
+      //   }
+      // }
+    };
+    const config: MutationObserverInit = {
+      subtree: true,
+      characterData: true
+    };
+    const observer = new MutationObserver(callback);
+
+    observer.observe(node, config);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [highlight, krwPriceRef, krwSymbol]);
+
+  useEffect(() => {
+    if (!usdPriceRef?.current) {
+      return;
+    }
+    const node = usdPriceRef.current;
+    const callback: MutationCallback = (e) => {
+      if (!highlight) {
+        return;
+      }
+      for (const mutationNode of e) {
+        mutationNode.target.parentElement?.classList.remove('highlight');
+        setTimeout(() => {
+          mutationNode.target.parentElement?.classList.add('highlight');
+        }, 0);
+      }
+    };
+    const config: MutationObserverInit = {
+      subtree: true,
+      characterData: true
+    };
+    const observer = new MutationObserver(callback);
+
+    observer.observe(node, config);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [highlight, usdPriceRef]);
+
   const upbitChangeRate = upbitMarket.scr * 100;
 
   let title = 'SOOROS';
@@ -595,14 +663,13 @@ const TableItem = React.memo<{
 
     switch (selectedExchange) {
       case 'BINANCE': {
-        title =
-          (upbitMarket.binance_price
-            ? `${selectedMarketSymbol} ${Number(upbitMarket.binance_price).toLocaleString()}$ | `
-            : '') + title;
+        title = upbitMarket.binance_price
+          ? `${selectedMarketSymbol} ${Number(upbitMarket.binance_price).toLocaleString()}$`
+          : '';
         break;
       }
       case 'UPBIT': {
-        title = `${selectedMarketSymbol} ${upbitMarket.tp.toLocaleString()}₩ | ` + title;
+        title = `${selectedMarketSymbol} ${upbitMarket.tp.toLocaleString()}₩`;
         break;
       }
     }
@@ -701,7 +768,9 @@ const TableItem = React.memo<{
             <MonoFontBox>
               <TextAlignRightBox>
                 <AskBidTypography state={upbitMarket.scp}>
-                  {upbitMarket.tp.toLocaleString()}
+                  <HighlightSpanTypography ref={krwPriceRef}>
+                    {upbitMarket.tp.toLocaleString()}
+                  </HighlightSpanTypography>
                   {/* <br />
                   {upbitBtcMarket && upbitBtcPrice
                     ? Number(
@@ -710,12 +779,14 @@ const TableItem = React.memo<{
                     : ''} */}
                 </AskBidTypography>
                 <AskBidTypography state={upbitMarket.scp} opacity={0.7}>
-                  {upbitMarket.binance_price &&
-                    Number(
-                      (Number(upbitMarket.binance_price) * upbitForex.basePrice).toFixed(
-                        priceDecimalLength
-                      )
-                    ).toLocaleString()}
+                  <HighlightSpanTypography ref={usdPriceRef}>
+                    {upbitMarket.binance_price &&
+                      Number(
+                        (Number(upbitMarket.binance_price) * upbitForex.basePrice).toFixed(
+                          priceDecimalLength
+                        )
+                      ).toLocaleString()}
+                  </HighlightSpanTypography>
                 </AskBidTypography>
               </TextAlignRightBox>
             </MonoFontBox>

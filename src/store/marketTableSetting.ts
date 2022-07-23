@@ -7,6 +7,7 @@ interface IMarketTableSettingState {
   sortColumn: keyof IMarketTableItem;
   sortType: 'ASC' | 'DESC';
   favoriteSymbols: Record<string, boolean>;
+  highlight: boolean;
 }
 
 interface IMarketTableSettingStore extends IMarketTableSettingState {
@@ -21,7 +22,8 @@ const defaultState: IMarketTableSettingState = {
   hydrated: false,
   sortColumn: 'tp',
   sortType: 'DESC',
-  favoriteSymbols: {}
+  favoriteSymbols: {},
+  highlight: true
 };
 
 export const useMarketTableSettingStore = create<IMarketTableSettingStore>(

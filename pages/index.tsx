@@ -74,8 +74,6 @@ const Home: NextPage<HomeProps> = ({
   const [isMounted, setMounted] = useState(false);
 
   if (!isMounted && upbitMarketSnapshot) {
-    console.log(lastUpdatedAt);
-
     useExchangeStore.setState({ upbitForex, lastUpdatedAt: new Date(lastUpdatedAt) });
 
     if (upbitMarketSnapshot) useExchangeStore.setState({ upbitMarketDatas: upbitMarketSnapshot });

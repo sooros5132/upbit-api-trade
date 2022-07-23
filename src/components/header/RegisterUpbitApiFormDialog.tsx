@@ -94,9 +94,8 @@ const RegisterUpbitApiFormDialog: React.FC<RegisterUpbitApiFormDialogProps> = ({
           </Typography> */}
           <BackgroundBlueBox>
             <Typography>
-              현재 운영중인 서버는 고정아이피가 아니므로 업비트 API연동을 이용하실 수 없습니다.
+              현재 운영중인 서버가 고정아이피가 아니므로 업비트 API연동을 이용할 수 없습니다.
             </Typography>
-            <Typography>빠른 시일 내에 고치겠습니다.</Typography>
           </BackgroundBlueBox>
         </TextAlignCenterBox>
         <Box mt={1}>
