@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 import { Width100Box } from 'src/components/modules/Box';
 import TradingViewChart from 'src/components/tradingview/Chart';
 import { useUpbitAuthStore } from 'src/store/upbitAuth';
-import _ from 'lodash';
 import { useRouter } from 'next/router';
 import { Box, Typography } from '@mui/material';
 import { krwRegex } from 'src/utils/regex';

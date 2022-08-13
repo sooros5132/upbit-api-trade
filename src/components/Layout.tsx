@@ -11,8 +11,7 @@ import Footer from './footer/Footer';
 import Header from './header/Header';
 import { FlexColumnHeight100Box } from './modules/Box';
 import CssBaseline from '@mui/material/CssBaseline';
-import { useThemeStore } from 'src/store/theme';
-import _ from 'lodash';
+import { merge } from 'lodash';
 import CommonTheme from 'src/styles/CommomTheme';
 import darkScrollbar from '@mui/material/darkScrollbar';
 import LightTheme from 'src/styles/LightTheme';
@@ -56,11 +55,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     };
     switch (themeMode) {
       case 'light': {
-        theme = createTheme(_.merge(fontSize, CommonTheme, LightTheme));
+        theme = createTheme(merge(fontSize, CommonTheme, LightTheme));
         break;
       }
       case 'dark': {
-        theme = createTheme(_.merge(fontSize, CommonTheme, DarkTheme));
+        theme = createTheme(merge(fontSize, CommonTheme, DarkTheme));
         break;
       }
     }

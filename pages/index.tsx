@@ -13,9 +13,10 @@ import { IBinanceSocketMessageTicker } from 'src/types/binance';
 import { useExchangeStore } from 'src/store/exchangeSockets';
 import { krwRegex } from 'src/utils/regex';
 import { binanceApis } from 'src-server/utils/binanceApis';
-import _ from 'lodash';
+import { keyBy } from 'lodash';
 import { useMarketTableSettingStore } from 'src/store/marketTableSetting';
 import TradingViewTickers from 'src/components/tradingview/Tickers';
+import utcToZonedTime from 'date-fns-tz/utcToZonedTime';
 
 const Container = styled('div')`
   flex: 1 0 auto;
@@ -192,13 +193,21 @@ export const getStaticProps: GetStaticProps<HomeProps> = async ({ params }) => {
   // );
 
   // 바이낸스는 해당 마켓이 없을 경우 에러를 냄 -> 전체 리스트를 가져와서 정렬.
-  const [upbitMarketSnapshotList, binanceMarketSnapshotList] = await Promise.all([
-    fetch(`${upbitApis.ticker}?markets=${upbitSymbols}`).then((res) => res.json()),
-    // fetch(`${binanceApis.tickerPrice}?symbols=${binanceSymbols}`).then((res) => res.json())
-    fetch(binanceApis.tickerPrice).then((res) => res.json())
-  ]);
+  const [{ lastUpdatedAt, upbitMarketSnapshotList }, binanceMarketSnapshotList] = await Promise.all(
+    [
+      fetch(`${upbitApis.ticker}?markets=${upbitSymbols}`).then(async (res) => ({
+        lastUpdatedAt: utcToZonedTime(
+          new Date(res.headers.get('date') ?? new Date()),
+          'Asia/Seoul'
+        ).toISOString(),
+        upbitMarketSnapshotList: await res.json()
+      })),
+      // fetch(`${binanceApis.tickerPrice}?symbols=${binanceSymbols}`).then((res) => res.json())
+      fetch(binanceApis.tickerPrice).then(async (res) => await res.json())
+    ]
+  );
 
-  const binanceSnapshotkeyByList = _.keyBy(binanceMarketSnapshotList, 'symbol');
+  const binanceSnapshotkeyByList = keyBy(binanceMarketSnapshotList, 'symbol');
 
   const upbitMarketSnapshot: Record<string, IMarketTableItem> = {};
   const binanceMarketSnapshot: Record<string, IBinanceSocketMessageTicker> = {};
@@ -270,7 +279,7 @@ export const getStaticProps: GetStaticProps<HomeProps> = async ({ params }) => {
       upbitMarketSnapshot[t.market].premium = premium;
     }
   }
-  const lastUpdatedAt = new Date().toISOString();
+
   return {
     props: {
       upbitForex: upbitForex[0],

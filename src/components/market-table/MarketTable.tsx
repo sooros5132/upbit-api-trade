@@ -1,5 +1,4 @@
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
-import _ from 'lodash';
 import isEqual from 'react-fast-compare';
 import { BiUpArrowAlt, BiDownArrowAlt } from 'react-icons/bi';
 import { IUpbitForex, IUpbitSocketMessageTickerSimple } from 'src/types/upbit';
@@ -18,7 +17,7 @@ import {
   TextAlignCenterBox,
   TextAlignRightBox
 } from '../modules/Box';
-import { koPriceLabelFormat, timeForToday } from 'src/utils/utils';
+import { koPriceLabelFormat } from 'src/utils/utils';
 import { NextSeo } from 'next-seo';
 import { styled, useTheme } from '@mui/material/styles';
 import {
@@ -41,7 +40,10 @@ import { useTradingViewSettingStore } from 'src/store/tradingViewSetting';
 import shallow from 'zustand/shallow';
 import { RiCloseCircleLine } from 'react-icons/ri';
 import { GoPrimitiveDot } from 'react-icons/go';
-import dateAndTime from 'date-and-time';
+import formatInTimeZone from 'date-fns-tz/formatInTimeZone';
+import { formatDistance } from 'date-fns';
+import { ko as koLocale } from 'date-fns/locale';
+import { utcToZonedTime } from 'date-fns-tz';
 
 const TableContainer = styled('div')`
   margin: 0 auto;
@@ -263,9 +265,11 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex }) => {
         <TextAlignCenterBox>
           <BackgroundRedBox sx={{ mt: 2, mb: 0 }}>
             <p>
-              현재 사용중인 브라우저에서 자바스크립트가 비활성화 되어있습니다. 자바스크립트를
-              활성화하고 새로고침 해주세요.
+              현재 사용중인 브라우저에서 자바스크립트가 비활성화 되어있습니다.
               <br />
+              실시간 시세를 보시려면 자바스크립트를 활성화하시고 새로고침 해주세요.
+            </p>
+            <p>
               <a
                 href="https://support.google.com/adsense/answer/12654?hl=ko"
                 style={{
@@ -279,8 +283,10 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex }) => {
               </a>
             </p>
             <p>
-              마지막 시세 업데이트: {timeForToday(lastUpdatedAt)}
-              <br />({dateAndTime.format(lastUpdatedAt, 'YYYY-MM-DD HH:mm:ss')})
+              시세 업데이트 시간:{' '}
+              {formatInTimeZone(new Date(lastUpdatedAt), 'Asia/Seoul', 'yyyy-MM-dd HH:mm:ss', {
+                locale: koLocale
+              })}
             </p>
           </BackgroundRedBox>
         </TextAlignCenterBox>
