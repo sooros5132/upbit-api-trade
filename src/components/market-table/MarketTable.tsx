@@ -32,7 +32,8 @@ import {
 import { useSnackbar } from 'notistack';
 import { AskBidTypography, HighlightSpanTypography } from '../modules/Typography';
 import { clientApiUrls } from 'src/utils/clientApiUrls';
-import { AiOutlineAreaChart, AiFillStar } from 'react-icons/ai';
+import { AiOutlineAreaChart } from 'react-icons/ai';
+import { TiPin } from 'react-icons/ti';
 import { useExchangeStore } from 'src/store/exchangeSockets';
 import { krwRegex, marketRegex } from 'src/utils/regex';
 import { useMarketTableSettingStore } from 'src/store/marketTableSetting';
@@ -41,9 +42,7 @@ import shallow from 'zustand/shallow';
 import { RiCloseCircleLine } from 'react-icons/ri';
 import { GoPrimitiveDot } from 'react-icons/go';
 import formatInTimeZone from 'date-fns-tz/formatInTimeZone';
-import { formatDistance } from 'date-fns';
 import { ko as koLocale } from 'date-fns/locale';
-import { utcToZonedTime } from 'date-fns-tz';
 
 const TableContainer = styled('div')`
   margin: 0 auto;
@@ -107,6 +106,7 @@ const ButtonContainer = styled(FlexBox)(({ theme }) => ({
 const MarketIconImage = styled('img')(({ theme }) => ({
   width: 16,
   height: 16,
+  padding: 1,
   objectFit: 'contain',
   backgroundColor: theme.color.absolutlyWhite,
   borderRadius: '50%',
@@ -707,7 +707,7 @@ const TableItem = React.memo<{
             <ButtonContainer>
               {favorite ? (
                 <FavoriteIconBox onClick={handleClickStarIcon(upbitMarket.cd)}>
-                  <AiFillStar />
+                  <TiPin />
                 </FavoriteIconBox>
               ) : (
                 <ChartIconBox
@@ -716,7 +716,7 @@ const TableItem = React.memo<{
                     color: favorite ? theme.color.yellowMain : undefined
                   }}
                 >
-                  <AiFillStar />
+                  <TiPin />
                 </ChartIconBox>
               )}
             </ButtonContainer>

@@ -1,6 +1,6 @@
 import { Box, Tooltip, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { memo, useEffect, useRef, useState } from 'react';
+import { memo, useMemo, useRef } from 'react';
 import isEqual from 'react-fast-compare';
 import { IUpbitAccounts } from 'src-server/types/upbit';
 import { FlexAlignItemsCenterBox, FlexBox, GridBox, TextAlignRightBox } from '../modules/Box';
@@ -13,6 +13,7 @@ import {
 import { BsDot } from 'react-icons/bs';
 import { clientApiUrls } from 'src/utils/clientApiUrls';
 import { useExchangeStore } from 'src/store/exchangeSockets';
+import shallow from 'zustand/shallow';
 
 const AccountsContainer = styled(FlexBox)(({ theme }) => ({
   paddingBottom: theme.spacing(1)
@@ -28,8 +29,11 @@ interface IAccountItemProps {
 }
 
 const AccountItem = memo(({ account }: IAccountItemProps) => {
-  const { currentPrice } = account;
-  if (typeof currentPrice !== 'number') return null;
+  const upbitMarketData = useExchangeStore(
+    (state) => state?.upbitMarketDatas?.['KRW-' + account.currency],
+    shallow
+  );
+  const currentPrice = account.currency === 'KRW' ? 1 : upbitMarketData?.tp;
 
   const {
     avg_buy_price,
@@ -128,13 +132,13 @@ const AccountItem = memo(({ account }: IAccountItemProps) => {
                   fontSize: (theme) => theme.size.px14
                 }}
               >
-                <Typography>총 잔고</Typography>
+                <Typography>보유 KRW</Typography>
                 <TextAlignRightBox>
                   <MonoFontTypography>
                     {Math.round(balance + locked).toLocaleString()}
                   </MonoFontTypography>
                 </TextAlignRightBox>
-                <Typography>주문 가능</Typography>
+                <Typography>사용 가능 KRW</Typography>
                 <TextAlignRightBox>
                   <MonoFontTypography>{Math.round(balance).toLocaleString()}</MonoFontTypography>
                 </TextAlignRightBox>
@@ -157,43 +161,33 @@ interface IMyAccountsProps {
 }
 
 const MyAccounts = memo(({ upbitAccounts: upbitAccountsTemp }: IMyAccountsProps) => {
-  const upbitMarketDatasRef = useRef(useExchangeStore.getState().upbitMarketDatas);
-  const [num, setNum] = useState(0);
+  const upbitMarketDatas = useRef(useExchangeStore.getState().upbitMarketDatas);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      useExchangeStore.subscribe((state) => {
-        upbitMarketDatasRef.current = state.upbitMarketDatas;
-      });
-      setNum((prev) => 1 - prev);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-  // useEffect(() => {
-  //   createPriceUpdateTrigger();
-  //   deletePriceUpdateTrigger();
-  // });
-
-  const upbitAccounts = upbitAccountsTemp
-    .map(
-      (account) =>
-        ({
-          ...account,
-          currentPrice:
-            account.currency === 'KRW'
-              ? 1
-              : upbitMarketDatasRef.current['KRW-' + account.currency]?.tp,
-          totalBalance: Number(account.balance) + Number(account.locked)
-        } as IAccountItemProps['account'])
-    )
-    .sort((a, b) => {
-      if (typeof a.currentPrice !== 'number') {
-        return 1;
-      } else if (typeof b.currentPrice !== 'number') {
-        return -1;
-      }
-      return b.currentPrice * b.totalBalance - a.currentPrice * a.totalBalance;
-    });
+  const upbitAccounts = useMemo(
+    () =>
+      upbitAccountsTemp
+        .map(
+          (account) =>
+            ({
+              ...account,
+              totalBalance: Number(account.balance) + Number(account.locked),
+              currentPrice:
+                account.currency === 'KRW'
+                  ? 1
+                  : upbitMarketDatas.current?.['KRW-' + account.currency]?.tp
+            } as IAccountItemProps['account'])
+        )
+        .filter((a) => typeof a.currentPrice === 'number')
+        .sort((a, b) => {
+          if (typeof a.currentPrice !== 'number') {
+            return 1;
+          } else if (typeof b.currentPrice !== 'number') {
+            return -1;
+          }
+          return b.currentPrice * b.totalBalance - a.currentPrice * a.totalBalance;
+        }),
+    [upbitAccountsTemp]
+  );
 
   return (
     <AccountsContainer>
