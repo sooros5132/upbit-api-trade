@@ -1,16 +1,18 @@
 import { Typography } from '@mui/material';
-import { styled } from '@mui/material/styles';
+import { styled, useTheme } from '@mui/material/styles';
 import Link from 'next/link';
-import React from 'react';
 import {
   Flex0033Box,
   Flex0066Box,
   FlexAlignItemsCenterBox,
   FlexAlignItemsCenterHeight100Box,
+  FlexCenterCenterBox,
   FlexJustifyContentCenterBox,
   TextAlignCenterBox,
   Width100Box
 } from '../modules/Box';
+import { SiGithub, SiMaildotru } from 'react-icons/si';
+import { RiGitRepositoryFill } from 'react-icons/ri';
 
 const Container = styled('footer')(({ theme }) => ({
   backgroundColor: theme.color.gray90,
@@ -50,6 +52,9 @@ const DescriptionInner = styled('div')`
   }
   border-left: 1px solid ${({ theme }) => theme.color.gray70};
   padding: 0 ${({ theme }) => theme.spacing(4)};
+  height: 65%;
+  display: flex;
+  align-items: center;
 `;
 
 // const ContactContainer = styled(FlexJustifyContentFlexEndBox)`
@@ -61,6 +66,7 @@ interface FooterProps {}
 
 const Footer: React.FC<FooterProps> = ({}) => {
   // const { data, error } = useSWR("/key", fetch);
+  const theme = useTheme();
 
   return (
     <Container>
@@ -71,13 +77,94 @@ const Footer: React.FC<FooterProps> = ({}) => {
               <LogoBox>
                 <Typography>SOOROS</Typography>
               </LogoBox>
-              <ContactBox>
+              {/* <ContactBox>
                 <Typography>
                   <Link href="mailto:sooros5132@gmail.com">
                     <a>sooros5132@gmail.com</a>
                   </Link>
                 </Typography>
-              </ContactBox>
+              </ContactBox> */}
+              <FlexCenterCenterBox
+                sx={{
+                  columnGap: 2,
+                  fontSize: theme.size.px24
+                }}
+              >
+                <a href="mailto:sooros5132@gmail.com">
+                  <div>
+                    <SiMaildotru />
+                  </div>
+                </a>
+                <a href="https://github.com/sooros5132" rel="noreferrer" target="_blank">
+                  <div>
+                    <SiGithub />
+                  </div>
+                </a>
+                <a
+                  href="https://github.com/sooros5132/upbit-realtime-premium"
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  <div>
+                    <RiGitRepositoryFill />
+                  </div>
+                </a>
+              </FlexCenterCenterBox>
+              <FlexCenterCenterBox mt={1}>
+                {process.env.NODE_ENV === 'production' ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    alt="number of visitors"
+                    src={`https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=${encodeURIComponent(
+                      `https://crypto.sooros.com`
+                    )}&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false`}
+                  />
+                ) : (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    xmlnsXlink="http://www.w3.org/1999/xlink"
+                    width="75"
+                    height="20"
+                  >
+                    <linearGradient id="smooth" x2="0" y2="100%">
+                      <stop offset="0" stopColor="#bbb" stopOpacity=".1" />
+                      <stop offset="1" stopOpacity=".1" />
+                    </linearGradient>
+
+                    <mask id="round">
+                      <rect width="75" height="20" rx="3" ry="3" fill="#fff" />
+                    </mask>
+
+                    <g mask="url(#round)">
+                      <rect width="30" height="20" fill="#555555" />
+                      <rect x="30" width="45" height="20" fill="#79C83D" />
+                      <rect width="75" height="20" fill="url(#smooth)" />
+                    </g>
+
+                    <g
+                      fill="#fff"
+                      textAnchor="middle"
+                      fontFamily="Verdana,DejaVu Sans,Geneva,sans-serif"
+                      fontSize="11"
+                    >
+                      <text x="16" y="15" fill="#010101" fillOpacity=".3">
+                        hits
+                      </text>
+                      <text x="16" y="14" fill="#fff">
+                        hits
+                      </text>
+                      <text x="51.5" y="15" fill="#010101" fillOpacity=".3">
+                        {' '}
+                        1 / 1{' '}
+                      </text>
+                      <text x="51.5" y="14" fill="#fff">
+                        {' '}
+                        1 / 1{' '}
+                      </text>
+                    </g>
+                  </svg>
+                )}
+              </FlexCenterCenterBox>
             </Width100Box>
           </FlexAlignItemsCenterHeight100Box>
         </Flex0033Box>
