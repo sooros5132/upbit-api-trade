@@ -2,15 +2,18 @@ import React from 'react';
 import isEqual from 'react-fast-compare';
 
 const TradingViewTickersWidget: React.FC = () => {
-  const tickerseWidgetRef = React.useRef<HTMLDivElement>(null);
+  const tickersWidgetRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
-    if (!tickerseWidgetRef.current) return;
+    if (!tickersWidgetRef.current) return;
 
+    const scriptContainer = tickersWidgetRef.current;
     const scriptEl = document.createElement('script');
 
     const id = new Date().getTime().toString();
-    scriptEl.id = `tradingview-tape-widget-${id}`;
+    scriptEl.id = `tradingview-tickers-widget-${id}`;
+    scriptEl.async = true;
+    scriptEl.type = 'text/javascript';
     scriptEl.src = 'https://s3.tradingview.com/external-embedding/embed-widget-tickers.js';
     scriptEl.innerHTML = `{
   "symbols": [
@@ -40,16 +43,17 @@ const TradingViewTickersWidget: React.FC = () => {
   "showSymbolLogo": true,
   "locale": "kr"
 }`;
-    tickerseWidgetRef.current.insertAdjacentElement('beforeend', scriptEl);
+    tickersWidgetRef.current.insertAdjacentElement('beforeend', scriptEl);
+    return () => {
+      if (scriptContainer) {
+        while (scriptContainer.firstChild) {
+          scriptContainer.removeChild(scriptContainer.firstChild);
+        }
+      }
+    };
   }, []);
 
-  return (
-    <>
-      <div ref={tickerseWidgetRef} className="tradingview-widget-tickers-container">
-        <div className="tradingview-widget-tickers-container__widget"></div>
-      </div>
-    </>
-  );
+  return <div ref={tickersWidgetRef} />;
 };
 
 TradingViewTickersWidget.displayName = 'TradingViewTickersWidget';

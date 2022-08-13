@@ -7,10 +7,13 @@ const TradingViewTapeWidget: React.FC = () => {
   React.useEffect(() => {
     if (!tapeWidgetRef.current) return;
 
-    const scriptEl = document.createElement('script');
+    const scriptContainer = tapeWidgetRef.current;
 
+    const scriptEl = document.createElement('script');
     const id = new Date().getTime().toString();
     scriptEl.id = `tradingview-tape-widget-${id}`;
+    scriptEl.async = true;
+    scriptEl.type = 'text/javascript';
     scriptEl.src = 'https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js';
     scriptEl.innerHTML = `
       {
@@ -48,15 +51,17 @@ const TradingViewTapeWidget: React.FC = () => {
       }
     `;
     tapeWidgetRef.current.insertAdjacentElement('beforeend', scriptEl);
+
+    return () => {
+      if (scriptContainer) {
+        while (scriptContainer.firstChild) {
+          scriptContainer.removeChild(scriptContainer.firstChild);
+        }
+      }
+    };
   }, []);
 
-  return (
-    <>
-      <div ref={tapeWidgetRef} className="tradingview-widget-tape-container">
-        <div className="tradingview-widget-tape-container__widget"></div>
-      </div>
-    </>
-  );
+  return <div ref={tapeWidgetRef} />;
 };
 
 TradingViewTapeWidget.displayName = 'TradingViewTapeWidget';
