@@ -89,6 +89,9 @@ const Home: NextPage<HomeProps> = ({
       useMarketTableSettingStore.getState().setSortColumn('tp');
       useMarketTableSettingStore.getState().setSortType('DESC');
       useExchangeStore.getState().sortSymbolList('tp', 'DESC');
+      useExchangeStore.setState({
+        sortedUpbitMarketSymbolList: useExchangeStore.getState().searchedSymbols
+      });
     }
   }
   // const { setMarketSocketData } = useUpbitDataStore();
@@ -196,10 +199,7 @@ export const getStaticProps: GetStaticProps<HomeProps> = async ({ params }) => {
   const [{ lastUpdatedAt, upbitMarketSnapshotList }, binanceMarketSnapshotList] = await Promise.all(
     [
       fetch(`${upbitApis.ticker}?markets=${upbitSymbols}`).then(async (res) => ({
-        lastUpdatedAt: utcToZonedTime(
-          new Date(res.headers.get('date') ?? new Date()),
-          'Asia/Seoul'
-        ).toISOString(),
+        lastUpdatedAt: new Date(res.headers.get('date') ?? new Date()).toISOString(),
         upbitMarketSnapshotList: await res.json()
       })),
       // fetch(`${binanceApis.tickerPrice}?symbols=${binanceSymbols}`).then((res) => res.json())
