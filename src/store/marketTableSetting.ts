@@ -8,6 +8,7 @@ interface IMarketTableSettingState {
   sortType: 'ASC' | 'DESC';
   favoriteSymbols: Record<string, boolean>;
   highlight: boolean;
+  stickyChart: boolean;
 }
 
 interface IMarketTableSettingStore extends IMarketTableSettingState {
@@ -23,7 +24,8 @@ const defaultState: IMarketTableSettingState = {
   sortColumn: 'tp',
   sortType: 'DESC',
   favoriteSymbols: {},
-  highlight: true
+  highlight: true,
+  stickyChart: false
 };
 
 export const useMarketTableSettingStore = create<IMarketTableSettingStore>(

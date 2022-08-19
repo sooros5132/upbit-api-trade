@@ -9,6 +9,7 @@ interface ISiteSettingState {
   theme: 'dark' | 'light';
   fontSize: number;
   showMyAccounts: boolean;
+  headerHeight?: number;
 }
 
 interface ISiteSettingStore extends ISiteSettingState {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Flex11AutoBox, FlexAlignItemsCenterBox, FlexSpaceBetweenCenterBox } from '../modules/Box';
 import { IoLogoVercel } from 'react-icons/io5';
 import { AiFillApi, AiFillSetting } from 'react-icons/ai';
@@ -58,20 +58,46 @@ const Header: React.FC = () => {
   const theme = useTheme();
   const upbitAuth = useUpbitAuthStore();
   const { showMyAccounts, setShowMyAccounts } = useSiteSettingStore(
-    ({ setShowMyAccounts, showMyAccounts }) => ({ setShowMyAccounts, showMyAccounts }),
+    ({ setShowMyAccounts, showMyAccounts }) => ({
+      setShowMyAccounts,
+      showMyAccounts
+    }),
     shallow
   );
-  const highlight = useMarketTableSettingStore((state) => state.highlight, shallow);
+  const { highlight, stickyChart } = useMarketTableSettingStore(
+    ({ highlight, stickyChart }) => ({ highlight, stickyChart }),
+    shallow
+  );
   const [openRegisterUpbitApiDialog, setOpenRegisterUpbitApiDialog] = useState(false);
   const [accountEl, setAccountEl] = useState<null | HTMLElement>(null);
   const [isMounted, setMounted] = useState(false);
+  const headerRef = useRef<HTMLHeadElement>(null);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  useEffect(() => {
+    if (!headerRef.current) {
+      return;
+    }
+    const headerEl = headerRef.current;
+
+    useSiteSettingStore.setState({ headerHeight: headerEl.scrollHeight });
+
+    const handleResize = (evt: UIEvent) => {
+      useSiteSettingStore.setState({ headerHeight: headerEl.scrollHeight });
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [showMyAccounts]);
+
   const handleClickMenuItem =
-    (prop: 'logout' | 'showMyAccounts' | 'highlight' | 'upbitApiConnect') =>
+    (prop: 'logout' | 'showMyAccounts' | 'highlight' | 'upbitApiConnect' | 'stickyChart') =>
     (event: React.MouseEvent<HTMLLIElement>) => {
       switch (prop) {
         case 'logout': {
@@ -89,6 +115,12 @@ const Header: React.FC = () => {
           }));
           break;
         }
+        case 'stickyChart': {
+          useMarketTableSettingStore.setState((state) => ({
+            stickyChart: !state.stickyChart
+          }));
+          break;
+        }
         case 'upbitApiConnect': {
           setOpenRegisterUpbitApiDialog(true);
           break;
@@ -101,7 +133,7 @@ const Header: React.FC = () => {
   };
 
   return (
-    <Container>
+    <Container ref={headerRef}>
       <Inner>
         <FlexAlignItemsCenterBox>
           <Link href={'/'}>
@@ -128,6 +160,12 @@ const Header: React.FC = () => {
             <MenuItemInner>
               <Typography>하이라이트</Typography>
               <Switch size="small" checked={highlight} />
+            </MenuItemInner>
+          </MenuItem>
+          <MenuItem onClick={handleClickMenuItem('stickyChart')}>
+            <MenuItemInner>
+              <Typography>차트 상단 고정</Typography>
+              <Switch size="small" checked={stickyChart} />
             </MenuItemInner>
           </MenuItem>
           {isMounted && upbitAuth.secretKey

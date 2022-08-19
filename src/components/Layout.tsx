@@ -17,6 +17,7 @@ import darkScrollbar from '@mui/material/darkScrollbar';
 import LightTheme from 'src/styles/LightTheme';
 import DarkTheme from 'src/styles/DarkTheme';
 import { useSiteSettingStore } from 'src/store/siteSetting';
+import shallow from 'zustand/shallow';
 
 const LayoutContainer = styled(FlexColumnHeight100Box)`
   min-width: 250px;
@@ -30,10 +31,13 @@ const MainBox = styled('main')`
 interface LayoutProps {}
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-  const { theme: themeMode, fontSize: siteFontSize } = useSiteSettingStore((state) => ({
-    fontSize: state.fontSize,
-    theme: state.theme
-  }));
+  const { theme: themeMode, fontSize: siteFontSize } = useSiteSettingStore(
+    (state) => ({
+      fontSize: state.fontSize,
+      theme: state.theme
+    }),
+    shallow
+  );
   const themes = useTheme();
 
   const theme = React.useMemo(() => {

@@ -17,6 +17,8 @@ import { keyBy } from 'lodash';
 import { useMarketTableSettingStore } from 'src/store/marketTableSetting';
 import TradingViewTickers from 'src/components/tradingview/Tickers';
 import utcToZonedTime from 'date-fns-tz/utcToZonedTime';
+import shallow from 'zustand/shallow';
+import { useSiteSettingStore } from 'src/store/siteSetting';
 
 const Container = styled('div')`
   flex: 1 0 auto;
@@ -24,6 +26,7 @@ const Container = styled('div')`
 `;
 
 const Inner = styled(Width100Box)`
+  position: relative;
   padding: 0 ${({ theme }) => theme.spacing(1.25)};
   ${({ theme }) => theme.breakpoints.up('lg')} {
     max-width: 1200px;
@@ -73,6 +76,8 @@ const Home: NextPage<HomeProps> = ({
     [upbitMarketList]
   );
   const [isMounted, setMounted] = useState(false);
+  const stickyChart = useMarketTableSettingStore((state) => state.stickyChart, shallow);
+  const headerHeight = useSiteSettingStore((state) => state.headerHeight, shallow);
 
   if (!isMounted && upbitMarketSnapshot) {
     useExchangeStore.setState({ upbitForex, lastUpdatedAt: new Date(lastUpdatedAt) });
@@ -153,7 +158,18 @@ const Home: NextPage<HomeProps> = ({
             <TradingViewTickers />
           </TradingViewTickersInner>
         </TradingViewTickersContainer>
-        <TradingViewContainer>
+        <TradingViewContainer
+          sx={
+            isMounted && stickyChart && headerHeight
+              ? {
+                  position: 'sticky',
+                  top: headerHeight,
+                  left: 0,
+                  zIndex: 1
+                }
+              : undefined
+          }
+        >
           <TradingViewChart />
         </TradingViewContainer>
         <MarketTable upbitForex={upbitForex} />
