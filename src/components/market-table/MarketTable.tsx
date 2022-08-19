@@ -284,7 +284,7 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex }) => {
             </p>
             <p>
               시세 업데이트 시간:{' '}
-              {formatInTimeZone(new Date(lastUpdatedAt), 'Asia/Seoul', 'yyyy-MM-dd HH:mm:ss', {
+              {formatInTimeZone(lastUpdatedAt, 'Asia/Seoul', 'yyyy-MM-dd HH:mm:ss', {
                 locale: koLocale
               })}
             </p>
