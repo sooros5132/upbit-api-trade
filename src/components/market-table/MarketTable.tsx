@@ -775,7 +775,7 @@ const TableItem = React.memo<{
               <TextAlignRightBox>
                 <AskBidTypography state={upbitMarket.scp}>
                   <HighlightSpanTypography ref={krwPriceRef}>
-                    {upbitMarket.tp.toLocaleString()}
+                    {upbitMarket.tp > 1 ? upbitMarket.tp.toLocaleString() : upbitMarket.tp}
                   </HighlightSpanTypography>
                   {/* <br />
                   {upbitBtcMarket && upbitBtcPrice
