@@ -370,9 +370,9 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex }) => {
                     <TableHeaderSortIcon>
                       {sortColumn === 'korean_name' ? (
                         sortType === 'ASC' ? (
-                          <BiDownArrowAlt />
-                        ) : (
                           <BiUpArrowAlt />
+                        ) : (
+                          <BiDownArrowAlt />
                         )
                       ) : null}
                     </TableHeaderSortIcon>
@@ -397,9 +397,9 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex }) => {
                     <TableHeaderSortIcon>
                       {sortColumn === 'tp' ? (
                         sortType === 'ASC' ? (
-                          <BiDownArrowAlt />
-                        ) : (
                           <BiUpArrowAlt />
+                        ) : (
+                          <BiDownArrowAlt />
                         )
                       ) : null}
                     </TableHeaderSortIcon>
@@ -424,9 +424,9 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex }) => {
                     <TableHeaderSortIcon>
                       {sortColumn === 'scr' ? (
                         sortType === 'ASC' ? (
-                          <BiDownArrowAlt />
-                        ) : (
                           <BiUpArrowAlt />
+                        ) : (
+                          <BiDownArrowAlt />
                         )
                       ) : null}
                     </TableHeaderSortIcon>
@@ -451,9 +451,9 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex }) => {
                     <TableHeaderSortIcon>
                       {sortColumn === 'premium' ? (
                         sortType === 'ASC' ? (
-                          <BiDownArrowAlt />
-                        ) : (
                           <BiUpArrowAlt />
+                        ) : (
+                          <BiDownArrowAlt />
                         )
                       ) : null}
                     </TableHeaderSortIcon>
@@ -478,9 +478,9 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex }) => {
                     <TableHeaderSortIcon>
                       {sortColumn === 'atp24h' ? (
                         sortType === 'ASC' ? (
-                          <BiDownArrowAlt />
-                        ) : (
                           <BiUpArrowAlt />
+                        ) : (
+                          <BiDownArrowAlt />
                         )
                       ) : null}
                     </TableHeaderSortIcon>
@@ -507,20 +507,13 @@ const TableBody = React.memo<{
     ({ hydrated, favoriteSymbols }) => ({ hydrated, favoriteSymbols }),
     shallow
   );
-  const { searchedSymbols, sortedUpbitMarketSymbolList } = useExchangeStore(
-    ({ searchedSymbols, sortedUpbitMarketSymbolList }) => ({
-      searchedSymbols,
-      sortedUpbitMarketSymbolList
-    }),
-    shallow
-  );
-  const symbols = hydrated ? searchedSymbols : sortedUpbitMarketSymbolList;
+  const searchedSymbols = useExchangeStore(({ searchedSymbols }) => searchedSymbols, shallow);
 
   useEffect(() => {
     const { hydrated, setHydrated } = useMarketTableSettingStore.getState();
 
     if (!hydrated) setHydrated();
-  });
+  }, []);
 
   useEffect(() => {
     useExchangeStore.getState().sortSymbolList(sortColumn, sortType);
@@ -533,7 +526,7 @@ const TableBody = React.memo<{
 
   return (
     <Tbody>
-      {symbols.map((krwSymbol, index) => {
+      {searchedSymbols.map((krwSymbol, index) => {
         const favorite = hydrated ? Boolean(favoriteSymbols[krwSymbol]) : false;
 
         return (

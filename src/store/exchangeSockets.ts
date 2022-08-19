@@ -283,19 +283,21 @@ const useExchangeStore = create<IExchangeStore>(
       const upbitForex = get().upbitForex;
       if (!upbitForex) return;
       set((state) => {
-        const favoriteSymbols = useMarketTableSettingStore.getState().favoriteSymbols;
+        const { favoriteSymbols, hydrated } = useMarketTableSettingStore.getState();
         const { searchedSymbols, upbitMarketDatas } = state;
         const favoriteList: IMarketTableItem[] = [];
-        const normalList = searchedSymbols
-          .map((symbol) => upbitMarketDatas[symbol])
-          .filter((m) => {
-            const favorite = favoriteSymbols[m.cd];
-            if (favorite) {
-              favoriteList.push(m);
-            } else {
-              return true;
-            }
-          });
+        const normalList = hydrated
+          ? searchedSymbols
+              .map((symbol) => upbitMarketDatas[symbol])
+              .filter((m) => {
+                const favorite = favoriteSymbols[m.cd];
+                if (favorite) {
+                  favoriteList.push(m);
+                } else {
+                  return true;
+                }
+              })
+          : searchedSymbols.map((symbol) => upbitMarketDatas[symbol]);
 
         // const mergeMarkets = upbitMarketDatas.map((upbitMarket) => {
         //   return {

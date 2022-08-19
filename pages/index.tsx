@@ -89,6 +89,9 @@ const Home: NextPage<HomeProps> = ({
       useMarketTableSettingStore.getState().setSortColumn('tp');
       useMarketTableSettingStore.getState().setSortType('DESC');
       useExchangeStore.getState().sortSymbolList('tp', 'DESC');
+      useExchangeStore.setState({
+        sortedUpbitMarketSymbolList: useExchangeStore.getState().searchedSymbols
+      });
     }
   }
   // const { setMarketSocketData } = useUpbitDataStore();
