@@ -779,12 +779,17 @@ const TableItem = React.memo<{
                 </AskBidTypography>
                 <AskBidTypography state={upbitMarket.scp} opacity={0.7}>
                   <HighlightSpanTypography ref={usdPriceRef}>
-                    {upbitMarket.binance_price &&
-                      Number(
-                        (Number(upbitMarket.binance_price) * upbitForex.basePrice).toFixed(
-                          priceDecimalLength
-                        )
-                      ).toLocaleString()}
+                    {upbitMarket.binance_price
+                      ? Number(upbitMarket.binance_price) * upbitForex.basePrice > 1
+                        ? Number(
+                            (Number(upbitMarket.binance_price) * upbitForex.basePrice).toFixed(
+                              priceDecimalLength
+                            )
+                          ).toLocaleString()
+                        : Number(Number(upbitMarket.binance_price) * upbitForex.basePrice).toFixed(
+                            priceDecimalLength
+                          )
+                      : null}
                   </HighlightSpanTypography>
                 </AskBidTypography>
               </TextAlignRightBox>
