@@ -79,8 +79,8 @@ const Footer: React.FC<FooterProps> = ({}) => {
               </LogoBox>
               {/* <ContactBox>
                 <Typography>
-                  <Link href="mailto:sooros5132@gmail.com">
-                    <a>sooros5132@gmail.com</a>
+                  <Link href="mailto:contact@sooros.com">
+                    <a>contact@sooros.com</a>
                   </Link>
                 </Typography>
               </ContactBox> */}
@@ -90,7 +90,7 @@ const Footer: React.FC<FooterProps> = ({}) => {
                   fontSize: theme.size.px24
                 }}
               >
-                <a href="mailto:sooros5132@gmail.com">
+                <a href="mailto:contact@sooros.com">
                   <div>
                     <SiMaildotru />
                   </div>
