@@ -118,7 +118,7 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex, isLastUpdate
   };
 
   return (
-    <div className='max-w-screen-xl mx-auto text-xs sm:text-sm'>
+    <div className='max-w-screen-xl mx-auto mb-4 text-xs sm:text-sm'>
       {isLastUpdatePage ? (
         <div className='my-4'>
           <BackgroundBlueBox>
@@ -180,7 +180,7 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex, isLastUpdate
               </BackgroundRedBox>
             </div>
           </noscript>
-          <div className='flex items-center justify-between'>
+          <div className='flex items-center justify-between my-2'>
             <div className='flex flex-nowrap'>
               <div className='tooltip' data-tip={connectedUpbit ? '연결 됨' : '재연결'}>
                 <div
@@ -213,16 +213,19 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex, isLastUpdate
               </div>
             </div>
             <div className='flex justify-end'>
-              <div className='form-control'>
-                <label className='input-group input-group-md'>
+              <div className='border rounded-md form-control border-base-300 '>
+                <label className='input-group input-group-sm '>
                   <input
                     type='text'
                     placeholder='BTC, 비트, Bitcoin'
                     value={searchValue}
                     onChange={handleChangeMarketSearchInput}
-                    className='input input-bordered w-[170px]'
+                    className='input input-sm bg-transparent w-[170px] focus:outline-offset-0 focus:rounded-l-md'
                   />
-                  <span>
+                  <span
+                    className='text-xl text-gray-600 bg-transparent cursor-pointer px-1.5 justify-end'
+                    onClick={handleClickClearSearchInputButton}
+                  >
                     <RiCloseCircleLine />
                   </span>
                 </label>
@@ -233,7 +236,7 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex, isLastUpdate
       )}
       <table className='table w-full [&_td]:text-xs sm:[&_td]:text-sm  table-compact'>
         <thead>
-          <tr className='[&>td]:text-gray-600'>
+          <tr className='[&>td]:text-gray-600 [&>th:first-child]:rounded-none [&>th:last-child]:rounded-none'>
             <th className='w-[1.25em] market-td-padding'></th>
             <th className='w-auto market-td-padding'>
               <div
@@ -437,30 +440,23 @@ const TableItem = React.memo<{
 
   const { selectedMarketSymbol, selectedExchange } = useTradingViewSettingStore();
 
-  const handleClickMarketIcon = useCallback(
-    (symbol: string, exchange: 'BINANCE' | 'UPBIT') => () => {
-      const { setSelectedMarketSymbol, setSelectedExchange } =
-        useTradingViewSettingStore.getState();
-      setSelectedMarketSymbol(symbol);
-      setSelectedExchange(exchange);
-      window.scrollTo(0, 0);
-    },
-    []
-  );
-  const handleClickStarIcon = useCallback(
-    (symbol: string) => () => {
-      if (!favorite) {
-        useMarketTableSettingStore.getState().addFavoriteSymbol(symbol);
-      } else {
-        useMarketTableSettingStore.getState().removeFavoriteSymbol(symbol);
-      }
-      const { sortColumn, sortType } = useMarketTableSettingStore.getState();
-      useExchangeStore.getState().sortSymbolList(sortColumn, sortType);
-    },
-    [favorite]
-  );
+  const handleClickMarketIcon = (symbol: string, exchange: 'BINANCE' | 'UPBIT') => () => {
+    const { setSelectedMarketSymbol, setSelectedExchange } = useTradingViewSettingStore.getState();
+    setSelectedMarketSymbol(symbol);
+    setSelectedExchange(exchange);
+    window.scrollTo(0, 0);
+  };
 
-  //
+  const handleClickStarIcon = (symbol: string) => () => {
+    if (!favorite) {
+      useMarketTableSettingStore.getState().addFavoriteSymbol(symbol);
+    } else {
+      useMarketTableSettingStore.getState().removeFavoriteSymbol(symbol);
+    }
+    const { sortColumn, sortType } = useMarketTableSettingStore.getState();
+    useExchangeStore.getState().sortSymbolList(sortColumn, sortType);
+  };
+
   useEffect(() => {
     if (!highlight || !krwPriceRef?.current) {
       return;
