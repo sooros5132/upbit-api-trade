@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
 import shallow from 'zustand/shallow';
 import { useThemeStore } from 'src/store/theme';
+// import Header from './header/Header';
+import Footer from './footer/Footer';
 
 interface LayoutProps {
   children?: React.ReactNode;
@@ -25,9 +27,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <div className='flex flex-col h-full min-h-screen'>
-      {/* <Header></Header> */}
+      {/* <Header /> */}
       {children}
-      {/* <Footer></Footer> */}
+      <Footer />
     </div>
   );
 };
