@@ -31,11 +31,11 @@
     @apply w-[1em] h-[1em] leading-[1em] opacity-60 object-contain;
   }
   .highlight {
-    animation: highlight-keyframe 0.3s ease-out;
+    animation: highlight-keyframes 0.3s ease-out;
   }
 }
 
-@keyframe highlight-keyframe {
+@keyframes highlight-keyframes {
   0% {
     background-color: none;
   }
