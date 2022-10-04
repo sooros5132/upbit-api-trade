@@ -3,6 +3,7 @@ import isEqual from 'react-fast-compare';
 import { BiUpArrowAlt, BiDownArrowAlt } from 'react-icons/bi';
 import { IUpbitForex, IUpbitSocketMessageTickerSimple } from 'src/types/upbit';
 import {
+  BackgroundBlueBox,
   BackgroundRedBox,
   CursorPointerBox,
   FlexAlignItemsCenterBox,
@@ -172,9 +173,10 @@ export interface IMarketTableItem extends IUpbitSocketMessageTickerSimple {
 
 interface MarketTableProps {
   upbitForex: IUpbitForex;
+  isLastUpdatePage?: boolean;
 }
 
-const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex }) => {
+const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex, isLastUpdatePage }) => {
   const theme = useTheme();
   const { enqueueSnackbar } = useSnackbar();
   const { sortColumn, sortType, setSortColumn, setSortType } = useMarketTableSettingStore();
@@ -261,25 +263,21 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex }) => {
 
   return (
     <TableContainer>
-      <noscript>
+      {isLastUpdatePage ? (
         <TextAlignCenterBox>
-          <BackgroundRedBox sx={{ mt: 2, mb: 0 }}>
+          <BackgroundBlueBox sx={{ my: 2 }}>
             <p>
-              현재 사용중인 브라우저에서 자바스크립트가 비활성화 되어있습니다.
+              마지막 시세를 보는 페이지입니다.
               <br />
-              실시간 시세를 보시려면 자바스크립트를 활성화하시고 새로고침 해주세요.
-            </p>
-            <p>
               <a
-                href="https://support.google.com/adsense/answer/12654?hl=ko"
+                href="/"
                 style={{
-                  textDecoration: 'underline',
-                  color: 'lightyellow'
+                  textDecoration: 'underline'
                 }}
                 target="_blank"
                 rel="noreferrer"
               >
-                활성화 방법 보기
+                실시간 시세 보러가기
               </a>
             </p>
             <p>
@@ -288,65 +286,98 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex }) => {
                 locale: koLocale
               })}
             </p>
-          </BackgroundRedBox>
+          </BackgroundBlueBox>
         </TextAlignCenterBox>
-      </noscript>
-      <FlexSpaceBetweenCenterBox>
-        <FlexNoWrapBox>
-          <Tooltip title={connectedUpbit ? '연결 됨' : '재연결'} arrow>
-            <FlexAlignItemsCenterBox
-              onClick={handleClickConnectSocket('upbit')}
-              sx={connectedBinance ? undefined : { cursor: 'pointer' }}
-            >
-              <Typography component="span">업비트</Typography>
-              <DotContainer
-                sx={{ color: connectedUpbit ? theme.color.greenMain : theme.color.redMain }}
-              >
-                <GoPrimitiveDot />
-              </DotContainer>
-            </FlexAlignItemsCenterBox>
-          </Tooltip>
-          <Box mx={0.5} />
-          <Tooltip title={connectedBinance ? '연결 됨' : '재연결'} arrow>
-            <FlexAlignItemsCenterBox
-              onClick={handleClickConnectSocket('binance')}
-              sx={connectedBinance ? undefined : { cursor: 'pointer' }}
-            >
-              <Typography component="span">바이낸스</Typography>
-              <DotContainer
-                sx={{ color: connectedBinance ? theme.color.greenMain : theme.color.redMain }}
-              >
-                <GoPrimitiveDot />
-              </DotContainer>
-            </FlexAlignItemsCenterBox>
-          </Tooltip>
-        </FlexNoWrapBox>
+      ) : (
+        <>
+          <noscript>
+            <TextAlignCenterBox>
+              <BackgroundRedBox sx={{ mt: 2, mb: 0 }}>
+                <p>
+                  현재 사용중인 브라우저에서 자바스크립트가 비활성화 되어있습니다.
+                  <br />
+                  실시간 시세를 보시려면 자바스크립트를 활성화하시고 새로고침 해주세요.
+                </p>
+                <p>
+                  <a
+                    href="https://support.google.com/adsense/answer/12654?hl=ko"
+                    style={{
+                      textDecoration: 'underline',
+                      color: 'lightyellow'
+                    }}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    활성화 방법 보기
+                  </a>
+                </p>
+                <p>
+                  시세 업데이트 시간:{' '}
+                  {formatInTimeZone(lastUpdatedAt, 'Asia/Seoul', 'yyyy-MM-dd HH:mm:ss', {
+                    locale: koLocale
+                  })}
+                </p>
+              </BackgroundRedBox>
+            </TextAlignCenterBox>
+          </noscript>
+          <FlexSpaceBetweenCenterBox>
+            <FlexNoWrapBox>
+              <Tooltip title={connectedUpbit ? '연결 됨' : '재연결'} arrow>
+                <FlexAlignItemsCenterBox
+                  onClick={handleClickConnectSocket('upbit')}
+                  sx={connectedBinance ? undefined : { cursor: 'pointer' }}
+                >
+                  <Typography component="span">업비트</Typography>
+                  <DotContainer
+                    sx={{ color: connectedUpbit ? theme.color.greenMain : theme.color.redMain }}
+                  >
+                    <GoPrimitiveDot />
+                  </DotContainer>
+                </FlexAlignItemsCenterBox>
+              </Tooltip>
+              <Box mx={0.5} />
+              <Tooltip title={connectedBinance ? '연결 됨' : '재연결'} arrow>
+                <FlexAlignItemsCenterBox
+                  onClick={handleClickConnectSocket('binance')}
+                  sx={connectedBinance ? undefined : { cursor: 'pointer' }}
+                >
+                  <Typography component="span">바이낸스</Typography>
+                  <DotContainer
+                    sx={{ color: connectedBinance ? theme.color.greenMain : theme.color.redMain }}
+                  >
+                    <GoPrimitiveDot />
+                  </DotContainer>
+                </FlexAlignItemsCenterBox>
+              </Tooltip>
+            </FlexNoWrapBox>
 
-        <SearchInputContainer>
-          <FormControl sx={{ width: 170 }} variant="standard">
-            <OutlinedInput
-              placeholder="BTC, 비트, Bitcoin"
-              value={searchValue}
-              onChange={handleChangeMarketSearchInput}
-              endAdornment={
-                searchValue && (
-                  <InputAdornment position="end">
-                    <IconButton
-                      onClick={handleClickClearSearchInputButton}
-                      sx={{ color: theme.color.gray70 }}
-                    >
-                      <RiCloseCircleLine />
-                    </IconButton>
-                  </InputAdornment>
-                )
-              }
-              sx={{
-                pr: 0
-              }}
-            />
-          </FormControl>
-        </SearchInputContainer>
-      </FlexSpaceBetweenCenterBox>
+            <SearchInputContainer>
+              <FormControl sx={{ width: 170 }} variant="standard">
+                <OutlinedInput
+                  placeholder="BTC, 비트, Bitcoin"
+                  value={searchValue}
+                  onChange={handleChangeMarketSearchInput}
+                  endAdornment={
+                    searchValue && (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={handleClickClearSearchInputButton}
+                          sx={{ color: theme.color.gray70 }}
+                        >
+                          <RiCloseCircleLine />
+                        </IconButton>
+                      </InputAdornment>
+                    )
+                  }
+                  sx={{
+                    pr: 0
+                  }}
+                />
+              </FormControl>
+            </SearchInputContainer>
+          </FlexSpaceBetweenCenterBox>
+        </>
+      )}
       <Table cellSpacing="0" cellPadding="0">
         <Thead>
           <TableHeaderRow>

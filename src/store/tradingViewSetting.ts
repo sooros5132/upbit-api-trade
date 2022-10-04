@@ -1,10 +1,6 @@
 import create from 'zustand';
 import { persist } from 'zustand/middleware';
 
-const DEFAULT_FONT_SIZE = 14;
-const MIN_FONT_SIZE = 12;
-const MAX_FONT_SIZE = 18;
-
 interface ITradingViewSettingState {
   selectedMarketSymbol: string;
   selectedExchange: 'BINANCE' | 'UPBIT';
