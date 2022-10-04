@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .flex-align-items-center {
+    @apply flex items-center;
+  }
+
+  .flex-justify-content-center {
+    @apply flex justify-center;
+  }
+
+  .flex-center {
+    @apply flex items-center justify-center;
+  }
+
+  .font-emoji {
+    font-family: emoji;
+  }
+
+  .market-td-padding {
+    @apply px-0.5 py-1.5 sm:px-1 sm:py-2;
+  }
+
+  .market-chart-icon {
+    @apply cursor-pointer opacity-50 text-white leading-[1em];
+  }
+
+  .market-exchange-image {
+    @apply w-[1em] h-[1em] leading-[1em] opacity-60 object-contain;
+  }
+  .highlight {
+    animation: highlight-keyframe 0.3s ease-out;
+  }
+}
+
+@keyframe highlight-keyframe {
+  0% {
+    background-color: none;
+  }
+  10% {
+    background-color: rgba(234, 200, 94, 0.5);
+  }
+  100% {
+    background-color: none;
+  }
+}
+
+html.nprogress-busy > body > #nprogress > .spinner {
+  display: none;
+}

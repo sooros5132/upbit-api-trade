@@ -1,84 +1,34 @@
-import React from 'react';
-import {
-  createTheme,
-  ThemeOptions,
-  ThemeProvider as MuiThemeProvider,
-  Theme as MuiTheme,
-  styled,
-  useTheme
-} from '@mui/material/styles';
-import Footer from './footer/Footer';
-import Header from './header/Header';
-import { FlexColumnHeight100Box } from './modules/Box';
-import CssBaseline from '@mui/material/CssBaseline';
-import { merge } from 'lodash';
-import CommonTheme from 'src/styles/CommomTheme';
-import darkScrollbar from '@mui/material/darkScrollbar';
-import LightTheme from 'src/styles/LightTheme';
-import DarkTheme from 'src/styles/DarkTheme';
-import { useSiteSettingStore } from 'src/store/siteSetting';
+import { useEffect } from 'react';
 import shallow from 'zustand/shallow';
+import { useThemeStore } from 'src/store/theme';
 
-const LayoutContainer = styled(FlexColumnHeight100Box)`
-  min-width: 250px;
-  min-height: 100vh;
-`;
-
-const MainBox = styled('main')`
-  flex: 1 0 auto;
-`;
-
-interface LayoutProps {}
+interface LayoutProps {
+  children?: React.ReactNode;
+}
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-  const { theme: themeMode, fontSize: siteFontSize } = useSiteSettingStore(
-    (state) => ({
-      fontSize: state.fontSize,
-      theme: state.theme
-    }),
-    shallow
-  );
-  const themes = useTheme();
+  const themeStore = useThemeStore((state) => state, shallow);
 
-  const theme = React.useMemo(() => {
-    let theme: MuiTheme;
-    const fontSize: ThemeOptions = {
-      components: {
-        MuiCssBaseline: {
-          styleOverrides: {
-            html: {
-              fontSize: siteFontSize,
-              [`${themes.breakpoints.down('sm')}`]: {
-                fontSize: siteFontSize * 0.8571428571428571
-              }
-            },
-            body: themeMode === 'dark' ? { ...darkScrollbar() } : {}
-          }
-        }
-      }
-    };
-    switch (themeMode) {
-      case 'light': {
-        theme = createTheme(merge(fontSize, CommonTheme, LightTheme));
-        break;
-      }
-      case 'dark': {
-        theme = createTheme(merge(fontSize, CommonTheme, DarkTheme));
-        break;
-      }
+  // React.useEffect(() => {
+  //   const handleRouteChangeStart = (url: string) => {
+
+  //   };
+  //   router.events.on('routeChangeStart', handleRouteChangeStart);
+  //   return () => router.events.off('routeChangeStart', handleRouteChangeStart);
+  // }, [router.events, router]);
+
+  useEffect(() => {
+    if (themeStore.mode) {
+      document.documentElement.dataset.theme = themeStore.mode;
     }
-    return theme;
-  }, [siteFontSize, themeMode, themes.breakpoints]);
+  }, [themeStore]);
 
   return (
-    <MuiThemeProvider<MuiTheme> theme={theme}>
-      <CssBaseline />
-      <LayoutContainer>
-        <Header></Header>
-        {children}
-        <Footer></Footer>
-      </LayoutContainer>
-    </MuiThemeProvider>
+    <div className='flex flex-col h-full min-h-screen'>
+      {/* <Header></Header> */}
+      {children}
+      {/* <Footer></Footer> */}
+    </div>
   );
 };
 

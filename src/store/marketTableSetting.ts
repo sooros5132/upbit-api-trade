@@ -28,8 +28,8 @@ const defaultState: IMarketTableSettingState = {
   stickyChart: false
 };
 
-export const useMarketTableSettingStore = create<IMarketTableSettingStore>(
-  persist(
+export const useMarketTableSettingStore = create(
+  persist<IMarketTableSettingStore>(
     (set, get) => ({
       ...defaultState,
       setHydrated: () => set({ hydrated: true }),
@@ -63,7 +63,9 @@ export const useMarketTableSettingStore = create<IMarketTableSettingStore>(
       //   }
       // }
       partialize: (state) =>
-        Object.fromEntries(Object.entries(state).filter(([key]) => !['hydrated'].includes(key)))
+        Object.fromEntries(
+          Object.entries(state).filter(([key]) => !['hydrated'].includes(key))
+        ) as IMarketTableSettingStore
     }
   )
 );
