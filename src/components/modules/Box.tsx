@@ -241,15 +241,15 @@ import { PropsWithChildren } from 'react';
 // `;
 
 export const BackgroundRedBox = ({ children }: PropsWithChildren) => {
-  return <div className='rounded-xl py-8 px-1.5 bg-red-600/25 text-red-400'>{children}</div>;
+  return <div className='rounded-lg py-8 px-1.5 bg-red-900/25 text-red-400'>{children}</div>;
 };
 
 export const BackgroundGreenBox = ({ children }: PropsWithChildren) => {
-  return <div className='rounded-xl py-8 px-1.5 bg-green-600/25 text-green-400'>{children}</div>;
+  return <div className='rounded-lg py-8 px-1.5 bg-green-900/25 text-green-400'>{children}</div>;
 };
 
 export const BackgroundBlueBox = ({ children }: PropsWithChildren) => {
-  return <div className='rounded-xl py-8 px-1.5 bg-blue-600/25 text-blue-400'>{children}</div>;
+  return <div className='rounded-lg py-8 px-1.5 bg-blue-900/25 text-blue-400'>{children}</div>;
 };
 
 // export const NoWrapBox = styled(Box)`
