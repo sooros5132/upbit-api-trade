@@ -1,37 +1,10 @@
+/* eslint-disable @next/next/no-img-element */
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import isEqual from 'react-fast-compare';
 import { BiUpArrowAlt, BiDownArrowAlt } from 'react-icons/bi';
 import { IUpbitForex, IUpbitSocketMessageTickerSimple } from 'src/types/upbit';
-import {
-  BackgroundBlueBox,
-  BackgroundRedBox,
-  CursorPointerBox,
-  FlexAlignItemsCenterBox,
-  FlexBox,
-  FlexCursorPointerBox,
-  FlexJustifyContentCenterBox,
-  FlexJustifyContentFlexEndBox,
-  FlexNoWrapBox,
-  FlexSpaceBetweenCenterBox,
-  MonoFontBox,
-  NoWrapBox,
-  TextAlignCenterBox,
-  TextAlignRightBox
-} from '../modules/Box';
 import { koPriceLabelFormat } from 'src/utils/utils';
 import { NextSeo } from 'next-seo';
-import { styled, useTheme } from '@mui/material/styles';
-import {
-  Box,
-  FormControl,
-  IconButton,
-  InputAdornment,
-  OutlinedInput,
-  Tooltip,
-  Typography
-} from '@mui/material';
-import { useSnackbar } from 'notistack';
-import { AskBidTypography, HighlightSpanTypography } from '../modules/Typography';
 import { clientApiUrls } from 'src/utils/clientApiUrls';
 import { AiOutlineAreaChart } from 'react-icons/ai';
 import { TiPin } from 'react-icons/ti';
@@ -44,124 +17,10 @@ import { RiCloseCircleLine } from 'react-icons/ri';
 import { GoPrimitiveDot } from 'react-icons/go';
 import formatInTimeZone from 'date-fns-tz/formatInTimeZone';
 import { ko as koLocale } from 'date-fns/locale';
-
-const TableContainer = styled('div')`
-  margin: 0 auto;
-  max-width: 1280px;
-`;
-
-const SearchInputContainer = styled(FlexJustifyContentFlexEndBox)`
-  margin: ${({ theme }) => theme.spacing(2)} 0;
-`;
-
-const Table = styled('table')`
-  width: 100%;
-  border-spacing: 0;
-  border-collapse: collapse;
-  text-indent: 0;
-`;
-const Thead = styled('thead')``;
-const Tbody = styled('tbody')`
-  & tr:hover {
-    background-color: ${({ theme }) => theme.color.black + '10'};
-  }
-`;
-
-const TableRow = styled('tr')`
-  border-bottom: 1px solid ${({ theme }) => theme.color.black + '10'};
-  min-width: ${({ theme }) => theme.spacing(5)};
-  padding: ${({ theme }) => theme.spacing(0.5)};
-`;
-
-const TableCell = styled('td')`
-  line-height: 1.25em;
-  font-size: ${({ theme }) => theme.size.px14};
-`;
-
-const TableHeaderRow = styled(TableRow)`
-  background-color: ${({ theme }) => theme.color.black + '05'};
-`;
-const TableHeaderCell = styled(TableCell)(({ theme }) => ({
-  color: theme.color.gray20,
-  padding: `${theme.spacing(1)} ${theme.spacing(0.5)}`,
-  [`${theme.breakpoints.down('sm')}`]: {
-    padding: `${theme.spacing(0.75)} ${theme.spacing(0.25)}`
-  }
-}));
-
-const TableHeaderSortIcon = styled(FlexAlignItemsCenterBox)`
-  font-size: ${({ theme }) => theme.size.px14};
-`;
-
-const TableCellInnerBox = styled('div')(({ theme }) => ({
-  padding: `${theme.spacing(1)} ${theme.spacing(0.5)}`,
-  [`${theme.breakpoints.down('sm')}`]: {
-    padding: `${theme.spacing(0.75)} ${theme.spacing(0.25)}`
-  }
-}));
-
-const ButtonContainer = styled(FlexBox)(({ theme }) => ({
-  fontSize: theme.size.px16
-}));
-
-const MarketIconImage = styled('img')(({ theme }) => ({
-  width: 16,
-  height: 16,
-  padding: 1,
-  objectFit: 'contain',
-  backgroundColor: theme.color.absolutlyWhite,
-  borderRadius: '50%',
-  [`${theme.breakpoints.down('sm')}`]: {
-    width: 12,
-    height: 12
-  }
-}));
-
-const ExchangeImage = styled('img')`
-  width: 1em;
-  height: 1em;
-  opacity: 0.65;
-  object-fit: contain;
-`;
-
-const ChartIconBox = styled(CursorPointerBox)(({ theme }) => ({
-  color: theme.color.black,
-  opacity: 0.5
-}));
-
-const FavoriteIconBox = styled(CursorPointerBox)(({ theme }) => ({
-  color: theme.color.yellowMain
-}));
-
-const IconCell = styled(TableCell)`
-  font-size: ${({ theme }) => theme.size.px14};
-  width: 28px;
-  ${({ theme }) => theme.breakpoints.down('sm')} {
-    width: 12px;
-  }
-`;
-const NameCell = styled(TableHeaderCell)`
-  width: 'auto';
-`;
-const PriceCell = styled(TableHeaderCell)`
-  width: 20%;
-`;
-const ChangeCell = styled(TableHeaderCell)`
-  width: 10%;
-`;
-const PremiumCell = styled(TableHeaderCell)`
-  width: 10%;
-`;
-const VolumeCell = styled(TableHeaderCell)`
-  width: 10%;
-  ${({ theme }) => theme.breakpoints.down('sm')} {
-    width: 'auto';
-  }
-`;
-
-const DotContainer = styled(FlexAlignItemsCenterBox)(({ theme }) => ({
-  fontSize: theme.size.px20
-}));
+import classNames from 'classnames';
+import { BackgroundBlueBox, BackgroundRedBox } from '../modules/Box';
+import { AskBidParagraph } from '../modules/Typography';
+import { toast } from 'react-toastify';
 
 export interface IMarketTableItem extends IUpbitSocketMessageTickerSimple {
   korean_name?: string;
@@ -177,9 +36,8 @@ interface MarketTableProps {
 }
 
 const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex, isLastUpdatePage }) => {
-  const theme = useTheme();
-  const { enqueueSnackbar } = useSnackbar();
   const { sortColumn, sortType, setSortColumn, setSortType } = useMarketTableSettingStore();
+
   const { connectedUpbit, connectedBinance, lastUpdatedAt } = useExchangeStore(
     ({ upbitSocket, binanceSocket, lastUpdatedAt }) => {
       let connectedUpbit = false;
@@ -231,301 +89,306 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex, isLastUpdate
       case 'upbit': {
         const { connectUpbitSocket, upbitMarkets } = useExchangeStore.getState();
         if (!connectedUpbit) {
-          enqueueSnackbar('업비트 서버에 다시 연결을 시도합니다.', {
-            variant: 'success'
-          });
+          // enqueueSnackbar(' 서버에 다시 연결을 시도합니다.', {
+          //   variant: 'success'
+          // });
+          toast.info('업비트 서버에 연결을 시도합니다.');
           useExchangeStore.setState({ upbitSocket: undefined });
           connectUpbitSocket({
             upbitMarkets: upbitMarkets
           });
+        } else {
+          toast.success('업비트 서버와 연결 되어 있습니다.');
         }
         break;
       }
       case 'binance': {
         const { connectBinanceSocket, upbitMarkets } = useExchangeStore.getState();
         if (!connectedBinance) {
-          enqueueSnackbar('바이낸스 서버에 다시 연결을 시도합니다.', {
-            variant: 'success'
-          });
+          // enqueueSnackbar('바이낸스 서버에 다시 연결을 시도합니다.', {
+          //   variant: 'success'
+          // });
           useExchangeStore.setState({ binanceSocket: undefined });
           const markets = upbitMarkets.map(
             (m) => m.market.replace(krwRegex, '').toLowerCase() + 'usdt@ticker'
           );
+          toast.info('바이낸스 서버에 연결을 시도합니다.');
           connectBinanceSocket({
             binanceMarkets: markets
           });
+        } else {
+          toast.success('바이낸스 서버와 연결 되어 있습니다.');
         }
-
         break;
       }
     }
   };
 
   return (
-    <TableContainer>
+    <div className='max-w-screen-xl mx-auto mb-4 text-xs sm:text-sm'>
       {isLastUpdatePage ? (
-        <TextAlignCenterBox>
-          <BackgroundBlueBox sx={{ my: 2 }}>
-            <p>
-              마지막 시세를 보는 페이지입니다.
-              <br />
-              <a
-                href="/"
-                style={{
-                  textDecoration: 'underline'
-                }}
-                target="_blank"
-                rel="noreferrer"
-              >
-                실시간 시세 보러가기
-              </a>
-            </p>
-            <p>
-              시세 업데이트 시간:{' '}
-              {formatInTimeZone(lastUpdatedAt, 'Asia/Seoul', 'yyyy-MM-dd HH:mm:ss', {
-                locale: koLocale
-              })}
-            </p>
+        <div className='my-4'>
+          <BackgroundBlueBox>
+            <div className='text-center'>
+              <p>
+                마지막 시세를 보는 페이지입니다.
+                <br />
+                <a
+                  href='/'
+                  style={{
+                    textDecoration: 'underline'
+                  }}
+                  target='_blank'
+                  rel='noreferrer'
+                >
+                  실시간 시세 보러가기
+                </a>
+              </p>
+              <p>
+                시세 업데이트 시간:{' '}
+                {formatInTimeZone(lastUpdatedAt, 'Asia/Seoul', 'yyyy-MM-dd HH:mm:ss', {
+                  locale: koLocale
+                })}
+              </p>
+            </div>
           </BackgroundBlueBox>
-        </TextAlignCenterBox>
+        </div>
       ) : (
         <>
           <noscript>
-            <TextAlignCenterBox>
-              <BackgroundRedBox sx={{ mt: 2, mb: 0 }}>
-                <p>
-                  현재 사용중인 브라우저에서 자바스크립트가 비활성화 되어있습니다.
-                  <br />
-                  실시간 시세를 보시려면 자바스크립트를 활성화하시고 새로고침 해주세요.
-                </p>
-                <p>
-                  <a
-                    href="https://support.google.com/adsense/answer/12654?hl=ko"
-                    style={{
-                      textDecoration: 'underline',
-                      color: 'lightyellow'
-                    }}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    활성화 방법 보기
-                  </a>
-                </p>
-                <p>
-                  시세 업데이트 시간:{' '}
-                  {formatInTimeZone(lastUpdatedAt, 'Asia/Seoul', 'yyyy-MM-dd HH:mm:ss', {
-                    locale: koLocale
-                  })}
-                </p>
+            <div className='mt-4'>
+              <BackgroundRedBox>
+                <div className='text-center'>
+                  <p>
+                    현재 사용중인 브라우저에서 자바스크립트가 비활성화 되어있습니다.
+                    <br />
+                    실시간 시세를 보시려면 자바스크립트를 활성화하시고 새로고침 해주세요.
+                  </p>
+                  <p>
+                    <a
+                      href='https://support.google.com/adsense/answer/12654?hl=ko'
+                      style={{
+                        textDecoration: 'underline',
+                        color: 'lightyellow'
+                      }}
+                      target='_blank'
+                      rel='noreferrer'
+                    >
+                      활성화 방법 보기
+                    </a>
+                  </p>
+                  <p>
+                    시세 업데이트 시간:{' '}
+                    {formatInTimeZone(lastUpdatedAt, 'Asia/Seoul', 'yyyy-MM-dd HH:mm:ss', {
+                      locale: koLocale
+                    })}
+                  </p>
+                </div>
               </BackgroundRedBox>
-            </TextAlignCenterBox>
+            </div>
           </noscript>
-          <FlexSpaceBetweenCenterBox>
-            <FlexNoWrapBox>
-              <Tooltip title={connectedUpbit ? '연결 됨' : '재연결'} arrow>
-                <FlexAlignItemsCenterBox
+          <div className='flex items-center justify-between my-2'>
+            <div className='flex flex-nowrap'>
+              <div>
+                <div
+                  className={classNames(
+                    'flex items-center',
+                    connectedBinance ? undefined : 'cursor-pointer'
+                  )}
                   onClick={handleClickConnectSocket('upbit')}
-                  sx={connectedBinance ? undefined : { cursor: 'pointer' }}
                 >
-                  <Typography component="span">업비트</Typography>
-                  <DotContainer
-                    sx={{ color: connectedUpbit ? theme.color.greenMain : theme.color.redMain }}
+                  <span>업비트</span>
+                  <div
+                    className={classNames(
+                      'text-xl',
+                      connectedUpbit ? 'text-green-500' : 'text-red-500'
+                    )}
                   >
                     <GoPrimitiveDot />
-                  </DotContainer>
-                </FlexAlignItemsCenterBox>
-              </Tooltip>
-              <Box mx={0.5} />
-              <Tooltip title={connectedBinance ? '연결 됨' : '재연결'} arrow>
-                <FlexAlignItemsCenterBox
+                  </div>
+                </div>
+              </div>
+              <div className='mx-1' />
+              <div>
+                <div
+                  className={classNames(
+                    'flex items-center',
+                    connectedBinance ? undefined : 'cursor-pointer'
+                  )}
                   onClick={handleClickConnectSocket('binance')}
-                  sx={connectedBinance ? undefined : { cursor: 'pointer' }}
                 >
-                  <Typography component="span">바이낸스</Typography>
-                  <DotContainer
-                    sx={{ color: connectedBinance ? theme.color.greenMain : theme.color.redMain }}
+                  <span>바이낸스</span>
+                  <div
+                    className={classNames(
+                      'text-xl',
+                      connectedBinance ? 'text-green-500' : 'text-red-500'
+                    )}
                   >
                     <GoPrimitiveDot />
-                  </DotContainer>
-                </FlexAlignItemsCenterBox>
-              </Tooltip>
-            </FlexNoWrapBox>
-
-            <SearchInputContainer>
-              <FormControl sx={{ width: 170 }} variant="standard">
-                <OutlinedInput
-                  placeholder="BTC, 비트, Bitcoin"
-                  value={searchValue}
-                  onChange={handleChangeMarketSearchInput}
-                  endAdornment={
-                    searchValue && (
-                      <InputAdornment position="end">
-                        <IconButton
-                          onClick={handleClickClearSearchInputButton}
-                          sx={{ color: theme.color.gray70 }}
-                        >
-                          <RiCloseCircleLine />
-                        </IconButton>
-                      </InputAdornment>
-                    )
-                  }
-                  sx={{
-                    pr: 0
-                  }}
-                />
-              </FormControl>
-            </SearchInputContainer>
-          </FlexSpaceBetweenCenterBox>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className='flex justify-end'>
+              <div className='border rounded-md form-control border-base-300 '>
+                <label className='input-group input-group-sm '>
+                  <input
+                    type='text'
+                    placeholder='BTC, 비트, Bitcoin'
+                    value={searchValue}
+                    onChange={handleChangeMarketSearchInput}
+                    className='input input-sm bg-transparent w-[170px] focus:outline-offset-0 focus:rounded-l-md'
+                  />
+                  <span
+                    className='text-xl text-gray-600 bg-transparent cursor-pointer px-1.5 justify-end'
+                    onClick={handleClickClearSearchInputButton}
+                  >
+                    <RiCloseCircleLine />
+                  </span>
+                </label>
+              </div>
+            </div>
+          </div>
         </>
       )}
-      <Table cellSpacing="0" cellPadding="0">
-        <Thead>
-          <TableHeaderRow>
-            <IconCell>
-              <TableCellInnerBox></TableCellInnerBox>
-            </IconCell>
-            <NameCell>
-              <FlexBox>
-                <Tooltip
-                  arrow
-                  placement="top"
-                  title={
-                    <Box>
-                      <Typography>거래소로 이동</Typography>
-                      <Typography>차트 변경</Typography>
-                    </Box>
-                  }
-                >
-                  <FlexCursorPointerBox onClick={handleClickThead('korean_name')}>
-                    <Typography component="span">이름</Typography>
-                    <TableHeaderSortIcon>
-                      {sortColumn === 'korean_name' ? (
-                        sortType === 'ASC' ? (
-                          <BiUpArrowAlt />
-                        ) : (
-                          <BiDownArrowAlt />
-                        )
-                      ) : null}
-                    </TableHeaderSortIcon>
-                  </FlexCursorPointerBox>
-                </Tooltip>
-              </FlexBox>
-            </NameCell>
-            <PriceCell>
-              <FlexJustifyContentFlexEndBox>
-                <Tooltip
-                  arrow
-                  placement="top"
-                  title={
-                    <Box>
-                      <Typography>업비트 현재가</Typography>
-                      <Typography>바이낸스 현재가</Typography>
-                    </Box>
-                  }
-                >
-                  <FlexCursorPointerBox onClick={handleClickThead('tp')}>
-                    <Typography component="span">현재가</Typography>
-                    <TableHeaderSortIcon>
-                      {sortColumn === 'tp' ? (
-                        sortType === 'ASC' ? (
-                          <BiUpArrowAlt />
-                        ) : (
-                          <BiDownArrowAlt />
-                        )
-                      ) : null}
-                    </TableHeaderSortIcon>
-                  </FlexCursorPointerBox>
-                </Tooltip>
-              </FlexJustifyContentFlexEndBox>
-            </PriceCell>
-            <ChangeCell>
-              <FlexJustifyContentFlexEndBox>
-                <Tooltip
-                  arrow
-                  placement="top"
-                  title={
-                    <Box>
-                      <Typography>일일 변동 퍼센트</Typography>
-                      <Typography>일일 변동 가격</Typography>
-                    </Box>
-                  }
-                >
-                  <FlexCursorPointerBox onClick={handleClickThead('scr')}>
-                    <Typography component="span">변동</Typography>
-                    <TableHeaderSortIcon>
-                      {sortColumn === 'scr' ? (
-                        sortType === 'ASC' ? (
-                          <BiUpArrowAlt />
-                        ) : (
-                          <BiDownArrowAlt />
-                        )
-                      ) : null}
-                    </TableHeaderSortIcon>
-                  </FlexCursorPointerBox>
-                </Tooltip>
-              </FlexJustifyContentFlexEndBox>
-            </ChangeCell>
-            <PremiumCell>
-              <FlexJustifyContentFlexEndBox>
-                <Tooltip
-                  arrow
-                  placement="top"
-                  title={
-                    <Box>
-                      <Typography>원화 프리미엄</Typography>
-                      <Typography>업비트-바이낸스 가격 차이</Typography>
-                    </Box>
-                  }
-                >
-                  <FlexCursorPointerBox onClick={handleClickThead('premium')}>
-                    <Typography component="span">김프</Typography>
-                    <TableHeaderSortIcon>
-                      {sortColumn === 'premium' ? (
-                        sortType === 'ASC' ? (
-                          <BiUpArrowAlt />
-                        ) : (
-                          <BiDownArrowAlt />
-                        )
-                      ) : null}
-                    </TableHeaderSortIcon>
-                  </FlexCursorPointerBox>
-                </Tooltip>
-              </FlexJustifyContentFlexEndBox>
-            </PremiumCell>
-            <VolumeCell>
-              <FlexJustifyContentFlexEndBox>
-                <Tooltip
-                  arrow
-                  placement="top"
-                  title={
-                    <Box>
-                      <Typography>업비트 거래량</Typography>
-                      <Typography>바이낸스 거래량</Typography>
-                    </Box>
-                  }
-                >
-                  <FlexCursorPointerBox onClick={handleClickThead('atp24h')}>
-                    <Typography component="span">거래량</Typography>
-                    <TableHeaderSortIcon>
-                      {sortColumn === 'atp24h' ? (
-                        sortType === 'ASC' ? (
-                          <BiUpArrowAlt />
-                        ) : (
-                          <BiDownArrowAlt />
-                        )
-                      ) : null}
-                    </TableHeaderSortIcon>
-                  </FlexCursorPointerBox>
-                </Tooltip>
-              </FlexJustifyContentFlexEndBox>
-            </VolumeCell>
-          </TableHeaderRow>
-        </Thead>
+      <table className='table w-full [&_td]:text-xs sm:[&_td]:text-sm  table-compact'>
+        <thead>
+          <tr className='[&>td]:text-gray-600 [&>th:first-child]:z-0 [&>th:first-child]:rounded-none [&>th:last-child]:rounded-none'>
+            <th className='w-[1.25em] market-td-padding'></th>
+            <th className='w-auto market-td-padding'>
+              <div
+                className='flex'
+                // className='flex tooltip'
+                // data-tip={
+                //   <div>
+                //     <p>거래소로 이동</p>
+                //     <p>차트 변경</p>
+                //   </div>
+                // }
+              >
+                <div className='flex cursor-pointer' onClick={handleClickThead('korean_name')}>
+                  <span>이름</span>
+                  <div className='flex items-center'>
+                    {sortColumn === 'korean_name' ? (
+                      sortType === 'ASC' ? (
+                        <BiUpArrowAlt />
+                      ) : (
+                        <BiDownArrowAlt />
+                      )
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            </th>
+            <th className='market-td-padding w-[20%]'>
+              <div
+                className='flex justify-end'
+                // className='flex justify-end tooltip'
+                // data-tip={
+                //   <div>
+                //     <p>업비트 현재가</p>
+                //     <p>바이낸스 현재가</p>
+                //   </div>
+                // }
+              >
+                <div className='flex cursor-pointer' onClick={handleClickThead('tp')}>
+                  <span>현재가</span>
+                  <div className='flex items-center'>
+                    {sortColumn === 'tp' ? (
+                      sortType === 'ASC' ? (
+                        <BiUpArrowAlt />
+                      ) : (
+                        <BiDownArrowAlt />
+                      )
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            </th>
+            <th className='market-td-padding w-[10%]'>
+              <div
+                className='flex justify-end'
+                // className='flex justify-end tooltip'
+                // data-tip={
+                //   <div>
+                //     <p>일일 변동 퍼센트</p>
+                //     <p>일일 변동 가격</p>
+                //   </div>
+                // }
+              >
+                <div className='flex cursor-pointer' onClick={handleClickThead('scr')}>
+                  <span>변동</span>
+                  <div className='flex items-center'>
+                    {sortColumn === 'scr' ? (
+                      sortType === 'ASC' ? (
+                        <BiUpArrowAlt />
+                      ) : (
+                        <BiDownArrowAlt />
+                      )
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            </th>
+            <th className='market-td-padding w-[10%]'>
+              <div
+                className='flex justify-end'
+                // className='flex justify-end tooltip'
+                // data-tip={
+                //   <div>
+                //     <p>원화 프리미엄</p>
+                //     <p>업비트-바이낸스 가격 차이</p>
+                //   </div>
+                // }
+              >
+                <div className='flex cursor-pointer' onClick={handleClickThead('premium')}>
+                  <span>김프</span>
+                  <div className='flex items-center'>
+                    {sortColumn === 'premium' ? (
+                      sortType === 'ASC' ? (
+                        <BiUpArrowAlt />
+                      ) : (
+                        <BiDownArrowAlt />
+                      )
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            </th>
+            <th className='market-td-padding w-auto sm:w-[10%]'>
+              <div
+                className='flex justify-end'
+                // className='flex justify-end tooltip'
+                // data-tip={
+                //   <div>
+                //     <p>업비트 거래량</p>
+                //     <p>바이낸스 거래량</p>
+                //   </div>
+                // }
+              >
+                <div className='flex cursor-pointer' onClick={handleClickThead('atp24h')}>
+                  <span>거래량</span>
+                  <div className='flex items-center'>
+                    {sortColumn === 'atp24h' ? (
+                      sortType === 'ASC' ? (
+                        <BiUpArrowAlt />
+                      ) : (
+                        <BiDownArrowAlt />
+                      )
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            </th>
+          </tr>
+        </thead>
         <TableBody upbitForex={upbitForex} sortColumn={sortColumn} sortType={sortType} />
-      </Table>
-    </TableContainer>
+      </table>
+    </div>
   );
 }, isEqual);
+
+MarketTable.displayName = 'MarketTable';
 
 const TableBody = React.memo<{
   upbitForex: IUpbitForex;
@@ -556,7 +419,7 @@ const TableBody = React.memo<{
   }, [sortColumn, sortType]);
 
   return (
-    <Tbody>
+    <tbody>
       {searchedSymbols.map((krwSymbol, index) => {
         const favorite = hydrated ? Boolean(favoriteSymbols[krwSymbol]) : false;
 
@@ -570,7 +433,7 @@ const TableBody = React.memo<{
           />
         );
       })}
-    </Tbody>
+    </tbody>
   );
 }, isEqual);
 
@@ -582,7 +445,6 @@ const TableItem = React.memo<{
   upbitForex: IUpbitForex;
   favorite: boolean;
 }>(({ krwSymbol, upbitForex, favorite }) => {
-  const theme = useTheme();
   const krwPriceRef = useRef<HTMLSpanElement>(null);
   const usdPriceRef = useRef<HTMLSpanElement>(null);
   const highlight = useMarketTableSettingStore((state) => state.highlight, shallow);
@@ -597,30 +459,23 @@ const TableItem = React.memo<{
 
   const { selectedMarketSymbol, selectedExchange } = useTradingViewSettingStore();
 
-  const handleClickMarketIcon = useCallback(
-    (symbol: string, exchange: 'BINANCE' | 'UPBIT') => () => {
-      const { setSelectedMarketSymbol, setSelectedExchange } =
-        useTradingViewSettingStore.getState();
-      setSelectedMarketSymbol(symbol);
-      setSelectedExchange(exchange);
-      window.scrollTo(0, 0);
-    },
-    []
-  );
-  const handleClickStarIcon = useCallback(
-    (symbol: string) => () => {
-      if (!favorite) {
-        useMarketTableSettingStore.getState().addFavoriteSymbol(symbol);
-      } else {
-        useMarketTableSettingStore.getState().removeFavoriteSymbol(symbol);
-      }
-      const { sortColumn, sortType } = useMarketTableSettingStore.getState();
-      useExchangeStore.getState().sortSymbolList(sortColumn, sortType);
-    },
-    [favorite]
-  );
+  const handleClickMarketIcon = (symbol: string, exchange: 'BINANCE' | 'UPBIT') => () => {
+    const { setSelectedMarketSymbol, setSelectedExchange } = useTradingViewSettingStore.getState();
+    setSelectedMarketSymbol(symbol);
+    setSelectedExchange(exchange);
+    window.scrollTo(0, 0);
+  };
 
-  //
+  const handleClickStarIcon = (symbol: string) => () => {
+    if (!favorite) {
+      useMarketTableSettingStore.getState().addFavoriteSymbol(symbol);
+    } else {
+      useMarketTableSettingStore.getState().removeFavoriteSymbol(symbol);
+    }
+    const { sortColumn, sortType } = useMarketTableSettingStore.getState();
+    useExchangeStore.getState().sortSymbolList(sortColumn, sortType);
+  };
+
   useEffect(() => {
     if (!highlight || !krwPriceRef?.current) {
       return;
@@ -712,189 +567,157 @@ const TableItem = React.memo<{
   const priceDecimalLength = String(upbitMarket.tp).replace(/^[0-9]+\.?/, '').length;
 
   return (
-    <TableRow>
+    <tr className='border-b border-base-300 min-w-[40px] p-1 [&:hover>td]:bg-white/5'>
       {selectedMarketSymbol === marketSymbol && (
         <NextSeo
           // title={bitcoinPremium ? `${bitcoinPremium?.toFixed(2)}%` : undefined}
           title={title}
         />
       )}
-      <TableCell>
-        <TableCellInnerBox>
-          <TextAlignCenterBox>
-            <MarketIconImage
-              src={`/asset/upbit/logos/${marketSymbol}.png`}
-              alt={`${upbitMarket.cd}-icon`}
-            />
-          </TextAlignCenterBox>
-          <FlexJustifyContentCenterBox>
-            <ButtonContainer>
-              {favorite ? (
-                <FavoriteIconBox onClick={handleClickStarIcon(upbitMarket.cd)}>
-                  <TiPin />
-                </FavoriteIconBox>
-              ) : (
-                <ChartIconBox
-                  onClick={handleClickStarIcon(upbitMarket.cd)}
-                  sx={{
-                    color: favorite ? theme.color.yellowMain : undefined
-                  }}
-                >
-                  <TiPin />
-                </ChartIconBox>
+      <td className='market-td-padding'>
+        <div className='text-center'>
+          <img
+            className='object-contain overflow-hidden bg-white rounded-full'
+            src={`/asset/upbit/logos/${marketSymbol}.png`}
+            alt={`${upbitMarket.cd}-icon`}
+            loading='lazy'
+          />
+        </div>
+        <div className='flex justify-center'>
+          <div className='flex'>
+            <div
+              className={classNames(
+                'cursor-pointer',
+                favorite ? 'text-yellow-300' : 'text-gray-600'
               )}
-            </ButtonContainer>
-          </FlexJustifyContentCenterBox>
-        </TableCellInnerBox>
-      </TableCell>
-      <TableCell>
-        <TableCellInnerBox>
-          {/* <FlexBox>
-            <HoverUnderlineBox>
-              <Link href={'/trade/' + upbitMarket.cd}>
-                <a> */}
-          <FlexAlignItemsCenterBox>
-            {/* <ChartIconBox fontSize={theme.size.px16} mr={0.5}>
-                      <RiExchangeLine />
-                    </ChartIconBox> */}
-            <Typography>{upbitMarket.korean_name}</Typography>
-          </FlexAlignItemsCenterBox>
-          {/* </a>
-              </Link>
-            </HoverUnderlineBox>
-          </FlexBox> */}
-          <ButtonContainer>
-            <a
-              href={clientApiUrls.upbit.marketHref + upbitMarket.cd}
-              target="_blank"
-              rel="noreferrer"
+              onClick={handleClickStarIcon(upbitMarket.cd)}
             >
-              <ExchangeImage src="/icons/upbit.png" alt="upbit favicon"></ExchangeImage>
-            </a>
-            <ChartIconBox onClick={handleClickMarketIcon(marketSymbol, 'UPBIT')}>
-              <AiOutlineAreaChart />
-            </ChartIconBox>
-            &nbsp;
-            {upbitMarket.binance_price && (
-              <>
-                <a
-                  href={`${clientApiUrls.binance.marketHref}/${marketSymbol}_USDT`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <ExchangeImage src="/icons/binance.ico" alt="upbit favicon"></ExchangeImage>
-                </a>
-                <ChartIconBox onClick={handleClickMarketIcon(marketSymbol, 'BINANCE')}>
-                  <AiOutlineAreaChart />
-                </ChartIconBox>
-              </>
-            )}
-          </ButtonContainer>
-        </TableCellInnerBox>
-      </TableCell>
-      <TableCell>
-        <TableCellInnerBox>
-          <NoWrapBox>
-            <MonoFontBox>
-              <TextAlignRightBox>
-                <AskBidTypography state={upbitMarket.scp}>
-                  <HighlightSpanTypography ref={krwPriceRef}>
-                    {upbitMarket.tp > 1 ? upbitMarket.tp.toLocaleString() : upbitMarket.tp}
-                  </HighlightSpanTypography>
-                  {/* <br />
-                  {upbitBtcMarket && upbitBtcPrice
-                    ? Number(
-                        (upbitBtcMarket.tp * upbitBtcPrice.tp).toFixed(priceDecimalLength)
-                      ).toLocaleString()
-                    : ''} */}
-                </AskBidTypography>
-                <AskBidTypography state={upbitMarket.scp} opacity={0.7}>
-                  <HighlightSpanTypography ref={usdPriceRef}>
-                    {upbitMarket.binance_price
-                      ? Number(upbitMarket.binance_price) * upbitForex.basePrice > 1
-                        ? Number(
-                            (Number(upbitMarket.binance_price) * upbitForex.basePrice).toFixed(
-                              priceDecimalLength
-                            )
-                          ).toLocaleString()
-                        : Number(Number(upbitMarket.binance_price) * upbitForex.basePrice).toFixed(
-                            priceDecimalLength
-                          )
-                      : null}
-                  </HighlightSpanTypography>
-                </AskBidTypography>
-              </TextAlignRightBox>
-            </MonoFontBox>
-          </NoWrapBox>
-        </TableCellInnerBox>
-      </TableCell>
-      <TableCell>
-        <TableCellInnerBox>
-          <NoWrapBox>
-            <MonoFontBox>
-              <TextAlignRightBox>
-                <AskBidTypography state={upbitMarket.scp}>
-                  {upbitChangeRate.toFixed(2)}%
-                </AskBidTypography>
-                <AskBidTypography state={upbitMarket.scp} opacity={0.7}>
-                  {upbitMarket.scp.toLocaleString()}
-                  {/* {binanceChangeRate && binanceChangeRate.toFixed(2) + '%'} */}
-                </AskBidTypography>
-              </TextAlignRightBox>
-            </MonoFontBox>
-          </NoWrapBox>
-        </TableCellInnerBox>
-      </TableCell>
-      <TableCell>
-        <TableCellInnerBox>
-          <NoWrapBox>
-            <MonoFontBox>
-              {typeof upbitMarket.premium === 'number' && (
-                <TextAlignRightBox>
-                  <AskBidTypography state={upbitMarket.premium}>
-                    {upbitMarket.premium.toFixed(2).padStart(2, '0')}%
-                  </AskBidTypography>
-                  <AskBidTypography state={upbitMarket.premium} opacity={0.7}>
-                    {upbitMarket.binance_price &&
-                      Number(
-                        (
-                          upbitMarket.tp -
-                          Number(upbitMarket.binance_price) * upbitForex.basePrice
-                        ).toFixed(priceDecimalLength)
-                      ).toLocaleString()}
-                  </AskBidTypography>
-                </TextAlignRightBox>
-              )}
-            </MonoFontBox>
-          </NoWrapBox>
-        </TableCellInnerBox>
-      </TableCell>
-      <TableCell>
-        <TableCellInnerBox>
-          <MonoFontBox>
-            <NoWrapBox>
-              <TextAlignRightBox>
-                <Typography color={theme.color.gray30}>
-                  {koPriceLabelFormat(upbitMarket.atp24h)}
-                </Typography>
-                <Typography
-                  sx={{
-                    color: theme.color.gray70
-                  }}
-                >
-                  {upbitMarket.binance_price &&
-                    koPriceLabelFormat(Number(upbitMarket.binance_volume) * upbitForex.basePrice)}
-                </Typography>
-              </TextAlignRightBox>
-            </NoWrapBox>
-          </MonoFontBox>
-        </TableCellInnerBox>
-      </TableCell>
-    </TableRow>
+              <TiPin />
+            </div>
+          </div>
+        </div>
+      </td>
+      <td className='market-td-padding'>
+        {/* <FlexBox>
+          <HoverUnderlineBox>
+            <Link href={'/trade/' + upbitMarket.cd}>
+              <a> */}
+        <div className='flex items-center'>
+          {/* <ChartIconBox fontSize={theme.size.px16} mr={0.5}>
+            <RiExchangeLine />
+          </ChartIconBox> */}
+          <span className='text-gray-300 whitespace-pre-wrap'>{upbitMarket.korean_name}</span>
+        </div>
+        {/* </a>
+            </Link>
+          </HoverUnderlineBox>
+        </FlexBox> */}
+        <div className='flex'>
+          <a
+            href={clientApiUrls.upbit.marketHref + upbitMarket.cd}
+            target='_blank'
+            rel='noreferrer'
+          >
+            <img
+              className='market-exchange-image'
+              src='/icons/upbit.png'
+              alt='upbit favicon'
+              loading='lazy'
+            />
+          </a>
+          <div className='market-chart-icon' onClick={handleClickMarketIcon(marketSymbol, 'UPBIT')}>
+            <AiOutlineAreaChart />
+          </div>
+          &nbsp;
+          {upbitMarket.binance_price && (
+            <>
+              <a
+                href={`${clientApiUrls.binance.marketHref}/${marketSymbol}_USDT`}
+                target='_blank'
+                rel='noreferrer'
+              >
+                <img
+                  className='market-exchange-image'
+                  src='/icons/binance.ico'
+                  alt='upbit favicon'
+                  loading='lazy'
+                />
+              </a>
+              <div
+                className='market-chart-icon'
+                onClick={handleClickMarketIcon(marketSymbol, 'BINANCE')}
+              >
+                <AiOutlineAreaChart />
+              </div>
+            </>
+          )}
+        </div>
+      </td>
+      <td className='font-mono text-right market-td-padding whitespace-nowrap'>
+        <AskBidParagraph state={upbitMarket.scp}>
+          <span ref={krwPriceRef}>
+            {upbitMarket.tp > 1 ? upbitMarket.tp.toLocaleString() : upbitMarket.tp}
+          </span>
+          {/* <br />
+          {upbitBtcMarket && upbitBtcPrice
+            ? Number(
+                (upbitBtcMarket.tp * upbitBtcPrice.tp).toFixed(priceDecimalLength)
+              ).toLocaleString()
+            : ''} */}
+        </AskBidParagraph>
+        <AskBidParagraph state={upbitMarket.scp} className='opacity-60'>
+          <span ref={usdPriceRef}>
+            {upbitMarket.binance_price
+              ? Number(upbitMarket.binance_price) * upbitForex.basePrice > 1
+                ? Number(
+                    (Number(upbitMarket.binance_price) * upbitForex.basePrice).toFixed(
+                      priceDecimalLength
+                    )
+                  ).toLocaleString()
+                : Number(Number(upbitMarket.binance_price) * upbitForex.basePrice).toFixed(
+                    priceDecimalLength
+                  )
+              : null}
+          </span>
+        </AskBidParagraph>
+      </td>
+      <td className='font-mono text-right market-td-padding whitespace-nowrap'>
+        <AskBidParagraph state={upbitMarket.scp}>{upbitChangeRate.toFixed(2)}%</AskBidParagraph>
+        <AskBidParagraph state={upbitMarket.scp} className='opacity-60'>
+          {upbitMarket.scp.toLocaleString()}
+          {/* {binanceChangeRate && binanceChangeRate.toFixed(2) + '%'} */}
+        </AskBidParagraph>
+      </td>
+
+      <td className='font-mono text-right market-td-padding whitespace-nowrap'>
+        {typeof upbitMarket.premium === 'number' && (
+          <>
+            <AskBidParagraph state={upbitMarket.premium}>
+              {upbitMarket.premium.toFixed(2).padStart(2, '0')}%
+            </AskBidParagraph>
+            <AskBidParagraph state={upbitMarket.premium} className='opacity-60'>
+              {upbitMarket.binance_price &&
+                Number(
+                  (
+                    upbitMarket.tp -
+                    Number(upbitMarket.binance_price) * upbitForex.basePrice
+                  ).toFixed(priceDecimalLength)
+                ).toLocaleString()}
+            </AskBidParagraph>
+          </>
+        )}
+      </td>
+      <td className='font-mono text-right text-gray-400 market-td-padding whitespace-nowrap'>
+        <p>{koPriceLabelFormat(upbitMarket.atp24h)}</p>
+        <p className='opacity-60'>
+          {upbitMarket.binance_price &&
+            koPriceLabelFormat(Number(upbitMarket.binance_volume) * upbitForex.basePrice)}
+        </p>
+      </td>
+    </tr>
   );
 }, isEqual);
 
 TableItem.displayName = 'TableItem';
-MarketTable.displayName = 'MarketTable';
 
 export default MarketTable;

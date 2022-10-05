@@ -1,9 +1,7 @@
-import { styled } from '@mui/material/styles';
 import type { GetStaticProps, NextPage } from 'next';
 import React, { useEffect, useState } from 'react';
 import { upbitApis } from 'src-server/utils/upbitApis';
 import MarketTable, { IMarketTableItem } from 'src/components/market-table/MarketTable';
-import { Width100Box } from 'src/components/modules/Box';
 import TradingViewChart from 'src/components/tradingview/Chart';
 import { IUpbitForex, IUpbitMarket } from 'src/types/upbit';
 import { useUpbitAuthStore } from 'src/store/upbitAuth';
@@ -16,44 +14,9 @@ import { binanceApis } from 'src-server/utils/binanceApis';
 import { keyBy } from 'lodash';
 import { useMarketTableSettingStore } from 'src/store/marketTableSetting';
 import TradingViewTickers from 'src/components/tradingview/Tickers';
-import utcToZonedTime from 'date-fns-tz/utcToZonedTime';
 import shallow from 'zustand/shallow';
 import { useSiteSettingStore } from 'src/store/siteSetting';
-
-const Container = styled('div')`
-  flex: 1 0 auto;
-  display: flex;
-`;
-
-const Inner = styled(Width100Box)`
-  position: relative;
-  padding: 0 ${({ theme }) => theme.spacing(1.25)};
-  ${({ theme }) => theme.breakpoints.up('lg')} {
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-  ${({ theme }) => theme.breakpoints.down('sm')} {
-    padding: 0 ${({ theme }) => theme.spacing(0.75)};
-  }
-`;
-const TradingViewContainer = styled('div')`
-  /* margin: ${({ theme }) => theme.spacing(2)} 0; */
-`;
-const TradingViewTickersContainer = styled('div')(({ theme }) => ({
-  overflowX: 'auto',
-  overflowY: 'hidden'
-}));
-
-const TradingViewTickersInner = styled('div')(({ theme }) => ({
-  width: 1200,
-  [`${theme.breakpoints.up('lg')}`]: {
-    maxWidth: '100%'
-  }
-}));
-
-const MarketTableContainer = styled('div')`
-  /* margin-bottom: ${({ theme }) => theme.spacing(2)}; */
-`;
+import classNames from 'classnames';
 
 interface HomeProps {
   upbitForex: IUpbitForex;
@@ -151,30 +114,26 @@ const Home: NextPage<HomeProps> = ({
   }, []);
 
   return (
-    <Container>
-      <Inner>
-        <TradingViewTickersContainer>
-          <TradingViewTickersInner>
-            <TradingViewTickers />
-          </TradingViewTickersInner>
-        </TradingViewTickersContainer>
-        <TradingViewContainer
-          sx={
-            isMounted && stickyChart && headerHeight
-              ? {
-                  position: 'sticky',
-                  top: headerHeight,
-                  left: 0,
-                  zIndex: 1
-                }
-              : undefined
-          }
-        >
-          <TradingViewChart />
-        </TradingViewContainer>
-        <MarketTable upbitForex={upbitForex} />
-      </Inner>
-    </Container>
+    <main className='relative w-full px-3 mx-auto max-w-7xl'>
+      <div className='overflow-x-auto overflow-y-hidden'>
+        <div className='w-[1200px] xl:w-full'>
+          <TradingViewTickers />
+        </div>
+      </div>
+      <div
+        className={isMounted && stickyChart && headerHeight ? `sticky left-0 z-[1]` : undefined}
+        style={
+          isMounted && stickyChart && headerHeight
+            ? {
+                top: headerHeight
+              }
+            : undefined
+        }
+      >
+        <TradingViewChart />
+      </div>
+      <MarketTable upbitForex={upbitForex} />
+    </main>
   );
 };
 

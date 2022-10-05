@@ -18,8 +18,8 @@ const defaultState: ITradingViewSettingState = {
   scriptLoaded: false
 };
 
-export const useTradingViewSettingStore = create<ITradingViewSettingStore>(
-  persist(
+export const useTradingViewSettingStore = create(
+  persist<ITradingViewSettingStore>(
     (set, get) => ({
       ...defaultState,
       setSelectedMarketSymbol(symbol: ITradingViewSettingState['selectedMarketSymbol']) {
@@ -37,7 +37,9 @@ export const useTradingViewSettingStore = create<ITradingViewSettingStore>(
       name: 'tradingViewSetting', // unique name
       getStorage: () => localStorage, // (optional) by default, 'localStorage' is used
       partialize: (state) =>
-        Object.fromEntries(Object.entries(state).filter(([key]) => !['scriptLoaded'].includes(key)))
+        Object.fromEntries(
+          Object.entries(state).filter(([key]) => !['scriptLoaded'].includes(key))
+        ) as ITradingViewSettingStore
     }
   )
 );

@@ -1,34 +1,6 @@
-import { Typography } from '@mui/material';
-import { styled, useTheme } from '@mui/material/styles';
-import React, { memo, useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import React, { memo, useCallback, useEffect } from 'react';
 import isEqual from 'react-fast-compare';
 import { useTradingViewSettingStore } from 'src/store/tradingViewSetting';
-import { FlexAlignItemsCenterBox, FullWidthBox } from '../modules/Box';
-import { HoverUnderLineSpan } from '../modules/Typography';
-
-const Container = styled('div')(({ theme }) => ({
-  height: 500,
-  [`${theme.breakpoints.down('sm')}`]: {
-    height: '50vh',
-    maxHeight: 300
-  }
-}));
-
-const UnMountedContainer = styled(FlexAlignItemsCenterBox)(({ theme }) => ({
-  height: '100%',
-  fontSize: theme.size.px50,
-  fontWeight: 'bold',
-  color: theme.color.gray70,
-  border: `1px dashed ${theme.color.gray70}`,
-  borderRadius: 20,
-  textAlign: 'center',
-  [`${theme.breakpoints.down('md')}`]: {
-    fontSize: theme.size.px36
-  },
-  [`${theme.breakpoints.down('sm')}`]: {
-    fontSize: theme.size.px24
-  }
-}));
 
 interface TradingViewChartProps {
   chart?: {
@@ -38,7 +10,6 @@ interface TradingViewChartProps {
 }
 
 const TradingViewChart: React.FC<TradingViewChartProps> = ({ chart }) => {
-  const theme = useTheme();
   const { selectedMarketSymbol, selectedExchange, scriptLoaded } = useTradingViewSettingStore();
   const symbol =
     chart?.exchange && chart?.symbol
@@ -59,14 +30,14 @@ const TradingViewChart: React.FC<TradingViewChartProps> = ({ chart }) => {
         theme: 'dark',
         style: '1',
         locale: 'kr',
-        toolbar_bg: theme.color.mainDrakBackground,
+        // toolbar_bg: theme.color.mainDrakBackground,
         enable_publishing: false,
         allow_symbol_change: true,
         studies: ['MASimple@tv-basicstudies'], // 'BB@tv-basicstudies'
         container_id: 'tradingview_4a4c4',
         withdateranges: true,
         overrides: {
-          'paneProperties.background': theme.color.mainDrakBackground,
+          // 'paneProperties.background': theme.color.mainDrakBackground,
           'paneProperties.vertGridProperties.color': '#363c4e',
           'paneProperties.horzGridProperties.color': '#363c4e',
           'scalesProperties.textColor': '#AAA',
@@ -75,7 +46,7 @@ const TradingViewChart: React.FC<TradingViewChartProps> = ({ chart }) => {
         }
       });
     }
-  }, [symbol, theme.color.mainDrakBackground]);
+  }, [symbol]);
 
   useEffect(() => {
     if (scriptLoaded) {
@@ -84,27 +55,26 @@ const TradingViewChart: React.FC<TradingViewChartProps> = ({ chart }) => {
   }, [handleLoadTradingViewScript, scriptLoaded]);
 
   return (
-    <>
-      <Container>
-        {scriptLoaded ? (
-          <div style={{ height: '100%' }} id={'tradingview_4a4c4'} />
-        ) : (
-          <UnMountedContainer>
-            <FullWidthBox>
-              <Typography>
-                <a
-                  href={`https://www.tradingview.com/chart?symbol=${symbol}`}
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  <HoverUnderLineSpan>TradingView {symbol} Chart</HoverUnderLineSpan>
-                </a>
-              </Typography>
-            </FullWidthBox>
-          </UnMountedContainer>
-        )}
-      </Container>
-    </>
+    <div className='h-[300px] sm:h-auto'>
+      {scriptLoaded ? (
+        <div className='h-full min-h-[300px] sm:h-[30vh]' id={'tradingview_4a4c4'} />
+      ) : (
+        <div className='flex items-center h-full text-2xl font-bold text-gray-700 border border-dashed border-gray-700 rounded-[1em] text-center sm:text-3xl md:text-5xl'>
+          <div className='basis-full'>
+            <p>
+              <a
+                className='no-underline hover:underline'
+                href={`https://www.tradingview.com/chart?symbol=${symbol}`}
+                rel='noreferrer'
+                target='_blank'
+              >
+                <span>TradingView {symbol} Chart</span>
+              </a>
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 

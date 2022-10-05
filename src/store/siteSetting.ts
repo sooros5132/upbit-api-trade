@@ -24,8 +24,8 @@ const defaultState: ISiteSettingState = {
   showMyAccounts: true
 };
 
-export const useSiteSettingStore = create<ISiteSettingStore>(
-  persist(
+export const useSiteSettingStore = create(
+  persist<ISiteSettingStore>(
     (set, get) => ({
       ...defaultState,
       setShowMyAccounts(show: boolean) {

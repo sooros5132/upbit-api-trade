@@ -29,8 +29,8 @@ interface AuthStore extends IAuthState {
   deleteKeys: () => void;
 }
 
-export const useUpbitAuthStore = create<AuthStore>(
-  persist(
+export const useUpbitAuthStore = create(
+  persist<AuthStore>(
     (set, get) => ({
       ...defaultState,
       _hasHydrated: false,
