@@ -121,9 +121,12 @@ const Home: NextPage<HomeProps> = ({
         </div>
       </div>
       <div
-        className={
+        className={isMounted && stickyChart && headerHeight ? `sticky left-0 z-[1]` : undefined}
+        style={
           isMounted && stickyChart && headerHeight
-            ? `sticky top-[${headerHeight}] left-0 z-[1]`
+            ? {
+                top: headerHeight
+              }
             : undefined
         }
       >
