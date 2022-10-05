@@ -1,28 +1,11 @@
-import { Box, Tooltip, Typography } from '@mui/material';
-import { styled } from '@mui/material/styles';
 import { memo, useMemo, useRef } from 'react';
 import isEqual from 'react-fast-compare';
 import { IUpbitAccounts } from 'src-server/types/upbit';
-import { FlexAlignItemsCenterBox, FlexBox, GridBox, TextAlignRightBox } from '../modules/Box';
-import {
-  AskBidSpanTypography,
-  AskBidTypography,
-  HoverUnderLineSpan,
-  MonoFontTypography
-} from '../modules/Typography';
 import { BsDot } from 'react-icons/bs';
 import { clientApiUrls } from 'src/utils/clientApiUrls';
 import { useExchangeStore } from 'src/store/exchangeSockets';
 import shallow from 'zustand/shallow';
-
-const AccountsContainer = styled(FlexBox)(({ theme }) => ({
-  paddingBottom: theme.spacing(1)
-}));
-
-const AccountsInner = styled(FlexAlignItemsCenterBox)(() => ({
-  overflowX: 'auto',
-  whiteSpace: 'nowrap'
-}));
+import { AskBidParagraph } from '../modules/Typography';
 
 interface IAccountItemProps {
   account: IUpbitAccounts & { currentPrice?: number; totalBalance: number };
@@ -63,98 +46,102 @@ const AccountItem = memo(({ account }: IAccountItemProps) => {
 
   return (
     <>
-      <FlexAlignItemsCenterBox>
+      <div className='flex items-center text-sm'>
         <BsDot />
-        <a href={upbitLink} rel="noreferrer" target="_blank">
-          <HoverUnderLineSpan fontWeight="bold">{currency}</HoverUnderLineSpan>
+        <a href={upbitLink} rel='noreferrer' target='_blank'>
+          <span className='font-bold hover:underline'>{currency}</span>
         </a>
         {currency !== 'KRW' ? (
-          <Tooltip
-            arrow
-            title={
-              <GridBox
-                sx={{
-                  gridTemplateColumns: 'auto 1fr',
-                  columnGap: 0.5,
-                  rowGap: 0.5,
-                  fontSize: (theme) => theme.size.px14
-                }}
-              >
-                <Typography>매수가</Typography>
-                <TextAlignRightBox>
-                  <MonoFontTypography>{avg_buy_price.toLocaleString()}</MonoFontTypography>
-                </TextAlignRightBox>
-                <Typography>현재가</Typography>
-                <TextAlignRightBox>
-                  <MonoFontTypography>{currentPrice.toLocaleString()}</MonoFontTypography>
-                </TextAlignRightBox>
-                <Typography>매수금액</Typography>
-                <TextAlignRightBox>
-                  <MonoFontTypography>
-                    {Math.round(totalPurchaseValue).toLocaleString()}
-                  </MonoFontTypography>
-                </TextAlignRightBox>
-                <Typography>평가금액</Typography>
-                <TextAlignRightBox>
-                  <AskBidSpanTypography state={profitAndLoss}>
-                    {Math.round(appraisedValue).toLocaleString()}
-                  </AskBidSpanTypography>
-                </TextAlignRightBox>
-                <Typography>평가손익</Typography>
-                <TextAlignRightBox>
-                  <AskBidSpanTypography state={profitAndLoss}>
-                    {Math.round(appraisedValue - totalPurchaseValue).toLocaleString()}
-                  </AskBidSpanTypography>
-                </TextAlignRightBox>
-                <Typography>보유수량</Typography>
-                <TextAlignRightBox>
-                  <MonoFontTypography>{totalBalance.toFixed(8)}</MonoFontTypography>
-                </TextAlignRightBox>
-              </GridBox>
-            }
-          >
-            <AskBidTypography state={profitAndLoss}>
-              &nbsp;
-              {`${Math.round(
-                currentPrice * totalBalance
-              ).toLocaleString()}₩ ${profitAndLoss.toFixed(2)}%`}
-            </AskBidTypography>
-          </Tooltip>
+          <div className='dropdown dropdown-hover dropdown-end'>
+            <label tabIndex={0}>
+              <AskBidParagraph state={profitAndLoss}>
+                &nbsp;
+                {`${Math.round(
+                  currentPrice * totalBalance
+                ).toLocaleString()}₩ ${profitAndLoss.toFixed(2)}%`}
+              </AskBidParagraph>
+            </label>
+            <div className='dropdown-content grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 bg-base-300 p-2 [&>p:nth-child(even)]:text-right [&>p:nth-child(even)]:font-mono'>
+              <p>매수가</p>
+              <p>{avg_buy_price.toLocaleString()}</p>
+              <p>현재가</p>
+              <p>{currentPrice.toLocaleString()}</p>
+              <p>매수금액</p>
+              <p>{Math.round(totalPurchaseValue).toLocaleString()}</p>
+              <p>평가금액</p>
+              <AskBidParagraph state={profitAndLoss}>
+                {Math.round(appraisedValue).toLocaleString()}
+              </AskBidParagraph>
+              <p>평가손익</p>
+              <AskBidParagraph state={profitAndLoss}>
+                {Math.round(appraisedValue - totalPurchaseValue).toLocaleString()}
+              </AskBidParagraph>
+              <p>보유수량</p>
+              <p>{totalBalance.toFixed(8)}</p>
+            </div>
+          </div>
         ) : (
-          <Tooltip
-            arrow
-            title={
-              <GridBox
-                sx={{
-                  gridTemplateColumns: 'auto 1fr',
-                  columnGap: 0.5,
-                  rowGap: 0.5,
-                  fontSize: (theme) => theme.size.px14
-                }}
-              >
-                <Typography>보유 KRW</Typography>
-                <TextAlignRightBox>
-                  <MonoFontTypography>
-                    {Math.round(balance + locked).toLocaleString()}
-                  </MonoFontTypography>
-                </TextAlignRightBox>
-                <Typography>사용 가능 KRW</Typography>
-                <TextAlignRightBox>
-                  <MonoFontTypography>{Math.round(balance).toLocaleString()}</MonoFontTypography>
-                </TextAlignRightBox>
-              </GridBox>
-            }
-          >
-            <AskBidTypography state={profitAndLoss}>
-              &nbsp;
-              {`${Math.round(balance + locked).toLocaleString()}₩`}
-            </AskBidTypography>
-          </Tooltip>
+          <div className='dropdown dropdown-hover dropdown-end'>
+            <label tabIndex={0}>
+              <AskBidParagraph state={profitAndLoss}>
+                &nbsp;
+                {`${Math.round(balance + locked).toLocaleString()}₩`}
+              </AskBidParagraph>
+            </label>
+            <div className='dropdown-content grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 bg-base-300 p-2 [&>p:nth-child(even)]:text-right [&>p:nth-child(even)]:font-mono'>
+              <p>보유</p>
+              <p>{Math.round(balance + locked).toLocaleString()}</p>
+              <p>사용 가능</p>
+              <p>{Math.round(balance).toLocaleString()}</p>
+            </div>
+          </div>
+          // <Tooltip
+          //   arrow
+          //   title={
+          //     <GridBox
+          //       sx={{
+          //         gridTemplateColumns: 'auto 1fr',
+          //         columnGap: 0.5,
+          //         rowGap: 0.5,
+          //         fontSize: (theme) => theme.size.px14
+          //       }}
+          //     >
+          //     </GridBox>
+          //   }
+          // >
+          // </Tooltip>
+          // <Tooltip
+          //   arrow
+          //   title={
+          //     <GridBox
+          //       sx={{
+          //         gridTemplateColumns: 'auto 1fr',
+          //         columnGap: 0.5,
+          //         rowGap: 0.5,
+          //         fontSize: (theme) => theme.size.px14
+          //       }}
+          //     >
+          //       <Typography>보유 KRW</Typography>
+          //       <TextAlignRightBox>
+          //         <MonoFontTypography>
+          //           {Math.round(balance + locked).toLocaleString()}
+          //         </MonoFontTypography>
+          //       </TextAlignRightBox>
+          //       <Typography>사용 가능 KRW</Typography>
+          //       <TextAlignRightBox>
+          //         <MonoFontTypography>{Math.round(balance).toLocaleString()}</MonoFontTypography>
+          //       </TextAlignRightBox>
+          //     </GridBox>
+          //   }
+          // >
+          // </Tooltip>
         )}
-      </FlexAlignItemsCenterBox>
+      </div>
     </>
   );
 }, isEqual);
+
+AccountItem.displayName = 'AccountItem';
 
 interface IMyAccountsProps {
   upbitAccounts: Array<IUpbitAccounts>;
@@ -190,26 +177,22 @@ const MyAccounts = memo(({ upbitAccounts: upbitAccountsTemp }: IMyAccountsProps)
   );
 
   return (
-    <AccountsContainer>
-      <Tooltip title="KRW 마켓에 있는 코인만 지원합니다." arrow>
-        <Typography>잔고&nbsp;</Typography>
-      </Tooltip>
-      <AccountsInner
-        sx={{
-          gridAutoColumns: 'auto',
-          columnGap: 1
-        }}
+    <div className='flex pb-2'>
+      <div
+        className='tooltip tooltip-right whitespace-nowrap'
+        data-tip='KRW 마켓에 있는 코인만 지원합니다.'
       >
+        <span>잔고&nbsp;</span>
+      </div>
+      <div className='flex flex-wrap items-center whitespace-nowrap gap-x-2'>
         {upbitAccounts.map((account) => (
           <AccountItem key={`header-my-account-${account.currency}`} account={account} />
         ))}
-      </AccountsInner>
-    </AccountsContainer>
+      </div>
+    </div>
   );
 }, isEqual);
 
 MyAccounts.displayName = 'MyAccounts';
-
-AccountItem.displayName = 'AccountItem';
 
 export default MyAccounts;

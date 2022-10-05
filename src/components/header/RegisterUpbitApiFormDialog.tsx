@@ -1,11 +1,9 @@
-import { Box, Typography, FormControl, TextField } from '@mui/material';
 import { memo, useState } from 'react';
 import isEqual from 'react-fast-compare';
 import { useUpbitAuthStore } from 'src/store/upbitAuth';
-import { FormDialog } from '../modules/dialog/Dialog';
-import { useSnackbar } from 'notistack';
-import { BackgroundBlueBox, BackgroundRedBox, TextAlignCenterBox } from '../modules/Box';
-import { HoverUnderLineSpan, UnderLineSpan } from '../modules/Typography';
+import { toast } from 'react-toastify';
+import { BackgroundBlueBox, BackgroundRedBox } from '../modules/Box';
+import classNames from 'classnames';
 
 interface RegisterUpbitApiFormDialogProps {
   open: boolean;
@@ -16,7 +14,6 @@ const RegisterUpbitApiFormDialog: React.FC<RegisterUpbitApiFormDialogProps> = ({
   open,
   onClose
 }) => {
-  const { enqueueSnackbar } = useSnackbar();
   const { registerKey } = useUpbitAuthStore();
   const [values, setValues] = useState({
     accessKey: '',
@@ -33,22 +30,18 @@ const RegisterUpbitApiFormDialog: React.FC<RegisterUpbitApiFormDialogProps> = ({
 
   const handleClose = (prop?: string) => async (event: any) => {
     if (prop !== 'submit' || !values.accessKey || !values.secretKey) {
-      onClose(false);
+      toast.info('모두 입력해주세요.');
       return;
     }
 
     const registerResult = await registerKey(values.accessKey.trim(), values.secretKey.trim());
     if (Array.isArray(registerResult)) {
-      enqueueSnackbar('업비트 API에 연동되었습니다.', {
-        variant: 'success'
-      });
+      onClose(false);
+      toast.success('업비트 API에 연동되었습니다.');
     } else {
-      enqueueSnackbar(registerResult?.error?.message || '업비트 API 연동을 실패했습니다.', {
-        variant: 'error'
-      });
+      toast.error(registerResult?.error?.message || '업비트 API 연동을 실패했습니다.');
       return;
     }
-    onClose(false);
     setValues({
       accessKey: '',
       secretKey: ''
@@ -56,34 +49,24 @@ const RegisterUpbitApiFormDialog: React.FC<RegisterUpbitApiFormDialogProps> = ({
   };
 
   return (
-    <FormDialog
-      open={open}
-      onClose={handleClose}
-      canCloseOnPending={false}
-      title={<b>Upbit API키를 입력해주세요.</b>}
-      buttons={[
-        {
-          isSubmitButton: false,
-          returningIdentifier: 'cancel',
-          title: '취소',
-          variant: 'containedGray'
-        },
-        {
-          isSubmitButton: true,
-          returningIdentifier: 'submit',
-          title: 'API 연동하기',
-          color: 'primary'
-        }
-      ]}
-    >
-      <Box minWidth={200}>
-        <TextAlignCenterBox>
-          <BackgroundRedBox>
-            <Typography>자산조회 기능만 사용이 가능합니다.</Typography>
-            <Typography>API 권한을 다시 한번 확인하고 연동해주세요.</Typography>
-            <Typography>API 사용 부주의로 인한 금전적 손실은 책임 지지 않습니다</Typography>
-          </BackgroundRedBox>
-          {/* <Typography>
+    <>
+      <input type='checkbox' className='modal-toggle' onClick={() => onClose(false)} />
+      <div
+        className={classNames(
+          'modal bg-black/50 backdrop-blur-sm',
+          open ? 'modal-open' : undefined
+        )}
+      >
+        <div className='min-w-[200px] max-w-sm bg-base-200 p-8'>
+          <div className='text-sm text-center'>
+            <BackgroundRedBox>
+              <div className='px-4'>
+                <span>자산조회 기능만 사용이 가능합니다.</span>
+                <span>API 권한을 다시 한번 확인하고 연동해주세요.</span>
+                <span>API 사용 부주의로 인한 금전적 손실은 책임 지지 않습니다</span>
+              </div>
+            </BackgroundRedBox>
+            {/* <Typography>
             <b>76.76.21.21</b> - 현재 접속한 서버 아이피입니다.
           </Typography>
           <Typography>
@@ -92,42 +75,47 @@ const RegisterUpbitApiFormDialog: React.FC<RegisterUpbitApiFormDialogProps> = ({
             </a>
             에서 허용 IP에 등록해야 사용이 가능합니다.
           </Typography> */}
-          <BackgroundBlueBox>
-            <Typography>
-              현재 운영중인 서버가 고정아이피가 아니므로 업비트 API연동을 이용할 수 없습니다.
-            </Typography>
-          </BackgroundBlueBox>
-        </TextAlignCenterBox>
-        <Box mt={1}>
-          <Typography>Access key</Typography>
-          <FormControl variant="filled" fullWidth>
-            <TextField
-              type="text"
+            <BackgroundBlueBox>
+              <div className='px-4'>
+                <span>
+                  현재 운영중인 서버가 고정아이피가 아니므로 업비트 API연동을 이용할 수 없습니다.
+                </span>
+              </div>
+            </BackgroundBlueBox>
+          </div>
+          <div className='mt-4'>
+            <p>Access key</p>
+            <input
+              type='text'
               value={values.accessKey}
-              fullWidth
-              variant="outlined"
-              placeholder="l0ug49ge..."
+              placeholder='l0ug49ge...'
+              className='w-full input'
               required
               onChange={handleChangeValue('accessKey')}
             />
-          </FormControl>
-        </Box>
-        <Box mt={1}>
-          <Typography>Secret key</Typography>
-          <FormControl variant="filled" fullWidth>
-            <TextField
-              type="text"
+          </div>
+          <div className='mt-4'>
+            <p>Secret key</p>
+            <input
+              className='w-full input'
+              type='text'
               value={values.secretKey}
-              fullWidth
-              variant="outlined"
-              placeholder="yXgI17Mu..."
+              placeholder='yXgI17Mu...'
               required
               onChange={handleChangeValue('secretKey')}
             />
-          </FormControl>
-        </Box>
-      </Box>
-    </FormDialog>
+          </div>
+          <div className='mt-4 flex-center'>
+            <button className='basis-1/2 btn' onClick={() => onClose(false)}>
+              취소
+            </button>
+            <button className='basis-1/2 btn btn-success' onClick={handleClose('submit')}>
+              API 연동하기
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
   );
 };
 

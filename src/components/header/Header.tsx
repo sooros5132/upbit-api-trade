@@ -1,61 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Flex11AutoBox, FlexAlignItemsCenterBox, FlexSpaceBetweenCenterBox } from '../modules/Box';
-import { IoLogoVercel } from 'react-icons/io5';
-import { AiFillApi, AiFillSetting } from 'react-icons/ai';
+import { AiFillSetting } from 'react-icons/ai';
 import Link from 'next/link';
 import TradingViewTapeWidget from '../tradingview/Tape';
-import { styled, useTheme } from '@mui/material/styles';
-import { Box, Divider, IconButton, Menu, MenuItem, Switch, Typography } from '@mui/material';
 import { useUpbitAuthStore } from 'src/store/upbitAuth';
 import MyAccounts from './MyAccounts';
 import RegisterUpbitApiFormDialog from './RegisterUpbitApiFormDialog';
 import { useSiteSettingStore } from 'src/store/siteSetting';
 import { useMarketTableSettingStore } from 'src/store/marketTableSetting';
 import shallow from 'zustand/shallow';
-
-const Container = styled('header')`
-  position: sticky;
-  top: 0;
-  left: 0;
-  z-index: 1;
-  background-color: ${({ theme }) => theme.color.mainDeepDrakBackground};
-  padding: 0 ${({ theme }) => theme.spacing(1.25)};
-`;
-
-const Inner = styled(FlexSpaceBetweenCenterBox)`
-  height: ${({ theme }) => theme.spacing(5.5)};
-  font-size: ${({ theme }) => theme.size.px20};
-  ${({ theme }) => theme.mediaQuery.desktop} {
-    /* max-width: 1200px; */
-    margin: 0 auto;
-  }
-`;
-const AccountsConintainer = styled(Box)`
-  ${({ theme }) => theme.mediaQuery.desktop} {
-    /* max-width: 1200px; */
-    margin: 0 auto;
-  }
-`;
-
-const LogoBox = styled(FlexSpaceBetweenCenterBox)(({ theme }) => ({
-  color: theme.color.mainLightText
-}));
-
-const TapeWidget = styled(Flex11AutoBox)`
-  padding: 0 ${({ theme }) => theme.spacing(1.25)};
-`;
-
-const HeaderIconButton = styled(IconButton)(({ theme }) => ({
-  color: theme.color.mainLightText
-}));
-
-const MenuItemInner = styled(FlexSpaceBetweenCenterBox)({
-  width: '100%',
-  minWidth: 120
-});
+import { FaSlackHash } from 'react-icons/fa';
 
 const Header: React.FC = () => {
-  const theme = useTheme();
   const upbitAuth = useUpbitAuthStore();
   const { showMyAccounts, setShowMyAccounts } = useSiteSettingStore(
     ({ setShowMyAccounts, showMyAccounts }) => ({
@@ -83,10 +38,10 @@ const Header: React.FC = () => {
     }
     const headerEl = headerRef.current;
 
-    useSiteSettingStore.setState({ headerHeight: headerEl.scrollHeight });
+    useSiteSettingStore.setState({ headerHeight: headerEl.offsetHeight });
 
     const handleResize = (evt: UIEvent) => {
-      useSiteSettingStore.setState({ headerHeight: headerEl.scrollHeight });
+      useSiteSettingStore.setState({ headerHeight: headerEl.offsetHeight });
     };
 
     window.addEventListener('resize', handleResize);
@@ -133,79 +88,97 @@ const Header: React.FC = () => {
   };
 
   return (
-    <Container ref={headerRef}>
-      <Inner>
-        <FlexAlignItemsCenterBox>
-          <Link href={'/'}>
-            <a>
-              <LogoBox>
-                <IoLogoVercel />
-              </LogoBox>
-            </a>
-          </Link>
-        </FlexAlignItemsCenterBox>
-        <TapeWidget>
+    <nav className='sticky top-0 left-0 z-10 bg-base-200 px-2.5' ref={headerRef}>
+      <div className='flex items-center justify-between h-11 xl:mx-auto '>
+        <Link href={'/'}>
+          <a>
+            <button className='text-xl btn btn-circle btn-ghost btn-sm bg-base-200'>
+              <FaSlackHash />
+            </button>
+          </a>
+        </Link>
+        <div className='px-2.5 basis-full'>
           <TradingViewTapeWidget />
-        </TapeWidget>
-        <HeaderIconButton onClick={handleClickOpenMenu}>
-          <AiFillSetting />
-        </HeaderIconButton>
-        <Menu
-          anchorEl={accountEl}
-          keepMounted
-          open={Boolean(accountEl)}
-          onClose={() => setAccountEl(null)}
-        >
-          <MenuItem onClick={handleClickMenuItem('highlight')}>
-            <MenuItemInner>
-              <Typography>하이라이트</Typography>
-              <Switch size="small" checked={highlight} />
-            </MenuItemInner>
-          </MenuItem>
-          <MenuItem onClick={handleClickMenuItem('stickyChart')}>
-            <MenuItemInner>
-              <Typography>차트 상단 고정</Typography>
-              <Switch size="small" checked={stickyChart} />
-            </MenuItemInner>
-          </MenuItem>
-          {isMounted && upbitAuth.secretKey
-            ? [
-                ,
-                <MenuItem
-                  key={'header-menu-showMyAccounts'}
-                  onClick={handleClickMenuItem('showMyAccounts')}
-                >
-                  <MenuItemInner>
-                    <Typography>잔고 표시</Typography>
-                    <Switch size="small" checked={showMyAccounts} />
-                  </MenuItemInner>
-                </MenuItem>,
-                <Divider key={'header-menu-divider'} />,
-                <MenuItem key={'header-menu-logout'} onClick={handleClickMenuItem('logout')}>
-                  <Typography sx={{ color: theme.color.redMain }}>upbit API 끊기</Typography>
-                </MenuItem>
-              ]
-            : [
-                <Divider key={'header-menu-divider'} />,
-                <MenuItem
-                  key={'header-menu-api-connect'}
-                  onClick={handleClickMenuItem('upbitApiConnect')}
-                >
-                  <Typography>upbit API 연결</Typography>
-                </MenuItem>
-              ]}
-        </Menu>
-      </Inner>
+        </div>
+        <div className='dropdown dropdown-end'>
+          <label tabIndex={0} className='m-1 text-xl btn btn-circle btn-ghost btn-sm bg-base-200'>
+            <AiFillSetting />
+          </label>
+          <ul
+            tabIndex={0}
+            className='p-2 shadow dropdown-content menu bg-base-100 rounded-box w-52 z-[10]'
+          >
+            <li onClickCapture={handleClickMenuItem('highlight')}>
+              <button className='justify-between font-normal btn btn-ghost'>
+                <span className='label-text'>시세 변경 표시</span>
+                <input
+                  type='checkbox'
+                  checked={highlight}
+                  readOnly
+                  className='checkbox checkbox-sm'
+                />
+              </button>
+            </li>
+            <li onClickCapture={handleClickMenuItem('stickyChart')}>
+              <button className='justify-between font-normal btn btn-ghost'>
+                <span className='label-text'>차트 상단 고정</span>
+                <input
+                  type='checkbox'
+                  checked={stickyChart}
+                  readOnly
+                  className='checkbox checkbox-sm'
+                />
+              </button>
+            </li>
+            {isMounted && upbitAuth.secretKey
+              ? [
+                  <li
+                    key={'header-menu-showMyAccounts'}
+                    onClick={handleClickMenuItem('showMyAccounts')}
+                  >
+                    <button className='justify-between font-normal btn btn-ghost'>
+                      <span className='label-text'>잔고 표시</span>
+                      <input
+                        type='checkbox'
+                        checked={showMyAccounts}
+                        readOnly
+                        className='checkbox checkbox-sm'
+                      />
+                    </button>
+                  </li>,
+                  <div key={'header-menu-divider'} className='m-0 divider' />,
+                  <li key={'header-menu-logout'} onClick={handleClickMenuItem('logout')}>
+                    <button className='justify-between font-normal btn btn-ghost'>
+                      <span className='text-red-400 label-text'>upbit API 끊기</span>
+                    </button>
+                  </li>
+                ]
+              : [
+                  <div key={'header-menu-divider'} className='m-0 divider' />,
+                  <li
+                    key={'header-menu-api-connect'}
+                    onClick={handleClickMenuItem('upbitApiConnect')}
+                  >
+                    <button className='justify-between font-normal btn btn-ghost'>
+                      <span className='text-green-500 label-text'>upbit API 연결</span>
+                    </button>
+                  </li>
+                ]}
+          </ul>
+        </div>
+      </div>
       {isMounted && showMyAccounts && upbitAuth.accounts.length ? (
-        <AccountsConintainer>
+        <div className='xl:mx-auto'>
           <MyAccounts upbitAccounts={upbitAuth.accounts} />
-        </AccountsConintainer>
+        </div>
       ) : null}
-      <RegisterUpbitApiFormDialog
-        open={openRegisterUpbitApiDialog}
-        onClose={(open) => setOpenRegisterUpbitApiDialog(open)}
-      />
-    </Container>
+      {openRegisterUpbitApiDialog && (
+        <RegisterUpbitApiFormDialog
+          open={openRegisterUpbitApiDialog}
+          onClose={(open) => setOpenRegisterUpbitApiDialog(open)}
+        />
+      )}
+    </nav>
   );
 };
 
