@@ -2,15 +2,15 @@ import classNames from 'classnames';
 
 export const AskBidParagraph: React.FC<{
   state?: number;
-  opacity?: number;
   children?: React.ReactNode;
-}> = ({ opacity, state, children }) => {
+  className?: string;
+}> = ({ className, state, children }) => {
   return (
     <p
       className={classNames(
         'font-mono',
         !state || state === 0 ? 'text-gray-400' : state > 0 ? 'text-teal-500' : 'text-rose-500',
-        opacity && `opacity-[${opacity}]`
+        className
       )}
     >
       {children}
