@@ -20,6 +20,7 @@ import { ko as koLocale } from 'date-fns/locale';
 import classNames from 'classnames';
 import { BackgroundBlueBox, BackgroundRedBox } from '../modules/Box';
 import { AskBidParagraph } from '../modules/Typography';
+import { toast } from 'react-toastify';
 
 export interface IMarketTableItem extends IUpbitSocketMessageTickerSimple {
   korean_name?: string;
@@ -36,6 +37,7 @@ interface MarketTableProps {
 
 const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex, isLastUpdatePage }) => {
   const { sortColumn, sortType, setSortColumn, setSortType } = useMarketTableSettingStore();
+
   const { connectedUpbit, connectedBinance, lastUpdatedAt } = useExchangeStore(
     ({ upbitSocket, binanceSocket, lastUpdatedAt }) => {
       let connectedUpbit = false;
@@ -87,13 +89,16 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex, isLastUpdate
       case 'upbit': {
         const { connectUpbitSocket, upbitMarkets } = useExchangeStore.getState();
         if (!connectedUpbit) {
-          // enqueueSnackbar('업비트 서버에 다시 연결을 시도합니다.', {
+          // enqueueSnackbar(' 서버에 다시 연결을 시도합니다.', {
           //   variant: 'success'
           // });
+          toast.info('업비트 서버에 연결을 시도합니다.');
           useExchangeStore.setState({ upbitSocket: undefined });
           connectUpbitSocket({
             upbitMarkets: upbitMarkets
           });
+        } else {
+          toast.success('업비트 서버와 연결 되어 있습니다.');
         }
         break;
       }
@@ -107,11 +112,13 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex, isLastUpdate
           const markets = upbitMarkets.map(
             (m) => m.market.replace(krwRegex, '').toLowerCase() + 'usdt@ticker'
           );
+          toast.info('바이낸스 서버에 연결을 시도합니다.');
           connectBinanceSocket({
             binanceMarkets: markets
           });
+        } else {
+          toast.success('바이낸스 서버와 연결 되어 있습니다.');
         }
-
         break;
       }
     }
@@ -182,7 +189,7 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex, isLastUpdate
           </noscript>
           <div className='flex items-center justify-between my-2'>
             <div className='flex flex-nowrap'>
-              <div className='tooltip' data-tip={connectedUpbit ? '연결 됨' : '재연결'}>
+              <div>
                 <div
                   className={classNames(
                     'flex items-center',
@@ -191,13 +198,18 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex, isLastUpdate
                   onClick={handleClickConnectSocket('upbit')}
                 >
                   <span>업비트</span>
-                  <div className={classNames(connectedUpbit ? 'text-green-500' : 'text-red-500')}>
+                  <div
+                    className={classNames(
+                      'text-xl',
+                      connectedUpbit ? 'text-green-500' : 'text-red-500'
+                    )}
+                  >
                     <GoPrimitiveDot />
                   </div>
                 </div>
               </div>
               <div className='mx-1' />
-              <div className='tooltip' data-tip={connectedUpbit ? '연결 됨' : '재연결'}>
+              <div>
                 <div
                   className={classNames(
                     'flex items-center',
@@ -206,7 +218,12 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex, isLastUpdate
                   onClick={handleClickConnectSocket('binance')}
                 >
                   <span>바이낸스</span>
-                  <div className={classNames(connectedBinance ? 'text-green-500' : 'text-red-500')}>
+                  <div
+                    className={classNames(
+                      'text-xl',
+                      connectedBinance ? 'text-green-500' : 'text-red-500'
+                    )}
+                  >
                     <GoPrimitiveDot />
                   </div>
                 </div>
@@ -236,7 +253,7 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex, isLastUpdate
       )}
       <table className='table w-full [&_td]:text-xs sm:[&_td]:text-sm  table-compact'>
         <thead>
-          <tr className='[&>td]:text-gray-600 [&>th:first-child]:rounded-none [&>th:last-child]:rounded-none'>
+          <tr className='[&>td]:text-gray-600 [&>th:first-child]:z-0 [&>th:first-child]:rounded-none [&>th:last-child]:rounded-none'>
             <th className='w-[1.25em] market-td-padding'></th>
             <th className='w-auto market-td-padding'>
               <div
@@ -371,6 +388,8 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex, isLastUpdate
   );
 }, isEqual);
 
+MarketTable.displayName = 'MarketTable';
+
 const TableBody = React.memo<{
   upbitForex: IUpbitForex;
   sortColumn: keyof IMarketTableItem;
@@ -400,7 +419,7 @@ const TableBody = React.memo<{
   }, [sortColumn, sortType]);
 
   return (
-    <tbody className='[&>tr:hover>td]:bg-white/5'>
+    <tbody>
       {searchedSymbols.map((krwSymbol, index) => {
         const favorite = hydrated ? Boolean(favoriteSymbols[krwSymbol]) : false;
 
@@ -548,7 +567,7 @@ const TableItem = React.memo<{
   const priceDecimalLength = String(upbitMarket.tp).replace(/^[0-9]+\.?/, '').length;
 
   return (
-    <tr className='border-b border-white/5 min-w-[40px] p-1'>
+    <tr className='border-b border-base-300 min-w-[40px] p-1 [&:hover>td]:bg-white/5'>
       {selectedMarketSymbol === marketSymbol && (
         <NextSeo
           // title={bitcoinPremium ? `${bitcoinPremium?.toFixed(2)}%` : undefined}
@@ -646,7 +665,7 @@ const TableItem = React.memo<{
               ).toLocaleString()
             : ''} */}
         </AskBidParagraph>
-        <AskBidParagraph state={upbitMarket.scp} opacity={0.7}>
+        <AskBidParagraph state={upbitMarket.scp} className='opacity-60'>
           <span ref={usdPriceRef}>
             {upbitMarket.binance_price
               ? Number(upbitMarket.binance_price) * upbitForex.basePrice > 1
@@ -664,7 +683,7 @@ const TableItem = React.memo<{
       </td>
       <td className='font-mono text-right market-td-padding whitespace-nowrap'>
         <AskBidParagraph state={upbitMarket.scp}>{upbitChangeRate.toFixed(2)}%</AskBidParagraph>
-        <AskBidParagraph state={upbitMarket.scp} opacity={0.7}>
+        <AskBidParagraph state={upbitMarket.scp} className='opacity-60'>
           {upbitMarket.scp.toLocaleString()}
           {/* {binanceChangeRate && binanceChangeRate.toFixed(2) + '%'} */}
         </AskBidParagraph>
@@ -676,7 +695,7 @@ const TableItem = React.memo<{
             <AskBidParagraph state={upbitMarket.premium}>
               {upbitMarket.premium.toFixed(2).padStart(2, '0')}%
             </AskBidParagraph>
-            <AskBidParagraph state={upbitMarket.premium} opacity={0.7}>
+            <AskBidParagraph state={upbitMarket.premium} className='opacity-60'>
               {upbitMarket.binance_price &&
                 Number(
                   (
@@ -688,9 +707,9 @@ const TableItem = React.memo<{
           </>
         )}
       </td>
-      <td className='font-mono text-right market-td-padding whitespace-nowrap'>
-        <p className='text-gray-400'>{koPriceLabelFormat(upbitMarket.atp24h)}</p>
-        <p className='text-gray-600'>
+      <td className='font-mono text-right text-gray-400 market-td-padding whitespace-nowrap'>
+        <p>{koPriceLabelFormat(upbitMarket.atp24h)}</p>
+        <p className='opacity-60'>
           {upbitMarket.binance_price &&
             koPriceLabelFormat(Number(upbitMarket.binance_volume) * upbitForex.basePrice)}
         </p>
@@ -700,6 +719,5 @@ const TableItem = React.memo<{
 }, isEqual);
 
 TableItem.displayName = 'TableItem';
-MarketTable.displayName = 'MarketTable';
 
 export default MarketTable;
