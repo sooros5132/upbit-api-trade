@@ -4,7 +4,9 @@ import Layout from 'src/components/Layout';
 import Script from 'next/script';
 import Head from 'next/head';
 import { useTradingViewSettingStore } from 'src/store/tradingViewSetting';
+import { ToastContainer } from 'react-toastify';
 import 'src/styles/globals.css';
+import 'react-toastify/dist/ReactToastify.css';
 
 // 'sm': '640px',
 // 'md': '768px',
@@ -39,10 +41,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         src='https://s3.tradingview.com/tv.js'
         onLoad={() => useTradingViewSettingStore.setState({ scriptLoaded: true })}
       />
-      <Script
-        src='https://www.googletagmanager.com/gtag/js?id=G-VYNSSXH1VE'
-        strategy='beforeInteractive'
-      />
+      <Script src='https://www.googletagmanager.com/gtag/js?id=G-VYNSSXH1VE' />
       <Script id='google-analytics' strategy='afterInteractive'>
         {`window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
@@ -52,6 +51,7 @@ gtag('config', 'G-VYNSSXH1VE');`}
       </Script>
       <Layout>
         <Component {...pageProps} />
+        <ToastContainer closeButton theme='dark' closeOnClick={false} position='bottom-right' />
       </Layout>
     </>
   );
