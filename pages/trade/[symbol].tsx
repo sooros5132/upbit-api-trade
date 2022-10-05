@@ -1,42 +1,15 @@
-import { styled, useTheme } from '@mui/material/styles';
-import type { GetServerSideProps, GetStaticProps, GetStaticPropsContext, NextPage } from 'next';
+import type { GetServerSideProps, NextPage } from 'next';
 import React, { useEffect, useState } from 'react';
-import { Width100Box } from 'src/components/modules/Box';
 import TradingViewChart from 'src/components/tradingview/Chart';
 import { useUpbitAuthStore } from 'src/store/upbitAuth';
 import { useRouter } from 'next/router';
-import { Box, Typography } from '@mui/material';
 import { krwRegex } from 'src/utils/regex';
-
-const Container = styled('div')`
-  flex: 1 0 auto;
-  display: flex;
-`;
-
-const Inner = styled(Width100Box)`
-  padding: 0 ${({ theme }) => theme.spacing(1.25)};
-  ${({ theme }) => theme.breakpoints.up('lg')} {
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-  ${({ theme }) => theme.breakpoints.down('sm')} {
-    padding: 0 ${({ theme }) => theme.spacing(0.75)};
-  }
-`;
-const TradingViewContainer = styled('div')`
-  /* margin: ${({ theme }) => theme.spacing(2)} 0; */
-`;
-
-const MarketTableContainer = styled('div')`
-  /* margin-bottom: ${({ theme }) => theme.spacing(2)}; */
-`;
 
 interface TradeProps {
   symbol: string;
 }
 
 const Trade: NextPage<TradeProps> = ({ symbol }) => {
-  const theme = useTheme();
   const upbitAuthStore = useUpbitAuthStore();
   const [isMounted, setMounted] = useState(false);
   const router = useRouter();
@@ -55,23 +28,23 @@ const Trade: NextPage<TradeProps> = ({ symbol }) => {
   }, [router.query]);
 
   return (
-    <Container>
-      <Inner>
-        <Box>
-          <Typography fontSize={theme.size.px30}>
+    <main className='flex flex-auto w-full'>
+      <div className='px-1.5 sm:px-2.5 xl:max-w-7xl xl:mx-auto'>
+        <div>
+          <p className='text-3xl'>
             <b>{router.query.symbol}</b>
-          </Typography>
-        </Box>
-        <Box>
+          </p>
+        </div>
+        <div>
           <TradingViewChart chart={chart} />
-        </Box>
-      </Inner>
-    </Container>
+        </div>
+      </div>
+    </main>
   );
 };
 
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
-  console.log(query);
+  // console.log(query);
   return {
     props: {
       symbol: query.symbol

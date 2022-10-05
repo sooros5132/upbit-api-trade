@@ -1,59 +1,14 @@
-import { styled } from '@mui/material/styles';
-import type { GetServerSideProps, GetStaticProps, NextPage } from 'next';
-import React, { useEffect, useState } from 'react';
+import type { GetServerSideProps, NextPage } from 'next';
+import { useMemo, useState } from 'react';
 import { upbitApis } from 'src-server/utils/upbitApis';
 import MarketTable, { IMarketTableItem } from 'src/components/market-table/MarketTable';
-import { Width100Box } from 'src/components/modules/Box';
-import TradingViewChart from 'src/components/tradingview/Chart';
 import { IUpbitForex, IUpbitMarket } from 'src/types/upbit';
-import { useUpbitAuthStore } from 'src/store/upbitAuth';
-import { clientApiUrls } from 'src/utils/clientApiUrls';
-import useSWR from 'swr';
 import { IBinanceSocketMessageTicker } from 'src/types/binance';
 import { useExchangeStore } from 'src/store/exchangeSockets';
 import { krwRegex } from 'src/utils/regex';
 import { binanceApis } from 'src-server/utils/binanceApis';
 import { keyBy } from 'lodash';
 import { useMarketTableSettingStore } from 'src/store/marketTableSetting';
-import TradingViewTickers from 'src/components/tradingview/Tickers';
-import utcToZonedTime from 'date-fns-tz/utcToZonedTime';
-import shallow from 'zustand/shallow';
-import { useSiteSettingStore } from 'src/store/siteSetting';
-
-const Container = styled('div')`
-  flex: 1 0 auto;
-  display: flex;
-`;
-
-const Inner = styled(Width100Box)`
-  position: relative;
-  padding: 0 ${({ theme }) => theme.spacing(1.25)};
-  ${({ theme }) => theme.breakpoints.up('lg')} {
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-  ${({ theme }) => theme.breakpoints.down('sm')} {
-    padding: 0 ${({ theme }) => theme.spacing(0.75)};
-  }
-`;
-const TradingViewContainer = styled('div')`
-  /* margin: ${({ theme }) => theme.spacing(2)} 0; */
-`;
-const TradingViewTickersContainer = styled('div')(({ theme }) => ({
-  overflowX: 'auto',
-  overflowY: 'hidden'
-}));
-
-const TradingViewTickersInner = styled('div')(({ theme }) => ({
-  width: 1200,
-  [`${theme.breakpoints.up('lg')}`]: {
-    maxWidth: '100%'
-  }
-}));
-
-const MarketTableContainer = styled('div')`
-  /* margin-bottom: ${({ theme }) => theme.spacing(2)}; */
-`;
 
 interface HomeProps {
   upbitForex: IUpbitForex;
@@ -70,14 +25,11 @@ const Home: NextPage<HomeProps> = ({
   binanceMarketSnapshot,
   lastUpdatedAt
 }) => {
-  const upbitAuthStore = useUpbitAuthStore();
-  const upbitKrwList = React.useMemo(
+  const upbitKrwList = useMemo(
     () => upbitMarketList.filter((c) => krwRegex.test(c.market)),
     [upbitMarketList]
   );
   const [isMounted, setMounted] = useState(false);
-  const stickyChart = useMarketTableSettingStore((state) => state.stickyChart, shallow);
-  const headerHeight = useSiteSettingStore((state) => state.headerHeight, shallow);
 
   if (!isMounted && upbitMarketSnapshot) {
     useExchangeStore.setState({ upbitForex, lastUpdatedAt: new Date(lastUpdatedAt) });
@@ -101,11 +53,9 @@ const Home: NextPage<HomeProps> = ({
   }
 
   return (
-    <Container>
-      <Inner>
-        <MarketTable upbitForex={upbitForex} isLastUpdatePage={true} />
-      </Inner>
-    </Container>
+    <main className='relative w-full px-3 mx-auto max-w-7xl'>
+      <MarketTable upbitForex={upbitForex} isLastUpdatePage={true} />
+    </main>
   );
 };
 
