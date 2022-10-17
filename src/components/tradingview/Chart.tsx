@@ -54,26 +54,24 @@ const TradingViewChart: React.FC<TradingViewChartProps> = ({ chart }) => {
     }
   }, [handleLoadTradingViewScript, scriptLoaded]);
 
+  if (scriptLoaded) {
+    return <div className='h-full' id={'tradingview_4a4c4'} />;
+  }
+
   return (
-    <div className='h-[300px] sm:h-auto'>
-      {scriptLoaded ? (
-        <div className='h-full min-h-[300px] sm:h-[30vh]' id={'tradingview_4a4c4'} />
-      ) : (
-        <div className='flex items-center h-full text-2xl font-bold text-gray-700 border border-dashed border-gray-700 rounded-[1em] text-center sm:text-3xl md:text-5xl'>
-          <div className='basis-full'>
-            <p>
-              <a
-                className='no-underline hover:underline'
-                href={`https://www.tradingview.com/chart?symbol=${symbol}`}
-                rel='noreferrer'
-                target='_blank'
-              >
-                <span>TradingView {symbol} Chart</span>
-              </a>
-            </p>
-          </div>
-        </div>
-      )}
+    <div className='flex items-center h-full text-2xl font-bold text-gray-700 border border-dashed border-gray-700 rounded-[1em] text-center sm:text-3xl md:text-5xl'>
+      <div className='basis-full'>
+        <p>
+          <a
+            className='no-underline hover:underline'
+            href={`https://www.tradingview.com/chart?symbol=${symbol}`}
+            rel='noreferrer'
+            target='_blank'
+          >
+            <span>TradingView {symbol} Chart</span>
+          </a>
+        </p>
+      </div>
     </div>
   );
 };

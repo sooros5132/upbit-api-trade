@@ -116,7 +116,7 @@ const Home: NextPage<HomeProps> = ({
   return (
     <main className='relative w-full px-3 mx-auto max-w-7xl'>
       <div className='overflow-x-auto overflow-y-hidden'>
-        <div className='w-[1200px] xl:w-full'>
+        <div className='w-[1200px] xl:w-full mx-auto'>
           <TradingViewTickers />
         </div>
       </div>
@@ -130,7 +130,9 @@ const Home: NextPage<HomeProps> = ({
             : undefined
         }
       >
-        <TradingViewChart />
+        <div className='h-[300px] min-h-[300px] sm:h-[30vh] lg:min-h-[500px] lg:h-[40vh]'>
+          <TradingViewChart />
+        </div>
       </div>
       <MarketTable upbitForex={upbitForex} />
     </main>
