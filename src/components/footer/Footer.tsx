@@ -19,6 +19,20 @@ const Footer: React.FC<FooterProps> = ({}) => {
             <br />
             디지털 자산 투자에 대한 금전적 손실은 본인 책임이며 투자에 유의하시기 바랍니다.
           </p>
+          <p className='w-full text-right text-gray-500 hover:[&>a]:underline'>
+            powerd by{' '}
+            <a href='https://upbit.com/' rel='noreferrer' target='_blank'>
+              upbit
+            </a>
+            ,{' '}
+            <a href='https://www.binance.com/' rel='noreferrer' target='_blank'>
+              binance
+            </a>
+            ,{' '}
+            <a href='https://vercel.com/' rel='noreferrer' target='_blank'>
+              vercel
+            </a>
+          </p>
         </div>
       </footer>
       <footer className='px-10 py-4 border-t footer bg-base-200 text-base-content border-base-300'>
