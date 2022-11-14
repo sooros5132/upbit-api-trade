@@ -11,6 +11,18 @@ module.exports = withBundleAnalyzer({
       {
         source: '/asset/upbit/logos/:path*',
         destination: `https://static.upbit.com/logos/:path*`
+      },
+      {
+        source: '/api/upbit/forex/recent',
+        destination: `https://quotation-api-cdn.dunamu.com/v1/forex/recent`
+      },
+      {
+        source: '/api/upbit/:path*',
+        destination: `https://api.upbit.com/v1/:path*`
+      },
+      {
+        source: '/api/binance/:path*',
+        destination: `https://www.binance.com/api/v3/:path*`
       }
     ];
   },
