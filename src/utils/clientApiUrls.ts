@@ -1,10 +1,10 @@
 export const clientApiUrls = {
   upbit: {
+    websocket: 'wss://api.upbit.com/websocket/v1',
+    marketHref: 'https://upbit.com/exchange?code=CRIX.UPBIT.',
     forexRecent: '/upbit/forex/recent',
     marketAll: '/upbit/market/all',
-    marketHref: 'https://upbit.com/exchange?code=CRIX.UPBIT.',
     ticker: '/upbit/ticker',
-    websocket: 'wss://api.upbit.com/websocket/v1',
     accounts: '/upbit/accounts',
     ordersChance: '/upbit/orders/chance',
     order: '/upbit/order',
@@ -25,6 +25,9 @@ export const clientApiUrls = {
   },
   binance: {
     websocket: 'wss://stream.binance.com/stream',
-    marketHref: 'https://www.binance.com/en/trade'
+    marketHref: 'https://www.binance.com/en/trade',
+    ticker: {
+      price: '/binance/ticker/price'
+    }
   }
 } as const;

@@ -148,7 +148,7 @@ interface IMyAccountsProps {
 }
 
 const MyAccounts = memo(({ upbitAccounts: upbitAccountsTemp }: IMyAccountsProps) => {
-  const upbitMarketDatas = useRef(useExchangeStore.getState().upbitMarketDatas);
+  const upbitMarketDatas = useExchangeStore(({ upbitMarketDatas }) => upbitMarketDatas, shallow);
 
   const upbitAccounts = useMemo(
     () =>
@@ -159,9 +159,7 @@ const MyAccounts = memo(({ upbitAccounts: upbitAccountsTemp }: IMyAccountsProps)
               ...account,
               totalBalance: Number(account.balance) + Number(account.locked),
               currentPrice:
-                account.currency === 'KRW'
-                  ? 1
-                  : upbitMarketDatas.current?.['KRW-' + account.currency]?.tp
+                account.currency === 'KRW' ? 1 : upbitMarketDatas['KRW-' + account.currency]?.tp
             } as IAccountItemProps['account'])
         )
         .filter((a) => typeof a.currentPrice === 'number')
@@ -173,7 +171,7 @@ const MyAccounts = memo(({ upbitAccounts: upbitAccountsTemp }: IMyAccountsProps)
           }
           return b.currentPrice * b.totalBalance - a.currentPrice * a.totalBalance;
         }),
-    [upbitAccountsTemp]
+    [upbitAccountsTemp, upbitMarketDatas]
   );
 
   return (

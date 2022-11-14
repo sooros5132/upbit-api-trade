@@ -5,6 +5,7 @@ import { IUpbitAccounts } from 'src-server/types/upbit';
 import { v4 as uuidv4 } from 'uuid';
 import { sign } from 'jsonwebtoken';
 import { IUpbitErrorMessage } from 'src/types/upbit';
+import config from 'site-config';
 
 interface IAuthState {
   _hasHydrated: boolean;
@@ -26,6 +27,7 @@ interface AuthStore extends IAuthState {
     accessKey: string,
     secretKey: string
   ) => Promise<Array<IUpbitAccounts> | IUpbitErrorMessage>;
+  revalidate: () => Promise<void>;
   deleteKeys: () => void;
 }
 
@@ -34,13 +36,12 @@ export const useUpbitAuthStore = create(
     (set, get) => ({
       ...defaultState,
       _hasHydrated: false,
-
       async registerKey(accessKey: string, secretKey: string) {
         const payload = {
           access_key: accessKey,
           nonce: uuidv4()
         };
-        const res = await fetch(process.env.NEXT_PUBLIC_SOOROS_API + clientApiUrls.upbit.accounts, {
+        const res = await fetch(config.path + clientApiUrls.upbit.accounts, {
           headers: {
             Authorization: `Bearer ${sign(payload, secretKey)}`
           }
@@ -55,6 +56,18 @@ export const useUpbitAuthStore = create(
           });
         }
         return accounts;
+      },
+      async revalidate() {
+        const { accessKey, secretKey } = get();
+
+        if (!accessKey || !secretKey) {
+          const { _hasHydrated, ...args } = { ...defaultState };
+
+          set({ ...args });
+          return;
+        }
+
+        await this.registerKey(accessKey, secretKey);
       },
       deleteKeys() {
         set(() => ({

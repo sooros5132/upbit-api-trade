@@ -1,116 +1,41 @@
-import type { GetStaticProps, NextPage } from 'next';
+import type { NextPage } from 'next';
 import React, { useEffect, useState } from 'react';
-import { upbitApis } from 'src-server/utils/upbitApis';
 import MarketTable, { IMarketTableItem } from 'src/components/market-table/MarketTable';
 import TradingViewChart from 'src/components/tradingview/Chart';
-import { IUpbitForex, IUpbitMarket } from 'src/types/upbit';
+import { IUpbitApiTicker, IUpbitForex, IUpbitMarket } from 'src/types/upbit';
 import { useUpbitAuthStore } from 'src/store/upbitAuth';
 import { clientApiUrls } from 'src/utils/clientApiUrls';
 import useSWR from 'swr';
-import { IBinanceSocketMessageTicker } from 'src/types/binance';
+import { IBinanceSocketMessageTicker, IBinanceTickerPrice } from 'src/types/binance';
 import { useExchangeStore } from 'src/store/exchangeSockets';
 import { krwRegex } from 'src/utils/regex';
-import { binanceApis } from 'src-server/utils/binanceApis';
 import { keyBy } from 'lodash';
 import { useMarketTableSettingStore } from 'src/store/marketTableSetting';
 import TradingViewTickers from 'src/components/tradingview/Tickers';
 import shallow from 'zustand/shallow';
 import { useSiteSettingStore } from 'src/store/siteSetting';
-import classNames from 'classnames';
+import axios from 'axios';
+import { BackgroundRedBox } from 'src/components/modules/Box';
+import Link from 'next/link';
+import config from 'site-config';
 
-interface HomeProps {
-  upbitForex: IUpbitForex;
-  upbitMarketList: Array<IUpbitMarket>;
-  upbitMarketSnapshot?: Record<string, IMarketTableItem>;
-  binanceMarketSnapshot?: Record<string, IBinanceSocketMessageTicker>;
-  lastUpdatedAt: string;
-}
-
-const Home: NextPage<HomeProps> = ({
-  upbitForex,
-  upbitMarketList,
-  upbitMarketSnapshot,
-  binanceMarketSnapshot,
-  lastUpdatedAt
-}) => {
-  const upbitAuthStore = useUpbitAuthStore();
-  const upbitKrwList = React.useMemo(
-    () => upbitMarketList.filter((c) => krwRegex.test(c.market)),
-    [upbitMarketList]
-  );
-  const [isMounted, setMounted] = useState(false);
+const Home: NextPage = () => {
   const stickyChart = useMarketTableSettingStore((state) => state.stickyChart, shallow);
   const headerHeight = useSiteSettingStore((state) => state.headerHeight, shallow);
-
-  if (!isMounted && upbitMarketSnapshot) {
-    useExchangeStore.setState({ upbitForex, lastUpdatedAt: new Date(lastUpdatedAt) });
-
-    if (upbitMarketSnapshot) useExchangeStore.setState({ upbitMarketDatas: upbitMarketSnapshot });
-    if (upbitMarketList) {
-      const symbolList = upbitKrwList.map((m) => m.market);
-
-      useExchangeStore.setState({
-        upbitMarkets: upbitMarketList,
-        searchedSymbols: symbolList,
-        sortedUpbitMarketSymbolList: symbolList
-      });
-      useMarketTableSettingStore.getState().setSortColumn('tp');
-      useMarketTableSettingStore.getState().setSortType('DESC');
-      useExchangeStore.getState().sortSymbolList('tp', 'DESC');
-      useExchangeStore.setState({
-        sortedUpbitMarketSymbolList: useExchangeStore.getState().searchedSymbols
-      });
-    }
-  }
-  // const { setMarketSocketData } = useUpbitDataStore();
-  // if (upbitMarketSnapshot) setMarketSocketData(upbitMarketSnapshot);
-
-  useSWR(process.env.NEXT_PUBLIC_SOOROS_API + clientApiUrls.upbit.accounts, async () => {
-    if (upbitAuthStore.accessKey && upbitAuthStore.secretKey) {
-      if (await upbitAuthStore.registerKey(upbitAuthStore.accessKey, upbitAuthStore.secretKey)) {
-        // enqueueSnackbar('업비트 API에 연동되었습니다.', {
-        //   variant: 'success'
-        // });
-      } else {
-        // enqueueSnackbar('서버와 연결이 불안정합니다. 업비트 API연동에 실패했습니다.', {
-        //   variant: 'error'
-        // });
-      }
-    }
-  });
-
-  const forexUrl =
-    process.env.NEXT_PUBLIC_SOOROS_API + clientApiUrls.upbit.forexRecent + '?codes=FRX.KRWUSD';
+  const [isMounted, setMounted] = useState(false);
 
   useSWR(
-    forexUrl,
-    async () => {
-      const forexResult = await (await fetch(forexUrl)).json();
-
-      if (!Array.isArray(forexResult) || !forexResult[0]) return;
-
-      if (upbitForex.basePrice === forexResult[0].basePrice) return;
-
-      useExchangeStore.setState({ upbitForex: forexResult[0] });
+    config.path + clientApiUrls.upbit.accounts,
+    () => {
+      useUpbitAuthStore.getState().revalidate();
     },
     {
       refreshInterval: 60 * 1000
     }
   );
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
-    const { connectBinanceSocket, connectUpbitSocket, upbitMarkets } = useExchangeStore.getState();
-    connectUpbitSocket({
-      upbitMarkets: upbitMarkets
-    });
-    connectBinanceSocket({
-      binanceMarkets: upbitMarkets.map(
-        (m) => m.market.replace(krwRegex, '').toLowerCase() + 'usdt@ticker'
-      )
-    });
+    setMounted(true);
   }, []);
 
   return (
@@ -134,138 +59,217 @@ const Home: NextPage<HomeProps> = ({
           <TradingViewChart />
         </div>
       </div>
-      <MarketTable upbitForex={upbitForex} />
+
+      <noscript>
+        <div className='mt-4'>
+          <BackgroundRedBox>
+            <div className='text-center'>
+              <p>
+                현재 사용중인 브라우저에서 자바스크립트가 비활성화 되어있습니다.
+                <br />
+                실시간 시세를 보시려면 자바스크립트를 활성화하시고 새로고침 해주세요.
+              </p>
+              <p>
+                <a
+                  className='text-white underline'
+                  href='https://support.google.com/adsense/answer/12654?hl=ko'
+                  target='_blank'
+                  rel='noreferrer'
+                >
+                  활성화 방법 보기
+                </a>
+              </p>
+              <p className='mt-3'>
+                또는{' '}
+                <Link href='/last'>
+                  <a className='text-white underline'>현재 시세보는 페이지</a>
+                </Link>
+              </p>
+            </div>
+          </BackgroundRedBox>
+        </div>
+      </noscript>
+      {isMounted && <ExchangeMarket />}
     </main>
   );
 };
 
-export const getStaticProps: GetStaticProps<HomeProps> = async ({ params }) => {
-  const upbitMarketRecord: Record<string, IUpbitMarket> = {};
-  const [resUpbitForex, resUpbitMarketList] = await Promise.all([
-    fetch(upbitApis.forexRecent + '?codes=FRX.KRWUSD'),
-    fetch(upbitApis.marketAll + '?isDetails=false')
-  ]);
-  const [upbitForex, upbitMarketList] = await Promise.all([
-    resUpbitForex.json(),
-    resUpbitMarketList.json().then((data: Array<IUpbitMarket>) =>
-      data.filter((m) => {
-        if (Boolean(m.market.match(krwRegex))) {
-          upbitMarketRecord[m.market] = m;
-          return true;
-        }
-        // BTC 마켓은 아래 코드 사용
-        // if (!Boolean(m.market.match(usdtRegex))) {
-        //   upbitMarketRecord[m.market] = m;
-        //   return true;
-        // }
-      })
-    )
-  ]);
+const ExchangeMarket: React.FC = () => {
+  const [isReady, setIsReady] = useState(false);
+  const { data: forexRecent } = useSWR(
+    config.rewritePath + clientApiUrls.upbit.forexRecent,
+    async (url) => {
+      const forexResult = await axios
+        .get<Array<IUpbitForex>>(url + '?codes=FRX.KRWUSD')
+        .then((res) => res.data);
 
-  const symbolList = upbitMarketList?.map((m: IUpbitMarket) => m.market);
-  const upbitSymbols = symbolList.join(',');
-  // const binanceSymbols = `["${symbolList
-  //   .map((m: string) => m.replace(krwRegex, '') + 'USDT')
-  //   .join('","')}"]`;
+      if (!Array.isArray(forexResult) || !forexResult[0]) return;
 
-  // const upbitMarketSnapshotList = await fetch(`${upbitApis.ticker}?markets=${upbitSymbols}`).then(
-  //   (res) => res.json()
-  // );
+      if (forexResult[0].basePrice < 0) return;
 
-  // 바이낸스는 해당 마켓이 없을 경우 에러를 냄 -> 전체 리스트를 가져와서 정렬.
-  const [{ lastUpdatedAt, upbitMarketSnapshotList }, binanceMarketSnapshotList] = await Promise.all(
-    [
-      fetch(`${upbitApis.ticker}?markets=${upbitSymbols}`).then(async (res) => ({
-        lastUpdatedAt: new Date(res.headers.get('date') ?? new Date()).toISOString(),
-        upbitMarketSnapshotList: await res.json()
-      })),
-      // fetch(`${binanceApis.tickerPrice}?symbols=${binanceSymbols}`).then((res) => res.json())
-      fetch(binanceApis.tickerPrice).then(async (res) => await res.json())
-    ]
+      useExchangeStore.setState({ upbitForex: forexResult[0] });
+
+      return forexResult[0];
+    },
+    {
+      refreshInterval: 60 * 1000
+    }
   );
 
-  const binanceSnapshotkeyByList = keyBy(binanceMarketSnapshotList, 'symbol');
-
-  const upbitMarketSnapshot: Record<string, IMarketTableItem> = {};
-  const binanceMarketSnapshot: Record<string, IBinanceSocketMessageTicker> = {};
-
-  for (const m of binanceMarketSnapshotList) {
-    binanceMarketSnapshot[m.symbol] = {
-      data: {
-        p: m.price,
-        s: m.symbol
-      },
-      stream: ''
-    } as IBinanceSocketMessageTicker;
-  }
-
-  for (const t of upbitMarketSnapshotList) {
-    const symbol = t.market?.replace(krwRegex, '');
-    let binanceSymbol: string | undefined = symbol + 'USDT';
-    switch (symbol) {
-      case 'BTT': {
-        binanceSymbol = 'BTTCUSDT';
-      }
-      case 'NU': {
-        binanceSymbol = undefined;
-      }
+  useEffect(() => {
+    if (isReady) {
+      return;
     }
-    upbitMarketSnapshot[t.market] = {
-      ty: 'ticker',
-      cd: t.market,
-      op: t.opening_price,
-      hp: t.high_price,
-      lp: t.low_price,
-      tp: t.trade_price,
-      pcp: t.prev_closing_price,
-      c: t.change,
-      cp: t.change_price,
-      scp: t.signed_change_price,
-      cr: t.change_rate,
-      scr: t.signed_change_rate,
-      tv: t.trade_volume,
-      atv: t.acc_trade_volume,
-      atv24h: t.acc_trade_volume_24h,
-      atp: t.acc_trade_price,
-      atp24h: t.acc_trade_price_24h,
-      tdt: t.trade_date_kst,
-      ttm: t.trade_time_kst,
-      ttms: t.trade_timestamp,
-      ab: 'ASK',
-      aav: 0,
-      abv: 0,
-      h52wp: t.highest_52_week_price,
-      h52wdt: t.highest_52_week_date,
-      l52wp: t.lowest_52_week_price,
-      l52wdt: t.lowest_52_week_date,
-      ms: 'ACTIVE',
-      mw: 'NONE',
-      its: false,
-      dd: null,
-      tms: t.timestamp,
-      st: 'SNAPSHOT',
-      english_name: upbitMarketRecord[t.market].english_name,
-      korean_name: upbitMarketRecord[t.market].korean_name
-    };
-
-    if (binanceSymbol && binanceSnapshotkeyByList[binanceSymbol]) {
-      const binanceMarket = binanceSnapshotkeyByList[binanceSymbol];
-      const binanceKrwPrice = Number(binanceMarket.price) * upbitForex[0].basePrice;
-      const premium = (1 - binanceKrwPrice / t.trade_price) * 100;
-      upbitMarketSnapshot[t.market].binance_price = binanceSnapshotkeyByList[binanceSymbol]?.price;
-      upbitMarketSnapshot[t.market].premium = premium;
+    if (!forexRecent) {
+      return;
     }
-  }
+    (async function () {
+      try {
+        const upbitMarketAllRecord: Record<string, IUpbitMarket> = {};
+        const upbitMarketAll = await axios
+          .get<Array<IUpbitMarket>>(
+            config.rewritePath + clientApiUrls.upbit.marketAll + '?isDetails=false'
+          )
+          .then((res) => {
+            return res.data?.filter((m) => {
+              if (Boolean(m.market.match(krwRegex))) {
+                upbitMarketAllRecord[m.market] = m;
+                return true;
+              }
+              // BTC 마켓은 아래 코드 사용
+              // if (!Boolean(m.market.match(usdtRegex))) {
+              //   upbitMarketRecord[m.market] = m;
+              //   return true;
+              // }
+            });
+          });
+        const symbolList = upbitMarketAll?.map((m: IUpbitMarket) => m.market);
+        const upbitSymbols = symbolList.join(',');
 
-  return {
-    props: {
-      upbitForex: upbitForex[0],
-      upbitMarketList,
-      upbitMarketSnapshot,
-      lastUpdatedAt
-    },
-    revalidate: 5
-  };
+        // 바이낸스는 해당 마켓이 없을 경우 에러를 냄 -> 전체 리스트를 가져와서 정렬.
+        const [upbitMarketSnapshot, binanceMarketSnapshot] = await Promise.all([
+          axios
+            .get<Array<IUpbitApiTicker>>(
+              config.rewritePath + clientApiUrls.upbit.ticker + '?markets=' + upbitSymbols
+            )
+            .then((res) => res.data),
+          // fetch(`${binanceApis.tickerPrice}?symbols=${binanceSymbols}`).then((res) => res.json())
+          axios
+            .get<Array<IBinanceTickerPrice>>(
+              config.rewritePath + clientApiUrls.binance.ticker.price
+            )
+            .then((res) => res.data)
+        ]);
+
+        const binanceMarketSnapshotKeyBy = keyBy(binanceMarketSnapshot, 'symbol');
+        const upbitMarketSnapshotRecord: Record<string, IMarketTableItem> = {};
+        const binanceMarketSnapshotRecord: Record<string, IBinanceSocketMessageTicker> = {};
+
+        for (const m of binanceMarketSnapshot) {
+          binanceMarketSnapshotRecord[m.symbol] = {
+            data: {
+              p: m.price,
+              s: m.symbol
+            },
+            stream: ''
+          } as IBinanceSocketMessageTicker;
+        }
+
+        for (const t of upbitMarketSnapshot) {
+          const symbol = t.market?.replace(krwRegex, '');
+          let binanceSymbol: string | undefined = symbol + 'USDT';
+          switch (symbol) {
+            case 'BTT': {
+              binanceSymbol = 'BTTCUSDT';
+            }
+            case 'NU': {
+              binanceSymbol = undefined;
+            }
+          }
+          upbitMarketSnapshotRecord[t.market] = {
+            ty: 'ticker',
+            cd: t.market,
+            op: t.opening_price,
+            hp: t.high_price,
+            lp: t.low_price,
+            tp: t.trade_price,
+            pcp: t.prev_closing_price,
+            c: t.change,
+            cp: t.change_price,
+            scp: t.signed_change_price,
+            cr: t.change_rate,
+            scr: t.signed_change_rate,
+            tv: t.trade_volume,
+            atv: t.acc_trade_volume,
+            atv24h: t.acc_trade_volume_24h,
+            atp: t.acc_trade_price,
+            atp24h: t.acc_trade_price_24h,
+            tdt: t.trade_date_kst,
+            ttm: t.trade_time_kst,
+            ttms: t.trade_timestamp,
+            ab: 'ASK',
+            aav: 0,
+            abv: 0,
+            h52wp: t.highest_52_week_price,
+            h52wdt: t.highest_52_week_date,
+            l52wp: t.lowest_52_week_price,
+            l52wdt: t.lowest_52_week_date,
+            ms: 'ACTIVE',
+            mw: 'NONE',
+            its: false,
+            dd: null,
+            tms: t.timestamp,
+            st: 'SNAPSHOT',
+            english_name: upbitMarketAllRecord[t.market].english_name,
+            korean_name: upbitMarketAllRecord[t.market].korean_name
+          };
+
+          if (binanceSymbol && binanceMarketSnapshotKeyBy[binanceSymbol]) {
+            const binanceMarket = binanceMarketSnapshotKeyBy[binanceSymbol];
+            const binanceKrwPrice = Number(binanceMarket.price) * forexRecent.basePrice;
+            const premium = (1 - binanceKrwPrice / t.trade_price) * 100;
+            upbitMarketSnapshotRecord[t.market].binance_price =
+              binanceMarketSnapshotKeyBy[binanceSymbol]?.price;
+            upbitMarketSnapshotRecord[t.market].premium = premium;
+          }
+        }
+
+        useExchangeStore.setState({ upbitForex: forexRecent, lastUpdatedAt: new Date() });
+
+        if (upbitMarketSnapshotRecord)
+          useExchangeStore.setState({ upbitMarketDatas: upbitMarketSnapshotRecord });
+        const upbitKrwSymbolList = upbitMarketSnapshot
+          .filter((c) => krwRegex.test(c.market))
+          .map((m) => m.market);
+
+        useExchangeStore.setState({
+          upbitMarkets: upbitMarketAll,
+          searchedSymbols: upbitKrwSymbolList,
+          sortedUpbitMarketSymbolList: upbitKrwSymbolList
+        });
+        useMarketTableSettingStore.getState().setSortColumn('tp');
+        useMarketTableSettingStore.getState().setSortType('DESC');
+        useExchangeStore.getState().sortSymbolList('tp', 'DESC');
+        useExchangeStore.setState({
+          sortedUpbitMarketSymbolList: useExchangeStore.getState().searchedSymbols
+        });
+
+        const { connectBinanceSocket, connectUpbitSocket } = useExchangeStore.getState();
+        connectUpbitSocket({
+          upbitMarkets: upbitMarketAll
+        });
+        connectBinanceSocket({
+          binanceMarkets: upbitMarketAll.map(
+            (m) => m.market.replace(krwRegex, '').toLowerCase() + 'usdt@ticker'
+          )
+        });
+
+        setIsReady(true);
+      } catch (e) {}
+    })();
+  }, [forexRecent, isReady]);
+
+  return <MarketTable />;
 };
 
 export default Home;

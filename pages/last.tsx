@@ -54,7 +54,7 @@ const Home: NextPage<HomeProps> = ({
 
   return (
     <main className='relative w-full px-3 mx-auto max-w-7xl'>
-      <MarketTable upbitForex={upbitForex} isLastUpdatePage={true} />
+      <MarketTable isLastUpdatePage={true} />
     </main>
   );
 };

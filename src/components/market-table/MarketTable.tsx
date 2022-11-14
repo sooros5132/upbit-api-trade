@@ -24,11 +24,10 @@ export interface IMarketTableItem extends IUpbitSocketMessageTickerSimple {
 }
 
 interface MarketTableProps {
-  upbitForex: IUpbitForex;
   isLastUpdatePage?: boolean;
 }
 
-const MarketTable: React.FC<MarketTableProps> = ({ upbitForex, isLastUpdatePage }) => {
+const MarketTable: React.FC<MarketTableProps> = ({ isLastUpdatePage }) => {
   const { sortColumn, sortType, setSortColumn, setSortType } = useMarketTableSettingStore();
 
   const { connectedUpbit, connectedBinance, lastUpdatedAt } = useExchangeStore(
@@ -159,11 +158,8 @@ const MarketTable: React.FC<MarketTableProps> = ({ upbitForex, isLastUpdatePage 
                   </p>
                   <p>
                     <a
+                      className='text-white underline'
                       href='https://support.google.com/adsense/answer/12654?hl=ko'
-                      style={{
-                        textDecoration: 'underline',
-                        color: 'lightyellow'
-                      }}
                       target='_blank'
                       rel='noreferrer'
                     >
@@ -375,7 +371,7 @@ const MarketTable: React.FC<MarketTableProps> = ({ upbitForex, isLastUpdatePage 
             </th>
           </tr>
         </thead>
-        <MarketTableBody upbitForex={upbitForex} sortColumn={sortColumn} sortType={sortType} />
+        <MarketTableBody sortColumn={sortColumn} sortType={sortType} />
       </table>
     </div>
   );

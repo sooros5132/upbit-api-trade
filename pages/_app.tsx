@@ -1,4 +1,5 @@
 import type { AppProps } from 'next/app';
+import axios from 'axios';
 import { NextSeo } from 'next-seo';
 import Layout from 'src/components/Layout';
 import Script from 'next/script';
@@ -19,6 +20,9 @@ declare global {
   }
 }
 
+axios.defaults.baseURL = process.env.NEXT_PUBLIC_BASE_API_ORIGIN || 'https://crypto.sooros.com';
+// axios.defaults.withCredentials = true;
+
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <>
@@ -26,7 +30,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         title='SOOROS'
         defaultTitle='SOOROS'
         openGraph={{
-          url: 'https://sooros.com',
+          url: 'https://crypto.sooros.com',
           title: 'sooros',
           description: '실시간 업비트 - 바이낸스 프리미엄 시세를 볼 수 있습니다.',
           locale: 'ko_KR',

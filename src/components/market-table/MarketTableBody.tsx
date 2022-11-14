@@ -8,19 +8,21 @@ import { MarketTableItem } from '.';
 import { IMarketTableItem } from './MarketTable';
 
 export interface TableBodyProps {
-  upbitForex: IUpbitForex;
   sortColumn: keyof IMarketTableItem;
   sortType: 'ASC' | 'DESC';
   // upbitMarketSnapshot?: Record<string, IMarketTableItem>;
   // binanceMarketSnapshot?: Record<string, IBinanceSocketMessageTicker>;
 }
 
-const TableBody: React.FC<TableBodyProps> = ({ upbitForex, sortColumn, sortType }) => {
+const TableBody: React.FC<TableBodyProps> = ({ sortColumn, sortType }) => {
   const { hydrated, favoriteSymbols } = useMarketTableSettingStore(
     ({ hydrated, favoriteSymbols }) => ({ hydrated, favoriteSymbols }),
     shallow
   );
-  const searchedSymbols = useExchangeStore(({ searchedSymbols }) => searchedSymbols, shallow);
+  const { searchedSymbols, upbitForex } = useExchangeStore(
+    ({ searchedSymbols, upbitForex }) => ({ searchedSymbols, upbitForex }),
+    shallow
+  );
 
   useEffect(() => {
     const { hydrated, setHydrated } = useMarketTableSettingStore.getState();
@@ -39,19 +41,27 @@ const TableBody: React.FC<TableBodyProps> = ({ upbitForex, sortColumn, sortType 
 
   return (
     <tbody>
-      {searchedSymbols.map((krwSymbol, index) => {
-        const favorite = hydrated ? Boolean(favoriteSymbols[krwSymbol]) : false;
+      {!upbitForex ? (
+        <tr>
+          <td colSpan={6}>
+            <div className='my-3 text-center'>로딩중입니다.</div>
+          </td>
+        </tr>
+      ) : (
+        searchedSymbols.map((krwSymbol, index) => {
+          const favorite = hydrated ? Boolean(favoriteSymbols[krwSymbol]) : false;
 
-        return (
-          <MarketTableItem
-            key={krwSymbol}
-            // upbitMarket={upbitMarket}
-            krwSymbol={krwSymbol}
-            upbitForex={upbitForex}
-            favorite={favorite}
-          />
-        );
-      })}
+          return (
+            <MarketTableItem
+              key={krwSymbol}
+              // upbitMarket={upbitMarket}
+              krwSymbol={krwSymbol}
+              upbitForex={upbitForex}
+              favorite={favorite}
+            />
+          );
+        })
+      )}
     </tbody>
   );
 };
