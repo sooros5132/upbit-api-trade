@@ -1,17 +1,11 @@
 /* eslint-disable @next/next/no-img-element */
-import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
+import React, { memo, useState } from 'react';
 import isEqual from 'react-fast-compare';
 import { BiUpArrowAlt, BiDownArrowAlt } from 'react-icons/bi';
 import { IUpbitForex, IUpbitSocketMessageTickerSimple } from 'src/types/upbit';
-import { koPriceLabelFormat } from 'src/utils/utils';
-import { NextSeo } from 'next-seo';
-import { clientApiUrls } from 'src/utils/clientApiUrls';
-import { AiOutlineAreaChart } from 'react-icons/ai';
-import { TiPin } from 'react-icons/ti';
 import { useExchangeStore } from 'src/store/exchangeSockets';
-import { krwRegex, marketRegex } from 'src/utils/regex';
+import { krwRegex } from 'src/utils/regex';
 import { useMarketTableSettingStore } from 'src/store/marketTableSetting';
-import { useTradingViewSettingStore } from 'src/store/tradingViewSetting';
 import shallow from 'zustand/shallow';
 import { RiCloseCircleLine } from 'react-icons/ri';
 import { GoPrimitiveDot } from 'react-icons/go';
@@ -19,9 +13,8 @@ import formatInTimeZone from 'date-fns-tz/formatInTimeZone';
 import { ko as koLocale } from 'date-fns/locale';
 import classNames from 'classnames';
 import { BackgroundBlueBox, BackgroundRedBox } from '../modules/Box';
-import { AskBidParagraph } from '../modules/Typography';
 import { toast } from 'react-toastify';
-
+import { MarketTableBody } from '.';
 export interface IMarketTableItem extends IUpbitSocketMessageTickerSimple {
   korean_name?: string;
   english_name?: string;
@@ -35,7 +28,7 @@ interface MarketTableProps {
   isLastUpdatePage?: boolean;
 }
 
-const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex, isLastUpdatePage }) => {
+const MarketTable: React.FC<MarketTableProps> = ({ upbitForex, isLastUpdatePage }) => {
   const { sortColumn, sortType, setSortColumn, setSortType } = useMarketTableSettingStore();
 
   const { connectedUpbit, connectedBinance, lastUpdatedAt } = useExchangeStore(
@@ -382,342 +375,10 @@ const MarketTable: React.FC<MarketTableProps> = memo(({ upbitForex, isLastUpdate
             </th>
           </tr>
         </thead>
-        <TableBody upbitForex={upbitForex} sortColumn={sortColumn} sortType={sortType} />
+        <MarketTableBody upbitForex={upbitForex} sortColumn={sortColumn} sortType={sortType} />
       </table>
     </div>
   );
-}, isEqual);
+};
 
-MarketTable.displayName = 'MarketTable';
-
-const TableBody = React.memo<{
-  upbitForex: IUpbitForex;
-  sortColumn: keyof IMarketTableItem;
-  sortType: 'ASC' | 'DESC';
-  // upbitMarketSnapshot?: Record<string, IMarketTableItem>;
-  // binanceMarketSnapshot?: Record<string, IBinanceSocketMessageTicker>;
-}>(({ upbitForex, sortColumn, sortType }) => {
-  const { hydrated, favoriteSymbols } = useMarketTableSettingStore(
-    ({ hydrated, favoriteSymbols }) => ({ hydrated, favoriteSymbols }),
-    shallow
-  );
-  const searchedSymbols = useExchangeStore(({ searchedSymbols }) => searchedSymbols, shallow);
-
-  useEffect(() => {
-    const { hydrated, setHydrated } = useMarketTableSettingStore.getState();
-
-    if (!hydrated) setHydrated();
-  }, []);
-
-  useEffect(() => {
-    useExchangeStore.getState().sortSymbolList(sortColumn, sortType);
-    const interval = setInterval(() => {
-      useExchangeStore.getState().sortSymbolList(sortColumn, sortType);
-      // setNum((prev) => 1 - prev);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [sortColumn, sortType]);
-
-  return (
-    <tbody>
-      {searchedSymbols.map((krwSymbol, index) => {
-        const favorite = hydrated ? Boolean(favoriteSymbols[krwSymbol]) : false;
-
-        return (
-          <TableItem
-            key={krwSymbol}
-            // upbitMarket={upbitMarket}
-            krwSymbol={krwSymbol}
-            upbitForex={upbitForex}
-            favorite={favorite}
-          />
-        );
-      })}
-    </tbody>
-  );
-}, isEqual);
-
-TableBody.displayName = 'TableBody';
-
-const TableItem = React.memo<{
-  krwSymbol: string;
-  // upbitMarket: IMarketTableItem;
-  upbitForex: IUpbitForex;
-  favorite: boolean;
-}>(({ krwSymbol, upbitForex, favorite }) => {
-  const krwPriceRef = useRef<HTMLSpanElement>(null);
-  const usdPriceRef = useRef<HTMLSpanElement>(null);
-  const highlight = useMarketTableSettingStore((state) => state.highlight, shallow);
-  const upbitMarket = useExchangeStore((state) => state.upbitMarketDatas[krwSymbol], shallow);
-  const marketSymbol = upbitMarket.cd.replace(marketRegex, '');
-
-  // const upbitBtcMarket = useExchangeStore(
-  //   (state) => state.upbitMarketDatas['BTC-' + marketSymbol],
-  //   shallow
-  // );
-  // const upbitBtcPrice = useExchangeStore.getState().upbitMarketDatas['KRW-BTC'];
-
-  const { selectedMarketSymbol, selectedExchange } = useTradingViewSettingStore();
-
-  const handleClickMarketIcon = (symbol: string, exchange: 'BINANCE' | 'UPBIT') => () => {
-    const { setSelectedMarketSymbol, setSelectedExchange } = useTradingViewSettingStore.getState();
-    setSelectedMarketSymbol(symbol);
-    setSelectedExchange(exchange);
-    window.scrollTo(0, 0);
-  };
-
-  const handleClickStarIcon = (symbol: string) => () => {
-    if (!favorite) {
-      useMarketTableSettingStore.getState().addFavoriteSymbol(symbol);
-    } else {
-      useMarketTableSettingStore.getState().removeFavoriteSymbol(symbol);
-    }
-    const { sortColumn, sortType } = useMarketTableSettingStore.getState();
-    useExchangeStore.getState().sortSymbolList(sortColumn, sortType);
-  };
-
-  useEffect(() => {
-    if (!highlight || !krwPriceRef?.current) {
-      return;
-    }
-    const node = krwPriceRef.current;
-    const callback: MutationCallback = (e) => {
-      for (const mutationNode of e) {
-        mutationNode.target.parentElement?.classList.remove('highlight');
-        setTimeout(() => {
-          mutationNode.target.parentElement?.classList.add('highlight');
-        }, 0);
-      }
-      // const animations = mutationNode.target.parentElement?.getAnimations()
-      // if(animations){
-      //   for(const animation of animations){
-      //     if (node.contains((animation.effect as KeyframeEffect).target)) {
-      //       animation.cancel();
-      //       animation.play();
-      //     }
-      //   }
-      // }
-    };
-    const config: MutationObserverInit = {
-      subtree: true,
-      characterData: true
-    };
-    const observer = new MutationObserver(callback);
-
-    observer.observe(node, config);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [highlight, krwPriceRef, krwSymbol]);
-
-  useEffect(() => {
-    if (!usdPriceRef?.current) {
-      return;
-    }
-    const node = usdPriceRef.current;
-    const callback: MutationCallback = (e) => {
-      if (!highlight) {
-        return;
-      }
-      for (const mutationNode of e) {
-        mutationNode.target.parentElement?.classList.remove('highlight');
-        setTimeout(() => {
-          mutationNode.target.parentElement?.classList.add('highlight');
-        }, 0);
-      }
-    };
-    const config: MutationObserverInit = {
-      subtree: true,
-      characterData: true
-    };
-    const observer = new MutationObserver(callback);
-
-    observer.observe(node, config);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [highlight, usdPriceRef]);
-
-  const upbitChangeRate = upbitMarket.scr * 100;
-
-  let title = 'SOOROS';
-  if (selectedMarketSymbol === marketSymbol) {
-    // const titleSymbol = `KRW-${selectedMarketSymbol || 'BTC'}`;
-
-    switch (selectedExchange) {
-      case 'BINANCE': {
-        title = upbitMarket.binance_price
-          ? `${selectedMarketSymbol} ${Number(upbitMarket.binance_price).toLocaleString()}$`
-          : '';
-        break;
-      }
-      case 'UPBIT': {
-        title = `${selectedMarketSymbol} ${upbitMarket.tp.toLocaleString()}₩`;
-        break;
-      }
-    }
-  }
-  // const priceIntegerLength = String(upbitMarket.tp).replace(
-  //   /\.[0-9]+$/,
-  //   ""
-  // ).length;
-
-  const priceDecimalLength = String(upbitMarket.tp).replace(/^[0-9]+\.?/, '').length;
-
-  return (
-    <tr className='border-b border-base-300 min-w-[40px] p-1 [&:hover>td]:bg-white/5'>
-      {selectedMarketSymbol === marketSymbol && (
-        <NextSeo
-          // title={bitcoinPremium ? `${bitcoinPremium?.toFixed(2)}%` : undefined}
-          title={title}
-        />
-      )}
-      <td className='market-td-padding'>
-        <div className='text-center'>
-          <img
-            className='object-contain overflow-hidden bg-white rounded-full'
-            src={`/asset/upbit/logos/${marketSymbol}.png`}
-            alt={`${upbitMarket.cd}-icon`}
-            loading='lazy'
-          />
-        </div>
-        <div className='flex justify-center'>
-          <div className='flex'>
-            <div
-              className={classNames(
-                'cursor-pointer',
-                favorite ? 'text-yellow-300' : 'text-gray-600'
-              )}
-              onClick={handleClickStarIcon(upbitMarket.cd)}
-            >
-              <TiPin />
-            </div>
-          </div>
-        </div>
-      </td>
-      <td className='market-td-padding'>
-        {/* <FlexBox>
-          <HoverUnderlineBox>
-            <Link href={'/trade/' + upbitMarket.cd}>
-              <a> */}
-        <div className='flex items-center'>
-          {/* <ChartIconBox fontSize={theme.size.px16} mr={0.5}>
-            <RiExchangeLine />
-          </ChartIconBox> */}
-          <span className='text-gray-300 whitespace-pre-wrap'>{upbitMarket.korean_name}</span>
-        </div>
-        {/* </a>
-            </Link>
-          </HoverUnderlineBox>
-        </FlexBox> */}
-        <div className='flex'>
-          <a
-            href={clientApiUrls.upbit.marketHref + upbitMarket.cd}
-            target='_blank'
-            rel='noreferrer'
-          >
-            <img
-              className='market-exchange-image'
-              src='/icons/upbit.png'
-              alt='upbit favicon'
-              loading='lazy'
-            />
-          </a>
-          <div className='market-chart-icon' onClick={handleClickMarketIcon(marketSymbol, 'UPBIT')}>
-            <AiOutlineAreaChart />
-          </div>
-          &nbsp;
-          {upbitMarket.binance_price && (
-            <>
-              <a
-                href={`${clientApiUrls.binance.marketHref}/${marketSymbol}_USDT`}
-                target='_blank'
-                rel='noreferrer'
-              >
-                <img
-                  className='market-exchange-image'
-                  src='/icons/binance.ico'
-                  alt='upbit favicon'
-                  loading='lazy'
-                />
-              </a>
-              <div
-                className='market-chart-icon'
-                onClick={handleClickMarketIcon(marketSymbol, 'BINANCE')}
-              >
-                <AiOutlineAreaChart />
-              </div>
-            </>
-          )}
-        </div>
-      </td>
-      <td className='font-mono text-right market-td-padding whitespace-nowrap'>
-        <AskBidParagraph state={upbitMarket.scp}>
-          <span ref={krwPriceRef}>
-            {upbitMarket.tp > 1 ? upbitMarket.tp.toLocaleString() : upbitMarket.tp}
-          </span>
-          {/* <br />
-          {upbitBtcMarket && upbitBtcPrice
-            ? Number(
-                (upbitBtcMarket.tp * upbitBtcPrice.tp).toFixed(priceDecimalLength)
-              ).toLocaleString()
-            : ''} */}
-        </AskBidParagraph>
-        <AskBidParagraph state={upbitMarket.scp} className='opacity-60'>
-          <span ref={usdPriceRef}>
-            {upbitMarket.binance_price
-              ? Number(upbitMarket.binance_price) * upbitForex.basePrice > 1
-                ? Number(
-                    (Number(upbitMarket.binance_price) * upbitForex.basePrice).toFixed(
-                      priceDecimalLength
-                    )
-                  ).toLocaleString()
-                : Number(Number(upbitMarket.binance_price) * upbitForex.basePrice).toFixed(
-                    priceDecimalLength
-                  )
-              : null}
-          </span>
-        </AskBidParagraph>
-      </td>
-      <td className='font-mono text-right market-td-padding whitespace-nowrap'>
-        <AskBidParagraph state={upbitMarket.scp}>{upbitChangeRate.toFixed(2)}%</AskBidParagraph>
-        <AskBidParagraph state={upbitMarket.scp} className='opacity-60'>
-          {upbitMarket.scp.toLocaleString()}
-          {/* {binanceChangeRate && binanceChangeRate.toFixed(2) + '%'} */}
-        </AskBidParagraph>
-      </td>
-
-      <td className='font-mono text-right market-td-padding whitespace-nowrap'>
-        {typeof upbitMarket.premium === 'number' && (
-          <>
-            <AskBidParagraph state={upbitMarket.premium}>
-              {upbitMarket.premium.toFixed(2).padStart(2, '0')}%
-            </AskBidParagraph>
-            <AskBidParagraph state={upbitMarket.premium} className='opacity-60'>
-              {upbitMarket.binance_price &&
-                Number(
-                  (
-                    upbitMarket.tp -
-                    Number(upbitMarket.binance_price) * upbitForex.basePrice
-                  ).toFixed(priceDecimalLength)
-                ).toLocaleString()}
-            </AskBidParagraph>
-          </>
-        )}
-      </td>
-      <td className='font-mono text-right text-gray-400 market-td-padding whitespace-nowrap'>
-        <p>{koPriceLabelFormat(upbitMarket.atp24h)}</p>
-        <p className='opacity-60'>
-          {upbitMarket.binance_price &&
-            koPriceLabelFormat(Number(upbitMarket.binance_volume) * upbitForex.basePrice)}
-        </p>
-      </td>
-    </tr>
-  );
-}, isEqual);
-
-TableItem.displayName = 'TableItem';
-
-export default MarketTable;
+export default memo(MarketTable, isEqual);
