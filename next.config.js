@@ -7,7 +7,7 @@ module.exports = withBundleAnalyzer({
   //   BASE_URL: process.env.BASE_URL,
   // },
   async rewrites() {
-    return [
+    const rewrites = [
       {
         source: '/asset/upbit/logos/:path*',
         destination: 'https://static.upbit.com/logos/:path*'
@@ -25,6 +25,15 @@ module.exports = withBundleAnalyzer({
         destination: 'https://www.binance.com/api/v3/:path*'
       }
     ];
+
+    if (process.env.NEXT_PUBLIC_BASE_API_PROXY_ORIGIN) {
+      rewrites.push({
+        source: '/api/proxy/:path*',
+        destination: `${process.env.NEXT_PUBLIC_BASE_API_PROXY_ORIGIN}/:path*`
+      });
+    }
+
+    return rewrites;
   },
   reactStrictMode: true,
   webpack(conf) {

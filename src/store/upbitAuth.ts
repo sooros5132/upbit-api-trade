@@ -1,6 +1,6 @@
 import create from 'zustand';
 import { persist } from 'zustand/middleware';
-import { clientApiUrls } from 'src/utils/clientApiUrls';
+import { apiUrls, PROXY_PATH } from 'src/lib/apiUrls';
 import { IUpbitAccounts } from 'src-server/types/upbit';
 import { v4 as uuidv4 } from 'uuid';
 import { sign } from 'jsonwebtoken';
@@ -44,7 +44,7 @@ export const useUpbitAuthStore = create(
         };
         const accounts = await axios
           .get<Array<IUpbitAccounts> | IUpbitErrorMessage>(
-            clientApiUrls.upbit.rewriteUrl + clientApiUrls.upbit.accounts,
+            PROXY_PATH + apiUrls.upbit.path + apiUrls.upbit.accounts,
             {
               headers: {
                 Authorization: `Bearer ${sign(payload, secretKey)}`
