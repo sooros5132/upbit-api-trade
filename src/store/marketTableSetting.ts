@@ -9,12 +9,14 @@ interface IMarketTableSettingState {
   favoriteSymbols: Record<string, boolean>;
   highlight: boolean;
   stickyChart: boolean;
+  searchValue: string;
 }
 
 interface IMarketTableSettingStore extends IMarketTableSettingState {
   setHydrated: () => void;
   setSortColumn: (column: keyof IMarketTableItem) => void;
   setSortType: (type: 'ASC' | 'DESC') => void;
+  setSearchValue: (searchValue: string) => void;
   addFavoriteSymbol: (symbol: string) => void;
   removeFavoriteSymbol: (symbol: string) => void;
 }
@@ -25,7 +27,8 @@ const defaultState: IMarketTableSettingState = {
   sortType: 'DESC',
   favoriteSymbols: {},
   highlight: true,
-  stickyChart: false
+  stickyChart: false,
+  searchValue: ''
 };
 
 export const useMarketTableSettingStore = create(
@@ -38,6 +41,9 @@ export const useMarketTableSettingStore = create(
       },
       setSortType(type) {
         set({ sortType: type });
+      },
+      setSearchValue(searchValue) {
+        set({ searchValue });
       },
       addFavoriteSymbol(symbol: string) {
         set((state) => ({

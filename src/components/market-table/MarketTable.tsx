@@ -28,7 +28,8 @@ interface MarketTableProps {
 }
 
 const MarketTable: React.FC<MarketTableProps> = ({ isLastUpdatePage }) => {
-  const { sortColumn, sortType, setSortColumn, setSortType } = useMarketTableSettingStore();
+  const { sortColumn, sortType, searchValue, setSortColumn, setSortType, setSearchValue } =
+    useMarketTableSettingStore();
 
   const { connectedUpbit, connectedBinance, lastUpdatedAt } = useExchangeStore(
     ({ upbitSocket, binanceSocket, lastUpdatedAt }) => {
@@ -48,7 +49,6 @@ const MarketTable: React.FC<MarketTableProps> = ({ isLastUpdatePage }) => {
     },
     shallow
   );
-  const [searchValue, setSearchValue] = useState('');
 
   const handleClickThead = (columnName: keyof IMarketTableItem) => () => {
     if (columnName === sortColumn) {
@@ -344,7 +344,7 @@ const MarketTable: React.FC<MarketTableProps> = ({ isLastUpdatePage }) => {
                 </div>
               </div>
             </th>
-            <th className='market-td-padding w-auto sm:w-[10%]'>
+            <th className='market-td-padding w-[10%]'>
               <div
                 className='flex justify-end'
                 // className='flex justify-end tooltip'
