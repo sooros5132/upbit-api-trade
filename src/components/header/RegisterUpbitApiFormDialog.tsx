@@ -1,14 +1,30 @@
-import { memo, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import isEqual from 'react-fast-compare';
 import { useUpbitAuthStore } from 'src/store/upbitAuth';
 import { toast } from 'react-toastify';
 import { BackgroundBlueBox, BackgroundRedBox } from '../modules/Box';
 import classNames from 'classnames';
+import axios from 'axios';
+import { PROXY_PATH } from 'src/lib/apiUrls';
 
 interface RegisterUpbitApiFormDialogProps {
   open: boolean;
   onClose: (open: boolean) => void;
 }
+
+type apiServerDefaultValueType = {
+  loading: boolean;
+  status: number;
+  ip: null | string;
+  lastCheck: null | Date;
+};
+
+const apiServerDefaultValue: apiServerDefaultValueType = {
+  loading: true,
+  status: 400,
+  ip: null,
+  lastCheck: new Date()
+};
 
 const RegisterUpbitApiFormDialog: React.FC<RegisterUpbitApiFormDialogProps> = ({
   open,
@@ -19,6 +35,7 @@ const RegisterUpbitApiFormDialog: React.FC<RegisterUpbitApiFormDialogProps> = ({
     accessKey: '',
     secretKey: ''
   });
+  const [apiServer, setApiServer] = useState(apiServerDefaultValue);
 
   const handleChangeValue =
     (prop: keyof typeof values) => (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,6 +65,32 @@ const RegisterUpbitApiFormDialog: React.FC<RegisterUpbitApiFormDialogProps> = ({
     });
   };
 
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+    setApiServer((prev) => ({ ...prev, loading: true }));
+    (async function () {
+      const apiServerCheck = await axios
+        .get<string>(PROXY_PATH + '/api/ip')
+        .then((res) => res)
+        .catch(async () => {
+          return await axios
+            .get<string>(PROXY_PATH + '/api/ip.php')
+            .then((res) => res)
+            .catch(async () => ({ status: 400, data: null }));
+        });
+
+      setApiServer((prev) => ({
+        ...prev,
+        loading: false,
+        status: apiServerCheck.status,
+        ip: apiServerCheck?.data || null,
+        lastCheck: new Date()
+      }));
+    })();
+  }, [open]);
+
   return (
     <>
       <input type='checkbox' className='modal-toggle' onClick={() => onClose(false)} />
@@ -59,29 +102,27 @@ const RegisterUpbitApiFormDialog: React.FC<RegisterUpbitApiFormDialogProps> = ({
       >
         <div className='min-w-[200px] max-w-sm bg-base-200 p-8'>
           <div className='text-sm text-center'>
-            <BackgroundRedBox>
-              <div className='px-4'>
-                <span>자산조회 기능만 사용이 가능합니다.</span>
-                <span>API 권한을 다시 한번 확인하고 연동해주세요.</span>
-                <span>API 사용 부주의로 인한 금전적 손실은 책임 지지 않습니다</span>
-              </div>
-            </BackgroundRedBox>
-            {/* <Typography>
-            <b>76.76.21.21</b> - 현재 접속한 서버 아이피입니다.
-          </Typography>
-          <Typography>
-            <a href="https://upbit.com/mypage/open_api_management" rel="noreferrer" target="_blank">
-              <UnderLineSpan>Open API 관리</UnderLineSpan>
-            </a>
-            에서 허용 IP에 등록해야 사용이 가능합니다.
-          </Typography> */}
-            <BackgroundBlueBox>
-              <div className='px-4'>
-                <span>
-                  현재 운영중인 서버가 고정아이피가 아니므로 업비트 API연동을 이용할 수 없습니다.
+            <p>
+              {apiServer.loading === false && apiServer.status === 200 && apiServer.ip ? (
+                <span className='my-9'>
+                  <b>{apiServer.ip}</b>
                 </span>
-              </div>
-            </BackgroundBlueBox>
+              ) : apiServer.loading === true ? (
+                <b>아이피를 불러오는 중 입니다.</b>
+              ) : (
+                <b>서버와 연결이 불안정하여 아이피를 확인할 수 없습니다.</b>
+              )}
+              <br />
+              <a
+                className='underline'
+                href='https://upbit.com/mypage/open_api_management'
+                rel='noreferrer'
+                target='_blank'
+              >
+                <span>Open API 관리</span>
+              </a>
+              에서 위 IP를 허용 IP에 등록해야 사용이 가능합니다.
+            </p>
           </div>
           <div className='mt-4'>
             <p>Access key</p>
@@ -104,6 +145,12 @@ const RegisterUpbitApiFormDialog: React.FC<RegisterUpbitApiFormDialogProps> = ({
               required
               onChange={handleChangeValue('secretKey')}
             />
+          </div>
+          <div className='mt-4 text-sm text-red-500'>
+            <p>
+              자산조회 기능만 사용이 가능합니다.&nbsp;API 사용 부주의로 인한 금전적 손실은 책임 지지
+              않습니다.&nbsp;API 권한을 다시 한번 확인하고 연동해주세요.
+            </p>
           </div>
           <div className='mt-4 flex-center'>
             <button className='basis-1/2 btn' onClick={() => onClose(false)}>
