@@ -19,7 +19,7 @@ const handler = nc<NextApiRequest, NextApiResponse>({
 
     const result = (await request.json()) as IGetSuccess;
 
-    res.status(200).json(result);
+    res.status(request.status).json(result);
   });
 
 export default handler;
