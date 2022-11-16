@@ -15,8 +15,8 @@ export interface TableBodyProps {
 }
 
 const TableBody: React.FC<TableBodyProps> = ({ sortColumn, sortType }) => {
-  const { hydrated, favoriteSymbols } = useMarketTableSettingStore(
-    ({ hydrated, favoriteSymbols }) => ({ hydrated, favoriteSymbols }),
+  const { hydrated, favoriteSymbols, searchValue } = useMarketTableSettingStore(
+    ({ hydrated, favoriteSymbols, searchValue }) => ({ hydrated, favoriteSymbols, searchValue }),
     shallow
   );
   const { searchedSymbols, upbitForex } = useExchangeStore(
@@ -39,29 +39,63 @@ const TableBody: React.FC<TableBodyProps> = ({ sortColumn, sortType }) => {
     return () => clearInterval(interval);
   }, [sortColumn, sortType]);
 
+  if (!upbitForex || searchedSymbols.length === 0) {
+    if (searchValue.length !== 0) {
+      return (
+        // 검색된 결과가 없음
+        <tbody>
+          <tr>
+            <td colSpan={6}>
+              <div className='h-20 text-center flex-center'>검색 된 코인이 없습니다.</div>
+            </td>
+          </tr>
+        </tbody>
+      );
+    }
+    return (
+      // 스켈레톤
+      <tbody>
+        {[...new Array(6)].map((_, i) => (
+          <tr key={`tr-skeleton-${i}`}>
+            <td>
+              <div className='w-[16px] h-10 rounded-sm animate-pulse bg-primary'></div>
+            </td>
+            <td>
+              <div className='h-10 rounded-sm animate-pulse bg-primary'></div>
+            </td>
+            <td>
+              <div className='h-10 rounded-sm animate-pulse bg-primary'></div>
+            </td>
+            <td>
+              <div className='h-10 rounded-sm animate-pulse bg-primary'></div>
+            </td>
+            <td>
+              <div className='h-10 rounded-sm animate-pulse bg-primary'></div>
+            </td>
+            <td>
+              <div className='h-10 rounded-sm animate-pulse bg-primary'></div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    );
+  }
+
   return (
     <tbody>
-      {!upbitForex ? (
-        <tr>
-          <td colSpan={6}>
-            <div className='my-3 text-center'>로딩중입니다.</div>
-          </td>
-        </tr>
-      ) : (
-        searchedSymbols.map((krwSymbol, index) => {
-          const favorite = hydrated ? Boolean(favoriteSymbols[krwSymbol]) : false;
+      {searchedSymbols.map((krwSymbol, index) => {
+        const favorite = hydrated ? Boolean(favoriteSymbols[krwSymbol]) : false;
 
-          return (
-            <MarketTableItem
-              key={krwSymbol}
-              // upbitMarket={upbitMarket}
-              krwSymbol={krwSymbol}
-              upbitForex={upbitForex}
-              favorite={favorite}
-            />
-          );
-        })
-      )}
+        return (
+          <MarketTableItem
+            key={krwSymbol}
+            // upbitMarket={upbitMarket}
+            krwSymbol={krwSymbol}
+            upbitForex={upbitForex}
+            favorite={favorite}
+          />
+        );
+      })}
     </tbody>
   );
 };
