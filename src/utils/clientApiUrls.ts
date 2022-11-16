@@ -1,33 +1,42 @@
 export const clientApiUrls = {
   upbit: {
+    origin: 'https://api.upbit.com/v1',
+    path: '/api/v1/upbit',
+    rewriteUrl: '/api/upbit',
     websocket: 'wss://api.upbit.com/websocket/v1',
     marketHref: 'https://upbit.com/exchange?code=CRIX.UPBIT.',
-    forexRecent: '/upbit/forex/recent',
-    marketAll: '/upbit/market/all',
-    ticker: '/upbit/ticker',
-    accounts: '/upbit/accounts',
-    ordersChance: '/upbit/orders/chance',
-    order: '/upbit/order',
-    orders: '/upbit/orders',
-    withdraw: '/upbit/withdraw',
-    withdraws: '/upbit/withdraws',
-    withdrawsChance: '/upbit/withdraws/chance',
-    withdrawsCoin: '/upbit/withdraws/coin',
-    withdrawsKrw: '/upbit/withdraws/krw',
-    deposits: '/upbit/deposits',
-    deposit: '/upbit/deposit',
-    depositsGenerateCoinAddress: '/upbit/deposits/generate_coin_address',
-    depositsCoinAddresses: '/upbit/deposits/coin_addresses',
-    depositsCoinAddress: '/upbit/deposits/coin_address',
-    depositsKrw: '/upbit/deposits/krw',
-    statusWallet: '/upbit/status/wallet',
-    apiKeys: '/upbit/api_keys'
+    forex: {
+      recent: '/forex/recent'
+    },
+    market: {
+      all: '/market/all'
+    },
+    ticker: '/ticker',
+    accounts: '/accounts',
+    ordersChance: '/orders/chance',
+    order: '/order',
+    orders: '/orders',
+    withdraw: '/withdraw',
+    withdraws: '/withdraws',
+    withdrawsChance: '/withdraws/chance',
+    withdrawsCoin: '/withdraws/coin',
+    withdrawsKrw: '/withdraws/krw',
+    deposits: '/deposits',
+    deposit: '/deposit',
+    depositsGenerateCoinAddress: '/deposits/generate_coin_address',
+    depositsCoinAddresses: '/deposits/coin_addresses',
+    depositsCoinAddress: '/deposits/coin_address',
+    depositsKrw: '/deposits/krw',
+    statusWallet: '/status/wallet',
+    apiKeys: '/api_keys'
   },
   binance: {
+    origin: 'https://www.binance.com/api/v3',
+    rewriteUrl: '/api/binance',
     websocket: 'wss://stream.binance.com/stream',
     marketHref: 'https://www.binance.com/en/trade',
     ticker: {
-      price: '/binance/ticker/price'
+      price: '/ticker/price'
     }
   }
 } as const;

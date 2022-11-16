@@ -97,7 +97,7 @@ const Home: NextPage = () => {
 const ExchangeMarket: React.FC = () => {
   const [isReady, setIsReady] = useState(false);
   const { data: forexRecent } = useSWR(
-    config.rewritePath + clientApiUrls.upbit.forexRecent,
+    clientApiUrls.upbit.rewriteUrl + clientApiUrls.upbit.forex.recent,
     async (url) => {
       const forexResult = await axios
         .get<Array<IUpbitForex>>(url + '?codes=FRX.KRWUSD')
@@ -128,7 +128,7 @@ const ExchangeMarket: React.FC = () => {
         const upbitMarketAllRecord: Record<string, IUpbitMarket> = {};
         const upbitMarketAll = await axios
           .get<Array<IUpbitMarket>>(
-            config.rewritePath + clientApiUrls.upbit.marketAll + '?isDetails=false'
+            clientApiUrls.upbit.origin + clientApiUrls.upbit.market.all + '?isDetails=false'
           )
           .then((res) => {
             return res.data?.filter((m) => {
@@ -150,13 +150,13 @@ const ExchangeMarket: React.FC = () => {
         const [upbitMarketSnapshot, binanceMarketSnapshot] = await Promise.all([
           axios
             .get<Array<IUpbitApiTicker>>(
-              config.rewritePath + clientApiUrls.upbit.ticker + '?markets=' + upbitSymbols
+              clientApiUrls.upbit.origin + clientApiUrls.upbit.ticker + '?markets=' + upbitSymbols
             )
             .then((res) => res.data),
           // fetch(`${binanceApis.tickerPrice}?symbols=${binanceSymbols}`).then((res) => res.json())
           axios
             .get<Array<IBinanceTickerPrice>>(
-              config.rewritePath + clientApiUrls.binance.ticker.price
+              clientApiUrls.binance.origin + clientApiUrls.binance.ticker.price
             )
             .then((res) => res.data)
         ]);
