@@ -5,6 +5,7 @@ import { IUpbitAccounts } from 'src-server/types/upbit';
 import { v4 as uuidv4 } from 'uuid';
 import { sign } from 'jsonwebtoken';
 import { IUpbitErrorMessage } from 'src/types/upbit';
+import axios from 'axios';
 import config from 'site-config';
 
 interface IAuthState {
@@ -41,13 +42,20 @@ export const useUpbitAuthStore = create(
           access_key: accessKey,
           nonce: uuidv4()
         };
-        const res = await fetch(config.path + clientApiUrls.upbit.accounts, {
-          headers: {
-            Authorization: `Bearer ${sign(payload, secretKey)}`
-          }
-        });
+        const accounts = await axios
+          .get<Array<IUpbitAccounts> | IUpbitErrorMessage>(
+            clientApiUrls.upbit.rewriteUrl + clientApiUrls.upbit.accounts,
+            {
+              headers: {
+                Authorization: `Bearer ${sign(payload, secretKey)}`
+              }
+            }
+          )
+          .then((res) => res.data)
+          .catch((res) => {
+            return res?.response?.data || '알 수 없는 에러';
+          });
 
-        const accounts = (await res.json()) as Array<IUpbitAccounts> | IUpbitErrorMessage;
         if (Array.isArray(accounts)) {
           set({
             accessKey,
