@@ -4,7 +4,7 @@ import { IMarketTableItem } from 'src/components/market-table/MarketTable';
 import { IUpbitForex, IUpbitMarket, IUpbitSocketMessageTickerSimple } from 'src/types/upbit';
 import { clientApiUrls } from 'src/utils/clientApiUrls';
 import { v4 as uuidv4 } from 'uuid';
-import { keyBy, sortBy } from 'lodash';
+import { isEqual, keyBy, sortBy } from 'lodash';
 import { IBinanceSocketMessageTicker } from 'src/types/binance';
 import { krwRegex } from 'src/utils/regex';
 import { useMarketTableSettingStore } from './marketTableSetting';
@@ -280,82 +280,91 @@ const useExchangeStore = create<IExchangeStore>(
       }
     },
     sortSymbolList(sortColumn, sortType) {
-      const upbitForex = get().upbitForex;
+      const { upbitForex, searchedSymbols, upbitMarketDatas } = get();
       if (!upbitForex) return;
-      set((state) => {
-        const { favoriteSymbols, hydrated } = useMarketTableSettingStore.getState();
-        const { searchedSymbols, upbitMarketDatas } = state;
-        const favoriteList: IMarketTableItem[] = [];
-        const normalList = hydrated
-          ? searchedSymbols
-              .map((symbol) => upbitMarketDatas[symbol])
-              .filter((m) => {
-                const favorite = favoriteSymbols[m.cd];
-                if (favorite) {
-                  favoriteList.push(m);
-                } else {
-                  return true;
-                }
-              })
-          : searchedSymbols.map((symbol) => upbitMarketDatas[symbol]);
+      const { favoriteSymbols, hydrated } = useMarketTableSettingStore.getState();
+      const favoriteList: IMarketTableItem[] = [];
+      const normalList = hydrated
+        ? searchedSymbols
+            .map((symbol) => upbitMarketDatas[symbol])
+            .filter((m) => {
+              const favorite = favoriteSymbols[m.cd];
+              if (favorite) {
+                favoriteList.push(m);
+              } else {
+                return true;
+              }
+            })
+        : searchedSymbols.map((symbol) => upbitMarketDatas[symbol]);
 
-        // const mergeMarkets = upbitMarketDatas.map((upbitMarket) => {
-        //   return {
-        //     ...upbitMarket
-        //   };
-        // });
+      // const mergeMarkets = upbitMarketDatas.map((upbitMarket) => {
+      //   return {
+      //     ...upbitMarket
+      //   };
+      // });
 
-        // const handleSort = (aItem: IMarketTableItem, bItem: IMarketTableItem) => {
-        //   const a = aItem[sortColumn];
-        //   const b = bItem[sortColumn];
-        //   if (a === undefined) return 1;
-        //   if (b === undefined) return -1;
+      // const handleSort = (aItem: IMarketTableItem, bItem: IMarketTableItem) => {
+      //   const a = aItem[sortColumn];
+      //   const b = bItem[sortColumn];
+      //   if (a === undefined) return 1;
+      //   if (b === undefined) return -1;
 
-        //   if (typeof a === 'number' && typeof b === 'number') {
-        //     if (sortType === 'ASC') {
-        //       return a - b;
-        //     }
-        //     return b - a;
-        //   } else if (typeof a === 'string' && typeof b === 'string') {
-        //     const aValue = a.toUpperCase();
-        //     const bValue = b.toUpperCase();
-        //     if (sortType === 'ASC') {
-        //       if (aValue < bValue) {
-        //         return 1;
-        //       }
-        //       if (aValue > bValue) {
-        //         return -1;
-        //       }
-        //       return 0;
-        //     }
-        //     if (aValue < bValue) {
-        //       return -1;
-        //     }
-        //     if (aValue > bValue) {
-        //       return 1;
-        //     }
-        //     return 0;
-        //   }
-        //   return 0;
-        // };
+      //   if (typeof a === 'number' && typeof b === 'number') {
+      //     if (sortType === 'ASC') {
+      //       return a - b;
+      //     }
+      //     return b - a;
+      //   } else if (typeof a === 'string' && typeof b === 'string') {
+      //     const aValue = a.toUpperCase();
+      //     const bValue = b.toUpperCase();
+      //     if (sortType === 'ASC') {
+      //       if (aValue < bValue) {
+      //         return 1;
+      //       }
+      //       if (aValue > bValue) {
+      //         return -1;
+      //       }
+      //       return 0;
+      //     }
+      //     if (aValue < bValue) {
+      //       return -1;
+      //     }
+      //     if (aValue > bValue) {
+      //       return 1;
+      //     }
+      //     return 0;
+      //   }
+      //   return 0;
+      // };
 
-        const sortedFavoriteList =
-          sortType === 'ASC'
-            ? sortBy(favoriteList, sortColumn)
-            : sortBy(favoriteList, sortColumn).reverse();
-        const sortedNormalList =
-          sortType === 'ASC'
-            ? sortBy(normalList, sortColumn)
-            : sortBy(normalList, sortColumn).reverse();
+      const sortedFavoriteList =
+        sortType === 'ASC'
+          ? sortBy(favoriteList, sortColumn)
+          : sortBy(favoriteList, sortColumn).reverse();
+      const sortedNormalList =
+        sortType === 'ASC'
+          ? sortBy(normalList, sortColumn)
+          : sortBy(normalList, sortColumn).reverse();
 
-        const sortedSymbolList = sortedFavoriteList.concat(sortedNormalList).map((m) => {
-          upbitMarketDatas[m.cd] = m;
-          return m.cd;
-        });
+      const sortedSymbolList = sortedFavoriteList.concat(sortedNormalList).map((m) => {
+        // upbitMarketDatas[m.cd] = m;
+        return m.cd;
+      });
 
-        return {
-          searchedSymbols: sortedSymbolList
-        };
+      // 순서까지 같은지 검사. 리렌더링보단 성능이 적게 소모됨
+      try {
+        sortedSymbolList.reduce((prev, current, i) => {
+          if (current !== searchedSymbols[i]) {
+            throw '같지 않음';
+          }
+          return prev;
+        }, true);
+
+        return; // 여기 오면 같음
+      } catch (e) {}
+
+      set({
+        searchedSymbols: sortedSymbolList
       });
     },
     distroyAll() {
