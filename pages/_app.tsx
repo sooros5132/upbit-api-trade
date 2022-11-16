@@ -20,9 +20,6 @@ declare global {
   }
 }
 
-axios.defaults.baseURL = process.env.NEXT_PUBLIC_BASE_API_ORIGIN || 'https://crypto.sooros.com';
-// axios.defaults.withCredentials = true;
-
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <>
