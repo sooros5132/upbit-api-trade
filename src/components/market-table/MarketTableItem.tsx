@@ -10,7 +10,7 @@ import { useExchangeStore } from 'src/store/exchangeSockets';
 import { useMarketTableSettingStore } from 'src/store/marketTableSetting';
 import { useTradingViewSettingStore } from 'src/store/tradingViewSetting';
 import { IUpbitForex } from 'src/types/upbit';
-import { clientApiUrls } from 'src/utils/clientApiUrls';
+import { apiUrls } from 'src/lib/apiUrls';
 import { marketRegex } from 'src/utils/regex';
 import { koPriceLabelFormat } from 'src/utils/utils';
 import shallow from 'zustand/shallow';
@@ -184,11 +184,7 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
           <span className='text-gray-300 whitespace-pre-wrap'>{upbitMarket.korean_name}</span>
         </div>
         <div className='flex'>
-          <a
-            href={clientApiUrls.upbit.marketHref + upbitMarket.cd}
-            target='_blank'
-            rel='noreferrer'
-          >
+          <a href={apiUrls.upbit.marketHref + upbitMarket.cd} target='_blank' rel='noreferrer'>
             <Image
               className='market-exchange-image'
               src='/icons/upbit.png'
@@ -205,7 +201,7 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
           {upbitMarket.binance_price && (
             <>
               <a
-                href={`${clientApiUrls.binance.marketHref}/${marketSymbol}_USDT`}
+                href={`${apiUrls.binance.marketHref}/${marketSymbol}_USDT`}
                 target='_blank'
                 rel='noreferrer'
               >

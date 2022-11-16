@@ -2,7 +2,7 @@ import create, { GetState } from 'zustand';
 import { NamedSet } from 'zustand/middleware';
 import { IMarketTableItem } from 'src/components/market-table/MarketTable';
 import { IUpbitForex, IUpbitMarket, IUpbitSocketMessageTickerSimple } from 'src/types/upbit';
-import { clientApiUrls } from 'src/utils/clientApiUrls';
+import { apiUrls } from 'src/lib/apiUrls';
 import { v4 as uuidv4 } from 'uuid';
 import { isEqual, keyBy, sortBy } from 'lodash';
 import { IBinanceSocketMessageTicker } from 'src/types/binance';
@@ -121,7 +121,7 @@ const handleConnectUpbitSocket =
           upbitSocket.close();
         }
       }
-      let ws: WebSocket = new WebSocket(clientApiUrls.upbit.websocket);
+      let ws: WebSocket = new WebSocket(apiUrls.upbit.websocket);
       set({ upbitSocket: ws });
 
       ws.binaryType = 'blob';
@@ -183,7 +183,7 @@ const handleConnectBinanceSocket =
           socket.close();
         }
       }
-      let ws: WebSocket = new WebSocket(clientApiUrls.binance.websocket);
+      let ws: WebSocket = new WebSocket(apiUrls.binance.websocket);
       set({ binanceSocket: ws });
 
       ws.binaryType = 'blob';

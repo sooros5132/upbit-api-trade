@@ -1,4 +1,6 @@
-export const clientApiUrls = {
+export const PROXY_PATH = process.env.NEXT_PUBLIC_BASE_API_PROXY_ORIGIN ? '/api/proxy' : '';
+
+export const apiUrls = {
   upbit: {
     origin: 'https://api.upbit.com/v1',
     path: '/api/v1/upbit',

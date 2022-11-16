@@ -4,7 +4,7 @@ import MarketTable, { IMarketTableItem } from 'src/components/market-table/Marke
 import TradingViewChart from 'src/components/tradingview/Chart';
 import { IUpbitApiTicker, IUpbitForex, IUpbitMarket } from 'src/types/upbit';
 import { useUpbitAuthStore } from 'src/store/upbitAuth';
-import { clientApiUrls } from 'src/utils/clientApiUrls';
+import { apiUrls } from 'src/lib/apiUrls';
 import useSWR from 'swr';
 import { IBinanceSocketMessageTicker, IBinanceTickerPrice } from 'src/types/binance';
 import { useExchangeStore } from 'src/store/exchangeSockets';
@@ -25,7 +25,7 @@ const Home: NextPage = () => {
   const [isMounted, setMounted] = useState(false);
 
   useSWR(
-    config.path + clientApiUrls.upbit.accounts,
+    config.path + apiUrls.upbit.accounts,
     () => {
       useUpbitAuthStore.getState().revalidate();
     },
@@ -97,7 +97,7 @@ const Home: NextPage = () => {
 const ExchangeMarket: React.FC = () => {
   const [isReady, setIsReady] = useState(false);
   const { data: forexRecent } = useSWR(
-    clientApiUrls.upbit.rewriteUrl + clientApiUrls.upbit.forex.recent,
+    apiUrls.upbit.rewriteUrl + apiUrls.upbit.forex.recent,
     async (url) => {
       const forexResult = await axios
         .get<Array<IUpbitForex>>(url + '?codes=FRX.KRWUSD')
@@ -128,7 +128,7 @@ const ExchangeMarket: React.FC = () => {
         const upbitMarketAllRecord: Record<string, IUpbitMarket> = {};
         const upbitMarketAll = await axios
           .get<Array<IUpbitMarket>>(
-            clientApiUrls.upbit.origin + clientApiUrls.upbit.market.all + '?isDetails=false'
+            apiUrls.upbit.origin + apiUrls.upbit.market.all + '?isDetails=false'
           )
           .then((res) => {
             return res.data?.filter((m) => {
@@ -150,14 +150,12 @@ const ExchangeMarket: React.FC = () => {
         const [upbitMarketSnapshot, binanceMarketSnapshot] = await Promise.all([
           axios
             .get<Array<IUpbitApiTicker>>(
-              clientApiUrls.upbit.origin + clientApiUrls.upbit.ticker + '?markets=' + upbitSymbols
+              apiUrls.upbit.origin + apiUrls.upbit.ticker + '?markets=' + upbitSymbols
             )
             .then((res) => res.data),
           // fetch(`${binanceApis.tickerPrice}?symbols=${binanceSymbols}`).then((res) => res.json())
           axios
-            .get<Array<IBinanceTickerPrice>>(
-              clientApiUrls.binance.origin + clientApiUrls.binance.ticker.price
-            )
+            .get<Array<IBinanceTickerPrice>>(apiUrls.binance.origin + apiUrls.binance.ticker.price)
             .then((res) => res.data)
         ]);
 

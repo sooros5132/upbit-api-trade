@@ -2,7 +2,7 @@ import { memo, useMemo, useRef } from 'react';
 import isEqual from 'react-fast-compare';
 import { IUpbitAccounts } from 'src-server/types/upbit';
 import { BsDot } from 'react-icons/bs';
-import { clientApiUrls } from 'src/utils/clientApiUrls';
+import { apiUrls } from 'src/lib/apiUrls';
 import { useExchangeStore } from 'src/store/exchangeSockets';
 import shallow from 'zustand/shallow';
 import { AskBidParagraph } from '../modules/Typography';
@@ -41,7 +41,7 @@ const AccountItem = memo(({ account }: IAccountItemProps) => {
 
   const upbitLink =
     currency !== 'KRW'
-      ? `${clientApiUrls.upbit.marketHref + 'KRW-' + currency}`
+      ? `${apiUrls.upbit.marketHref + 'KRW-' + currency}`
       : 'https://upbit.com/investments/balance';
 
   return (
