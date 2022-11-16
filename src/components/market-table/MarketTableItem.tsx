@@ -1,6 +1,7 @@
 import classNames from 'classnames';
 import { isEqual } from 'lodash';
 import { NextSeo } from 'next-seo';
+import Image from 'next/image';
 import React from 'react';
 import { memo, useEffect, useRef } from 'react';
 import { AiOutlineAreaChart } from 'react-icons/ai';
@@ -154,11 +155,14 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
       )}
       <td className='market-td-padding'>
         <div className='text-center'>
-          <img
+          <Image
             className='object-contain overflow-hidden bg-white rounded-full'
             src={`/asset/upbit/logos/${marketSymbol}.png`}
-            alt={`${upbitMarket.cd}-icon`}
+            width={14}
+            height={14}
+            quality={100}
             loading='lazy'
+            alt={`${upbitMarket.cd}-icon`}
           />
         </div>
         <div className='flex justify-center'>
@@ -176,31 +180,22 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
         </div>
       </td>
       <td className='market-td-padding'>
-        {/* <FlexBox>
-          <HoverUnderlineBox>
-            <Link href={'/trade/' + upbitMarket.cd}>
-              <a> */}
         <div className='flex items-center'>
-          {/* <ChartIconBox fontSize={theme.size.px16} mr={0.5}>
-            <RiExchangeLine />
-          </ChartIconBox> */}
           <span className='text-gray-300 whitespace-pre-wrap'>{upbitMarket.korean_name}</span>
         </div>
-        {/* </a>
-            </Link>
-          </HoverUnderlineBox>
-        </FlexBox> */}
         <div className='flex'>
           <a
             href={clientApiUrls.upbit.marketHref + upbitMarket.cd}
             target='_blank'
             rel='noreferrer'
           >
-            <img
+            <Image
               className='market-exchange-image'
               src='/icons/upbit.png'
-              alt='upbit favicon'
+              width={14}
+              height={14}
               loading='lazy'
+              alt='upbit favicon'
             />
           </a>
           <div className='market-chart-icon' onClick={handleClickMarketIcon(marketSymbol, 'UPBIT')}>
@@ -214,11 +209,13 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
                 target='_blank'
                 rel='noreferrer'
               >
-                <img
+                <Image
                   className='market-exchange-image'
                   src='/icons/binance.ico'
-                  alt='upbit favicon'
+                  width={14}
+                  height={14}
                   loading='lazy'
+                  alt='binance favicon'
                 />
               </a>
               <div
@@ -296,4 +293,4 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
   );
 };
 
-export default React.memo(TableItem, isEqual);
+export default memo(TableItem, isEqual);
