@@ -1,0 +1,15 @@
+version: "3"
+services:
+  # Web Application
+  upbit-realtime-premium:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: upbit-realtime-premium
+    # volumes:
+      # - ./:/app
+      # - /app/node_modules
+    working_dir: /app
+    ports:
+      - 3000:3000
+    restart: on-failure
