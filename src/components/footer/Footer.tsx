@@ -22,15 +22,19 @@ const Footer: React.FC<FooterProps> = ({}) => {
           <p className='w-full text-right text-gray-500 hover:[&>a]:underline'>
             powerd by{' '}
             <a href='https://upbit.com/' rel='noreferrer' target='_blank'>
-              upbit
+              Upbit
             </a>
             ,{' '}
             <a href='https://www.binance.com/' rel='noreferrer' target='_blank'>
-              binance
+              Binance
             </a>
             ,{' '}
             <a href='https://vercel.com/' rel='noreferrer' target='_blank'>
-              vercel
+              Vercel
+            </a>
+            ,{' '}
+            <a href='https://www.tradingview.com/' rel='noreferrer' target='_blank'>
+              TradingView
             </a>
           </p>
         </div>
