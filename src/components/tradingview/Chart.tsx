@@ -1,5 +1,6 @@
-import React, { memo, useCallback, useEffect } from 'react';
+import React, { memo, useCallback, useEffect, useState } from 'react';
 import isEqual from 'react-fast-compare';
+import { useSiteSettingStore } from 'src/store/siteSetting';
 import { useTradingViewSettingStore } from 'src/store/tradingViewSetting';
 
 interface TradingViewChartProps {
@@ -10,6 +11,7 @@ interface TradingViewChartProps {
 }
 
 const TradingViewChart: React.FC<TradingViewChartProps> = ({ chart }) => {
+  const [hydrated, setHydrated] = useState(false);
   const { selectedMarketSymbol, selectedExchange, scriptLoaded } = useTradingViewSettingStore();
   const symbol =
     chart?.exchange && chart?.symbol
@@ -54,7 +56,11 @@ const TradingViewChart: React.FC<TradingViewChartProps> = ({ chart }) => {
     }
   }, [handleLoadTradingViewScript, scriptLoaded]);
 
-  if (scriptLoaded) {
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
+
+  if (scriptLoaded || !hydrated) {
     return <div className='h-full' id={'tradingview_4a4c4'} />;
   }
 
