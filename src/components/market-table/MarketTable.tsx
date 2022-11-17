@@ -1,19 +1,15 @@
 /* eslint-disable @next/next/no-img-element */
-import React, { memo, useState } from 'react';
+import React, { memo } from 'react';
 import isEqual from 'react-fast-compare';
 import { BiUpArrowAlt, BiDownArrowAlt } from 'react-icons/bi';
-import { IUpbitForex, IUpbitSocketMessageTickerSimple } from 'src/types/upbit';
+import { IUpbitSocketMessageTickerSimple } from 'src/types/upbit';
 import { useExchangeStore } from 'src/store/exchangeSockets';
-import { krwRegex } from 'src/utils/regex';
 import { useMarketTableSettingStore } from 'src/store/marketTableSetting';
 import shallow from 'zustand/shallow';
 import { RiCloseCircleLine } from 'react-icons/ri';
-import { GoPrimitiveDot } from 'react-icons/go';
 import formatInTimeZone from 'date-fns-tz/formatInTimeZone';
 import { ko as koLocale } from 'date-fns/locale';
-import classNames from 'classnames';
 import { BackgroundBlueBox, BackgroundRedBox } from '../modules/Box';
-import { toast } from 'react-toastify';
 import { MarketTableBody } from '.';
 export interface IMarketTableItem extends IUpbitSocketMessageTickerSimple {
   korean_name?: string;
@@ -31,24 +27,12 @@ const MarketTable: React.FC<MarketTableProps> = ({ isLastUpdatePage }) => {
   const { sortColumn, sortType, searchValue, setSortColumn, setSortType, setSearchValue } =
     useMarketTableSettingStore();
 
-  const { connectedUpbit, connectedBinance, lastUpdatedAt } = useExchangeStore(
-    ({ upbitSocket, binanceSocket, lastUpdatedAt }) => {
-      let connectedUpbit = false;
-      let connectedBinance = false;
-      if (upbitSocket?.readyState === 1) {
-        connectedUpbit = true;
-      }
-      if (binanceSocket?.readyState === 1) {
-        connectedBinance = true;
-      }
-      return {
-        connectedUpbit,
-        connectedBinance,
-        lastUpdatedAt
-      };
-    },
-    shallow
-  );
+  const { upbitForex, lastUpdatedAt } = useExchangeStore(({ lastUpdatedAt, upbitForex }) => {
+    return {
+      upbitForex,
+      lastUpdatedAt
+    };
+  }, shallow);
 
   const handleClickThead = (columnName: keyof IMarketTableItem) => () => {
     if (columnName === sortColumn) {
@@ -74,46 +58,6 @@ const MarketTable: React.FC<MarketTableProps> = ({ isLastUpdatePage }) => {
     const { searchSymbols, sortSymbolList } = useExchangeStore.getState();
     searchSymbols('');
     sortSymbolList(sortColumn, sortType);
-  };
-
-  const handleClickConnectSocket = (prop: 'upbit' | 'binance') => () => {
-    switch (prop) {
-      case 'upbit': {
-        const { connectUpbitSocket, upbitMarkets } = useExchangeStore.getState();
-        if (!connectedUpbit) {
-          // enqueueSnackbar(' 서버에 다시 연결을 시도합니다.', {
-          //   variant: 'success'
-          // });
-          toast.info('업비트 서버에 연결을 시도합니다.');
-          useExchangeStore.setState({ upbitSocket: undefined });
-          connectUpbitSocket({
-            upbitMarkets: upbitMarkets
-          });
-        } else {
-          toast.success('업비트 서버와 연결 되어 있습니다.');
-        }
-        break;
-      }
-      case 'binance': {
-        const { connectBinanceSocket, upbitMarkets } = useExchangeStore.getState();
-        if (!connectedBinance) {
-          // enqueueSnackbar('바이낸스 서버에 다시 연결을 시도합니다.', {
-          //   variant: 'success'
-          // });
-          useExchangeStore.setState({ binanceSocket: undefined });
-          const markets = upbitMarkets.map(
-            (m) => m.market.replace(krwRegex, '').toLowerCase() + 'usdt@ticker'
-          );
-          toast.info('바이낸스 서버에 연결을 시도합니다.');
-          connectBinanceSocket({
-            binanceMarkets: markets
-          });
-        } else {
-          toast.success('바이낸스 서버와 연결 되어 있습니다.');
-        }
-        break;
-      }
-    }
   };
 
   return (
@@ -177,65 +121,25 @@ const MarketTable: React.FC<MarketTableProps> = ({ isLastUpdatePage }) => {
             </div>
           </noscript>
           <div className='flex items-center justify-between my-2'>
-            <div className='flex flex-nowrap'>
-              <div>
-                <div
-                  className={classNames(
-                    'flex items-center',
-                    connectedBinance ? undefined : 'cursor-pointer'
-                  )}
-                  onClick={handleClickConnectSocket('upbit')}
-                >
-                  <span>업비트</span>
-                  <div
-                    className={classNames(
-                      'text-xl',
-                      connectedUpbit ? 'text-green-500' : 'text-red-500'
-                    )}
-                  >
-                    <GoPrimitiveDot />
-                  </div>
-                </div>
-              </div>
-              <div className='mx-1' />
-              <div>
-                <div
-                  className={classNames(
-                    'flex items-center',
-                    connectedBinance ? undefined : 'cursor-pointer'
-                  )}
-                  onClick={handleClickConnectSocket('binance')}
-                >
-                  <span>바이낸스</span>
-                  <div
-                    className={classNames(
-                      'text-xl',
-                      connectedBinance ? 'text-green-500' : 'text-red-500'
-                    )}
-                  >
-                    <GoPrimitiveDot />
-                  </div>
-                </div>
-              </div>
+            <div className='tooltip tooltip-right' data-tip='계산에 적용된 달러 환율입니다.'>
+              USD/KRW {upbitForex?.basePrice?.toLocaleString()}
             </div>
-            <div className='flex justify-end'>
-              <div className='border rounded-md form-control border-base-300 '>
-                <label className='input-group input-group-sm '>
-                  <input
-                    type='text'
-                    placeholder='BTC, 비트, Bitcoin'
-                    value={searchValue}
-                    onChange={handleChangeMarketSearchInput}
-                    className='input input-sm bg-transparent w-[170px] focus:outline-offset-0 focus:rounded-l-md'
-                  />
-                  <span
-                    className='text-xl text-gray-600 bg-transparent cursor-pointer px-1.5 justify-end'
-                    onClick={handleClickClearSearchInputButton}
-                  >
-                    <RiCloseCircleLine />
-                  </span>
-                </label>
-              </div>
+            <div className='border rounded-md form-control border-base-300 '>
+              <label className='input-group input-group-sm '>
+                <input
+                  type='text'
+                  placeholder='BTC, 비트, Bitcoin'
+                  value={searchValue}
+                  onChange={handleChangeMarketSearchInput}
+                  className='input input-sm bg-transparent w-[170px] focus:outline-offset-0 focus:rounded-l-md'
+                />
+                <span
+                  className='text-xl text-gray-600 bg-transparent cursor-pointer px-1.5 justify-end'
+                  onClick={handleClickClearSearchInputButton}
+                >
+                  <RiCloseCircleLine />
+                </span>
+              </label>
             </div>
           </div>
         </>

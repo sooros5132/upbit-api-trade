@@ -1,4 +1,4 @@
-import { memo, useMemo, useRef } from 'react';
+import { memo, useMemo, useRef, useState } from 'react';
 import isEqual from 'react-fast-compare';
 import { IUpbitAccounts } from 'src-server/types/upbit';
 import { BsDot } from 'react-icons/bs';
@@ -6,12 +6,15 @@ import { apiUrls } from 'src/lib/apiUrls';
 import { useExchangeStore } from 'src/store/exchangeSockets';
 import shallow from 'zustand/shallow';
 import { AskBidParagraph } from '../modules/Typography';
+import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai';
+import { useSiteSettingStore } from 'src/store/siteSetting';
 
 interface IAccountItemProps {
   account: IUpbitAccounts & { currentPrice?: number; totalBalance: number };
+  visibleBalance?: boolean;
 }
 
-const AccountItem = memo(({ account }: IAccountItemProps) => {
+const AccountItem = memo(({ account, visibleBalance }: IAccountItemProps) => {
   const upbitMarketData = useExchangeStore(
     (state) => state?.upbitMarketDatas?.['KRW-' + account.currency],
     shallow
@@ -56,9 +59,8 @@ const AccountItem = memo(({ account }: IAccountItemProps) => {
             <label tabIndex={0}>
               <AskBidParagraph state={profitAndLoss}>
                 &nbsp;
-                {`${Math.round(
-                  currentPrice * totalBalance
-                ).toLocaleString()}₩ ${profitAndLoss.toFixed(2)}%`}
+                {visibleBalance && `${Math.round(currentPrice * totalBalance).toLocaleString()}₩ `}
+                {`${profitAndLoss.toFixed(2)}%`}
               </AskBidParagraph>
             </label>
             <div className='dropdown-content grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 bg-base-300 p-2 [&>p:nth-child(even)]:text-right [&>p:nth-child(even)]:font-mono'>
@@ -95,46 +97,6 @@ const AccountItem = memo(({ account }: IAccountItemProps) => {
               <p>{Math.round(balance).toLocaleString()}</p>
             </div>
           </div>
-          // <Tooltip
-          //   arrow
-          //   title={
-          //     <GridBox
-          //       sx={{
-          //         gridTemplateColumns: 'auto 1fr',
-          //         columnGap: 0.5,
-          //         rowGap: 0.5,
-          //         fontSize: (theme) => theme.size.px14
-          //       }}
-          //     >
-          //     </GridBox>
-          //   }
-          // >
-          // </Tooltip>
-          // <Tooltip
-          //   arrow
-          //   title={
-          //     <GridBox
-          //       sx={{
-          //         gridTemplateColumns: 'auto 1fr',
-          //         columnGap: 0.5,
-          //         rowGap: 0.5,
-          //         fontSize: (theme) => theme.size.px14
-          //       }}
-          //     >
-          //       <Typography>보유 KRW</Typography>
-          //       <TextAlignRightBox>
-          //         <MonoFontTypography>
-          //           {Math.round(balance + locked).toLocaleString()}
-          //         </MonoFontTypography>
-          //       </TextAlignRightBox>
-          //       <Typography>사용 가능 KRW</Typography>
-          //       <TextAlignRightBox>
-          //         <MonoFontTypography>{Math.round(balance).toLocaleString()}</MonoFontTypography>
-          //       </TextAlignRightBox>
-          //     </GridBox>
-          //   }
-          // >
-          // </Tooltip>
         )}
       </div>
     </>
@@ -149,6 +111,10 @@ interface IMyAccountsProps {
 
 const MyAccounts = memo(({ upbitAccounts: upbitAccountsTemp }: IMyAccountsProps) => {
   const upbitMarketDatas = useExchangeStore(({ upbitMarketDatas }) => upbitMarketDatas, shallow);
+  const { visibleBalances, setVisibleBalances } = useSiteSettingStore(
+    ({ visibleBalances, setVisibleBalances }) => ({ visibleBalances, setVisibleBalances }),
+    shallow
+  );
 
   const upbitAccounts = useMemo(
     () =>
@@ -159,7 +125,11 @@ const MyAccounts = memo(({ upbitAccounts: upbitAccountsTemp }: IMyAccountsProps)
               ...account,
               totalBalance: Number(account.balance) + Number(account.locked),
               currentPrice:
-                account.currency === 'KRW' ? 1 : upbitMarketDatas['KRW-' + account.currency]?.tp
+                account.currency === 'KRW'
+                  ? visibleBalances
+                    ? 1
+                    : undefined
+                  : upbitMarketDatas['KRW-' + account.currency]?.tp
             } as IAccountItemProps['account'])
         )
         .filter((a) => typeof a.currentPrice === 'number')
@@ -171,7 +141,7 @@ const MyAccounts = memo(({ upbitAccounts: upbitAccountsTemp }: IMyAccountsProps)
           }
           return b.currentPrice * b.totalBalance - a.currentPrice * a.totalBalance;
         }),
-    [upbitAccountsTemp, upbitMarketDatas]
+    [upbitAccountsTemp, upbitMarketDatas, visibleBalances]
   );
 
   return (
@@ -182,10 +152,23 @@ const MyAccounts = memo(({ upbitAccounts: upbitAccountsTemp }: IMyAccountsProps)
       >
         <span>잔고&nbsp;</span>
       </div>
-      <div className='flex flex-wrap items-center whitespace-nowrap gap-x-2'>
+      <div className='flex flex-wrap items-center flex-grow whitespace-nowrap gap-x-2'>
         {upbitAccounts.map((account) => (
-          <AccountItem key={`header-my-account-${account.currency}`} account={account} />
+          <AccountItem
+            key={`header-my-account-${account.currency}`}
+            account={account}
+            visibleBalance={visibleBalances}
+          />
         ))}
+      </div>
+      <div className='flex-center'>
+        <button
+          className='btn btn-circle btn-ghost btn-sm flex-center tooltip tooltip-left w-[1.5em] h-[1.5em] min-h-0'
+          data-tip='평가금액 표시/숨기기'
+          onClick={() => setVisibleBalances(!visibleBalances)}
+        >
+          {visibleBalances ? <AiFillEye /> : <AiFillEyeInvisible />}
+        </button>
       </div>
     </div>
   );

@@ -9,6 +9,12 @@ import { useSiteSettingStore } from 'src/store/siteSetting';
 import { useMarketTableSettingStore } from 'src/store/marketTableSetting';
 import shallow from 'zustand/shallow';
 import { FaSlackHash } from 'react-icons/fa';
+import { GoPrimitiveDot } from 'react-icons/go';
+import { useExchangeStore } from 'src/store/exchangeSockets';
+import { toast } from 'react-toastify';
+import { krwRegex } from 'src/utils/regex';
+import { IoMdRefresh } from 'react-icons/io';
+import classNames from 'classnames';
 
 const Header: React.FC = () => {
   const upbitAuth = useUpbitAuthStore();
@@ -27,6 +33,23 @@ const Header: React.FC = () => {
   const [accountEl, setAccountEl] = useState<null | HTMLElement>(null);
   const [isMounted, setMounted] = useState(false);
   const headerRef = useRef<HTMLHeadElement>(null);
+  const { connectedUpbit, connectedBinance } = useExchangeStore(
+    ({ upbitSocket, binanceSocket }) => {
+      let connectedUpbit = false;
+      let connectedBinance = false;
+      if (upbitSocket?.readyState === 1) {
+        connectedUpbit = true;
+      }
+      if (binanceSocket?.readyState === 1) {
+        connectedBinance = true;
+      }
+      return {
+        connectedUpbit,
+        connectedBinance
+      };
+    },
+    shallow
+  );
 
   useEffect(() => {
     setMounted(true);
@@ -85,6 +108,64 @@ const Header: React.FC = () => {
 
   const handleClickOpenMenu = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAccountEl(event.currentTarget);
+  };
+
+  const handleClickConnectSocket = (prop: 'upbit' | 'binance') => () => {
+    switch (prop) {
+      case 'upbit': {
+        const { connectUpbitSocket, upbitMarkets, upbitSocket } = useExchangeStore.getState();
+        if (upbitSocket) {
+          upbitSocket.close();
+        }
+        useExchangeStore.setState({ upbitSocket: undefined });
+        toast.info('업비트 서버에 다시 연결합니다.');
+        connectUpbitSocket({
+          upbitMarkets: upbitMarkets
+        });
+
+        // if (!connectedUpbit) {
+        //   // enqueueSnackbar(' 서버에 다시 연결을 시도합니다.', {
+        //   //   variant: 'success'
+        //   // });
+        //   toast.info('업비트 서버에 연결을 시도합니다.');
+        //   useExchangeStore.setState({ upbitSocket: undefined });
+        //   connectUpbitSocket({
+        //     upbitMarkets: upbitMarkets
+        //   });
+        // } else {
+        //   toast.success('업비트 서버와 연결 되어 있습니다.');
+        // }
+        break;
+      }
+      case 'binance': {
+        const { connectBinanceSocket, upbitMarkets, binanceSocket } = useExchangeStore.getState();
+        if (binanceSocket) {
+          binanceSocket.close();
+        }
+        useExchangeStore.setState({ binanceSocket: undefined });
+        const markets = upbitMarkets.map(
+          (m) => m.market.replace(krwRegex, '').toLowerCase() + 'usdt@ticker'
+        );
+        toast.info('바이낸스 서버에 다시 연결합니다.');
+        connectBinanceSocket({
+          binanceMarkets: markets
+        });
+        // if (!connectedBinance) {
+
+        //   useExchangeStore.setState({ binanceSocket: undefined });
+        //   const markets = upbitMarkets.map(
+        //     (m) => m.market.replace(krwRegex, '').toLowerCase() + 'usdt@ticker'
+        //   );
+        //   toast.info('바이낸스 서버에 연결을 시도합니다.');
+        //   connectBinanceSocket({
+        //     binanceMarkets: markets
+        //   });
+        // } else {
+        //   toast.success('바이낸스 서버와 연결 되어 있습니다.');
+        // }
+        break;
+      }
+    }
   };
 
   return (
@@ -164,6 +245,49 @@ const Header: React.FC = () => {
                     </button>
                   </li>
                 ]}
+            <div className='m-0 divider' />
+            <li onClick={handleClickConnectSocket('upbit')}>
+              <div className='flex justify-between'>
+                <div
+                  className={classNames(
+                    'flex items-center',
+                    connectedBinance ? undefined : 'cursor-pointer'
+                  )}
+                >
+                  <div
+                    className={classNames(
+                      'text-xl',
+                      connectedUpbit ? 'text-green-500' : 'text-red-500'
+                    )}
+                  >
+                    <GoPrimitiveDot />
+                  </div>
+                  <span>업비트</span>
+                </div>
+                <IoMdRefresh />
+              </div>
+            </li>
+            <li onClick={handleClickConnectSocket('binance')}>
+              <div className='flex justify-between'>
+                <div
+                  className={classNames(
+                    'flex items-center ',
+                    connectedBinance ? undefined : 'cursor-pointer'
+                  )}
+                >
+                  <div
+                    className={classNames(
+                      'text-xl',
+                      connectedBinance ? 'text-green-500' : 'text-red-500'
+                    )}
+                  >
+                    <GoPrimitiveDot />
+                  </div>
+                  <span>바이낸스</span>
+                </div>
+                <IoMdRefresh />
+              </div>
+            </li>
           </ul>
         </div>
       </div>
