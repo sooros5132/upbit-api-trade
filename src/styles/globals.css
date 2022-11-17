@@ -3,6 +3,10 @@
 @tailwind utilities;
 
 @layer components {
+  .tooltip:before {
+    z-index: 1;
+  }
+
   .flex-align-items-center {
     @apply flex items-center;
   }
