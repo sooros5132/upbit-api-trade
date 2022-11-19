@@ -253,14 +253,8 @@ const ExchangeMarket: React.FC = () => {
         });
 
         const { connectBinanceSocket, connectUpbitSocket } = useExchangeStore.getState();
-        connectUpbitSocket({
-          upbitMarkets: upbitMarketAll
-        });
-        connectBinanceSocket({
-          binanceMarkets: upbitMarketAll.map(
-            (m) => m.market.replace(krwRegex, '').toLowerCase() + 'usdt@ticker'
-          )
-        });
+        connectUpbitSocket();
+        connectBinanceSocket();
 
         setIsReady(true);
       } catch (e) {}

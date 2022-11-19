@@ -12,7 +12,6 @@ import { FaSlackHash } from 'react-icons/fa';
 import { GoPrimitiveDot } from 'react-icons/go';
 import { useExchangeStore } from 'src/store/exchangeSockets';
 import { toast } from 'react-toastify';
-import { krwRegex } from 'src/utils/regex';
 import { IoMdRefresh } from 'react-icons/io';
 import classNames from 'classnames';
 
@@ -113,56 +112,17 @@ const Header: React.FC = () => {
   const handleClickConnectSocket = (prop: 'upbit' | 'binance') => () => {
     switch (prop) {
       case 'upbit': {
-        const { connectUpbitSocket, upbitMarkets, upbitSocket } = useExchangeStore.getState();
-        if (upbitSocket) {
-          upbitSocket.close();
-        }
-        useExchangeStore.setState({ upbitSocket: undefined });
+        const { connectUpbitSocket, disconnectUpbitSocket } = useExchangeStore.getState();
+        disconnectUpbitSocket();
         toast.info('업비트 서버에 다시 연결합니다.');
-        connectUpbitSocket({
-          upbitMarkets: upbitMarkets
-        });
-
-        // if (!connectedUpbit) {
-        //   // enqueueSnackbar(' 서버에 다시 연결을 시도합니다.', {
-        //   //   variant: 'success'
-        //   // });
-        //   toast.info('업비트 서버에 연결을 시도합니다.');
-        //   useExchangeStore.setState({ upbitSocket: undefined });
-        //   connectUpbitSocket({
-        //     upbitMarkets: upbitMarkets
-        //   });
-        // } else {
-        //   toast.success('업비트 서버와 연결 되어 있습니다.');
-        // }
+        connectUpbitSocket();
         break;
       }
       case 'binance': {
-        const { connectBinanceSocket, upbitMarkets, binanceSocket } = useExchangeStore.getState();
-        if (binanceSocket) {
-          binanceSocket.close();
-        }
-        useExchangeStore.setState({ binanceSocket: undefined });
-        const markets = upbitMarkets.map(
-          (m) => m.market.replace(krwRegex, '').toLowerCase() + 'usdt@ticker'
-        );
+        const { connectBinanceSocket, disconnectBinanceSocket } = useExchangeStore.getState();
+        disconnectBinanceSocket();
         toast.info('바이낸스 서버에 다시 연결합니다.');
-        connectBinanceSocket({
-          binanceMarkets: markets
-        });
-        // if (!connectedBinance) {
-
-        //   useExchangeStore.setState({ binanceSocket: undefined });
-        //   const markets = upbitMarkets.map(
-        //     (m) => m.market.replace(krwRegex, '').toLowerCase() + 'usdt@ticker'
-        //   );
-        //   toast.info('바이낸스 서버에 연결을 시도합니다.');
-        //   connectBinanceSocket({
-        //     binanceMarkets: markets
-        //   });
-        // } else {
-        //   toast.success('바이낸스 서버와 연결 되어 있습니다.');
-        // }
+        connectBinanceSocket();
         break;
       }
     }
