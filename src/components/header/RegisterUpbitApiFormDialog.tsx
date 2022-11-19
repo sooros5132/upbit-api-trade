@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import { BackgroundBlueBox, BackgroundRedBox } from '../modules/Box';
 import classNames from 'classnames';
 import axios from 'axios';
-import { PROXY_PATH } from 'src/lib/apiUrls';
+import { apiUrls, PROXY_PATH } from 'src/lib/apiUrls';
 
 interface RegisterUpbitApiFormDialogProps {
   open: boolean;
@@ -45,8 +45,9 @@ const RegisterUpbitApiFormDialog: React.FC<RegisterUpbitApiFormDialogProps> = ({
       }));
     };
 
-  const handleClose = (prop?: string) => async (event: any) => {
-    if (prop !== 'submit' || !values.accessKey || !values.secretKey) {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!values.accessKey || !values.secretKey) {
       toast.info('모두 입력해주세요.');
       return;
     }
@@ -92,15 +93,12 @@ const RegisterUpbitApiFormDialog: React.FC<RegisterUpbitApiFormDialogProps> = ({
   }, [open]);
 
   return (
-    <>
-      <input type='checkbox' className='modal-toggle' onClick={() => onClose(false)} />
-      <div
-        className={classNames(
-          'modal bg-black/50 backdrop-blur-sm',
-          open ? 'modal-open' : undefined
-        )}
-      >
-        <div className='min-w-[200px] max-w-sm bg-base-200 p-8'>
+    <div
+      className={classNames('modal bg-black/50 backdrop-blur-sm', open ? 'modal-open' : undefined)}
+    >
+      {/* <input type='checkbox' className='modal-toggle' onClick={() => onClose(false)} /> */}
+      <div className='min-w-[200px] max-w-sm bg-base-200 p-8'>
+        <form onSubmit={handleSubmit}>
           <div className='text-sm text-center'>
             <p>
               {apiServer.loading === false && apiServer.status === 200 && apiServer.ip ? (
@@ -138,8 +136,8 @@ const RegisterUpbitApiFormDialog: React.FC<RegisterUpbitApiFormDialogProps> = ({
           <div className='mt-4'>
             <p>Secret key</p>
             <input
-              className='w-full input'
               type='text'
+              className='w-full input'
               value={values.secretKey}
               placeholder='yXgI17Mu...'
               required
@@ -156,13 +154,13 @@ const RegisterUpbitApiFormDialog: React.FC<RegisterUpbitApiFormDialogProps> = ({
             <button className='basis-1/2 btn' onClick={() => onClose(false)}>
               취소
             </button>
-            <button className='basis-1/2 btn btn-success' onClick={handleClose('submit')}>
+            <button type='submit' className='basis-1/2 btn btn-success'>
               API 연동하기
             </button>
           </div>
-        </div>
+        </form>
       </div>
-    </>
+    </div>
   );
 };
 
