@@ -173,6 +173,7 @@ const Header: React.FC = () => {
             </li>
             {isMounted && upbitAuth.secretKey
               ? [
+                  <div key={'header-menu-divider'} className='m-0 divider' />,
                   <li
                     key={'header-menu-showMyAccounts'}
                     onClick={handleClickMenuItem('showMyAccounts')}
@@ -187,7 +188,6 @@ const Header: React.FC = () => {
                       />
                     </button>
                   </li>,
-                  <div key={'header-menu-divider'} className='m-0 divider' />,
                   <li key={'header-menu-logout'} onClick={handleClickMenuItem('logout')}>
                     <button className='justify-between font-normal btn btn-ghost'>
                       <span className='text-red-400 label-text'>upbit API 끊기</span>
@@ -206,46 +206,36 @@ const Header: React.FC = () => {
                   </li>
                 ]}
             <div className='m-0 divider' />
-            <li onClick={handleClickConnectSocket('upbit')}>
+            <li className='disabled'>
               <div className='flex justify-between'>
-                <div
-                  className={classNames(
-                    'flex items-center',
-                    connectedBinance ? undefined : 'cursor-pointer'
-                  )}
-                >
-                  <div
-                    className={classNames(
-                      'text-xl',
-                      connectedUpbit ? 'text-green-500' : 'text-red-500'
-                    )}
-                  >
+                <div className='flex items-center text-base-content'>
+                  <div className={connectedUpbit ? 'text-green-500' : 'text-red-500'}>
                     <GoPrimitiveDot />
                   </div>
                   <span>업비트</span>
                 </div>
-                <IoMdRefresh />
+                <button
+                  className='w-6 h-6 min-h-0 btn btn-circle btn-sm btn-ghost'
+                  onClick={handleClickConnectSocket('upbit')}
+                >
+                  <IoMdRefresh />
+                </button>
               </div>
             </li>
-            <li onClick={handleClickConnectSocket('binance')}>
+            <li className='disabled'>
               <div className='flex justify-between'>
-                <div
-                  className={classNames(
-                    'flex items-center ',
-                    connectedBinance ? undefined : 'cursor-pointer'
-                  )}
-                >
-                  <div
-                    className={classNames(
-                      'text-xl',
-                      connectedBinance ? 'text-green-500' : 'text-red-500'
-                    )}
-                  >
+                <div className='flex items-center text-base-content'>
+                  <div className={connectedBinance ? 'text-green-500' : 'text-red-500'}>
                     <GoPrimitiveDot />
                   </div>
                   <span>바이낸스</span>
                 </div>
-                <IoMdRefresh />
+                <div
+                  className='w-6 h-6 min-h-0 btn btn-circle btn-sm btn-ghost'
+                  onClick={handleClickConnectSocket('binance')}
+                >
+                  <IoMdRefresh />
+                </div>
               </div>
             </li>
           </ul>
