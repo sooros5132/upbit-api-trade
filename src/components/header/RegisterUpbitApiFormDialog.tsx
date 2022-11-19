@@ -6,25 +6,12 @@ import { BackgroundBlueBox, BackgroundRedBox } from '../modules/Box';
 import classNames from 'classnames';
 import axios from 'axios';
 import { apiUrls, PROXY_PATH } from 'src/lib/apiUrls';
+import useSWR from 'swr';
 
 interface RegisterUpbitApiFormDialogProps {
   open: boolean;
   onClose: (open: boolean) => void;
 }
-
-type apiServerDefaultValueType = {
-  loading: boolean;
-  status: number;
-  ip: null | string;
-  lastCheck: null | Date;
-};
-
-const apiServerDefaultValue: apiServerDefaultValueType = {
-  loading: true,
-  status: 400,
-  ip: null,
-  lastCheck: new Date()
-};
 
 const RegisterUpbitApiFormDialog: React.FC<RegisterUpbitApiFormDialogProps> = ({
   open,
@@ -66,32 +53,6 @@ const RegisterUpbitApiFormDialog: React.FC<RegisterUpbitApiFormDialogProps> = ({
     });
   };
 
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-    setApiServer((prev) => ({ ...prev, loading: true }));
-    (async function () {
-      const apiServerCheck = await axios
-        .get<string>(PROXY_PATH + '/api/ip')
-        .then((res) => res)
-        .catch(async () => {
-          return await axios
-            .get<string>(PROXY_PATH + '/api/ip.php')
-            .then((res) => res)
-            .catch(async () => ({ status: 400, data: null }));
-        });
-
-      setApiServer((prev) => ({
-        ...prev,
-        loading: false,
-        status: apiServerCheck.status,
-        ip: apiServerCheck?.data || null,
-        lastCheck: new Date()
-      }));
-    })();
-  }, [open]);
-
   return (
     <div
       className={classNames('modal bg-black/50 backdrop-blur-sm', open ? 'modal-open' : undefined)}
@@ -101,15 +62,9 @@ const RegisterUpbitApiFormDialog: React.FC<RegisterUpbitApiFormDialogProps> = ({
         <form onSubmit={handleSubmit}>
           <div className='text-sm text-center'>
             <p>
-              {apiServer.loading === false && apiServer.status === 200 && apiServer.ip ? (
-                <span className='my-9'>
-                  <b>{apiServer.ip}</b>
-                </span>
-              ) : apiServer.loading === true ? (
-                <b>아이피를 불러오는 중 입니다.</b>
-              ) : (
-                <b>서버와 연결이 불안정하여 아이피를 확인할 수 없습니다.</b>
-              )}
+              <span className='text-lg my-9'>
+                <ApiServerIp />
+              </span>
               <br />
               <a
                 className='underline'
@@ -162,6 +117,60 @@ const RegisterUpbitApiFormDialog: React.FC<RegisterUpbitApiFormDialogProps> = ({
       </div>
     </div>
   );
+};
+
+type apiServerDefaultValueType = {
+  loading: boolean;
+  status: number;
+  ip: null | string;
+  lastCheck: null | Date;
+};
+
+const apiServerDefaultValue: apiServerDefaultValueType = {
+  loading: false,
+  status: 400,
+  ip: null,
+  lastCheck: new Date()
+};
+
+const ApiServerIp: React.FC = () => {
+  const {
+    data: ip,
+    error,
+    isValidating
+  } = useSWR<string>(
+    PROXY_PATH + '/api/ip',
+    async (url) => {
+      const res = await axios
+        .get<string>(url)
+        .then((res) => res.data)
+        .catch(async () => {
+          return await axios
+            .get<string>(url + '.php')
+            .then((res) => res.data)
+            .catch(async () => {
+              return await axios
+                .get<string>('/api/ip')
+                .then((res) => res.data)
+                .catch(async () => 'error');
+            });
+        });
+
+      return res || 'error';
+    },
+    {
+      revalidateOnFocus: false
+    }
+  );
+
+  if (isValidating) {
+    return <b>아이피를 불러오는 중 입니다.</b>;
+  }
+  if (error || ip === 'error') {
+    return <b>서버와 연결이 불안정하여 아이피를 확인할 수 없습니다.</b>;
+  }
+
+  return <b>{ip}</b>;
 };
 
 export default memo(RegisterUpbitApiFormDialog, isEqual);
