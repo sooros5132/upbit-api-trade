@@ -2,10 +2,9 @@ import { memo, useEffect, useState } from 'react';
 import isEqual from 'react-fast-compare';
 import { useUpbitAuthStore } from 'src/store/upbitAuth';
 import { toast } from 'react-toastify';
-import { BackgroundBlueBox, BackgroundRedBox } from '../modules/Box';
 import classNames from 'classnames';
 import axios from 'axios';
-import { apiUrls, PROXY_PATH } from 'src/lib/apiUrls';
+import { PROXY_PATH } from 'src/lib/apiUrls';
 import useSWR from 'swr';
 
 interface RegisterUpbitApiFormDialogProps {

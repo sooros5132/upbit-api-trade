@@ -1,5 +1,4 @@
 import type { AppProps } from 'next/app';
-import axios from 'axios';
 import { NextSeo } from 'next-seo';
 import Layout from 'src/components/Layout';
 import Script from 'next/script';
