@@ -179,9 +179,17 @@ const ExchangeMarket: React.FC = () => {
           switch (symbol) {
             case 'BTT': {
               binanceSymbol = 'BTTCUSDT';
+              break;
             }
+            case 'POLY':
+            // {
+            //   binanceSymbol = 'POLYXUSDT';
+            //   break;
+            // }
+            case 'BTG':
             case 'NU': {
               binanceSymbol = undefined;
+              break;
             }
           }
           upbitMarketSnapshotRecord[t.market] = {
@@ -222,6 +230,7 @@ const ExchangeMarket: React.FC = () => {
             korean_name: upbitMarketAllRecord[t.market].korean_name
           };
 
+          // 바이낸스 가격 넣기
           if (binanceSymbol && binanceMarketSnapshotKeyBy[binanceSymbol]) {
             const binanceMarket = binanceMarketSnapshotKeyBy[binanceSymbol];
             const binanceKrwPrice = Number(binanceMarket.price) * forexRecent.basePrice;
