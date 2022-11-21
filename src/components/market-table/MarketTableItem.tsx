@@ -36,8 +36,6 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
   // );
   // const upbitBtcPrice = useExchangeStore.getState().upbitMarketDatas['KRW-BTC'];
 
-  const { selectedMarketSymbol, selectedExchange } = useTradingViewSettingStore();
-
   const handleClickMarketIcon = (symbol: string, exchange: 'BINANCE' | 'UPBIT') => () => {
     const { setSelectedMarketSymbol, setSelectedExchange } = useTradingViewSettingStore.getState();
     setSelectedMarketSymbol(symbol);
@@ -88,7 +86,7 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
     return () => {
       observer.disconnect();
     };
-  }, [highlight, krwPriceRef, krwSymbol]);
+  }, [highlight, krwPriceRef]);
 
   useEffect(() => {
     if (!usdPriceRef?.current) {
@@ -121,23 +119,6 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
 
   const upbitChangeRate = upbitMarket.scr * 100;
 
-  let title = 'SOOROS';
-  if (selectedMarketSymbol === marketSymbol) {
-    // const titleSymbol = `KRW-${selectedMarketSymbol || 'BTC'}`;
-
-    switch (selectedExchange) {
-      case 'BINANCE': {
-        title = upbitMarket.binance_price
-          ? `${selectedMarketSymbol} ${Number(upbitMarket.binance_price).toLocaleString()}$`
-          : '';
-        break;
-      }
-      case 'UPBIT': {
-        title = `${selectedMarketSymbol} ${upbitMarket.tp.toLocaleString()}₩`;
-        break;
-      }
-    }
-  }
   // const priceIntegerLength = String(upbitMarket.tp).replace(
   //   /\.[0-9]+$/,
   //   ""
@@ -147,12 +128,6 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
 
   return (
     <tr className='border-b border-base-300 min-w-[40px] p-1 [&:hover>td]:bg-white/5'>
-      {selectedMarketSymbol === marketSymbol && (
-        <NextSeo
-          // title={bitcoinPremium ? `${bitcoinPremium?.toFixed(2)}%` : undefined}
-          title={title}
-        />
-      )}
       <td className='market-td-padding'>
         <div className='text-center'>
           <Image
