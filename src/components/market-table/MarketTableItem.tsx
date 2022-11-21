@@ -1,6 +1,5 @@
 import classNames from 'classnames';
 import { isEqual } from 'lodash';
-import { NextSeo } from 'next-seo';
 import Image from 'next/image';
 import React from 'react';
 import { memo, useEffect, useRef } from 'react';
@@ -14,7 +13,6 @@ import { apiUrls } from 'src/lib/apiUrls';
 import { marketRegex } from 'src/utils/regex';
 import { koPriceLabelFormat } from 'src/utils/utils';
 import shallow from 'zustand/shallow';
-import { AskBidParagraph } from '../modules/Typography';
 
 export interface TableItemProps {
   krwSymbol: string;
@@ -126,6 +124,20 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
 
   const priceDecimalLength = String(upbitMarket.tp).replace(/^[0-9]+\.?/, '').length;
 
+  const colorPrice =
+    !upbitMarket.scp || upbitMarket.scp === 0
+      ? 'text-gray-400'
+      : upbitMarket.scp > 0
+      ? 'text-teal-500'
+      : 'text-rose-500';
+
+  const colorPremium =
+    !upbitMarket.premium || upbitMarket.premium === 0
+      ? 'text-gray-400'
+      : upbitMarket.premium > 0
+      ? 'text-teal-500'
+      : 'text-rose-500';
+
   return (
     <tr className='border-b border-base-300 min-w-[40px] p-1 [&:hover>td]:bg-white/5'>
       <td className='market-td-padding'>
@@ -200,18 +212,12 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
         </div>
       </td>
       <td className='font-mono text-right market-td-padding whitespace-nowrap'>
-        <AskBidParagraph state={upbitMarket.scp}>
+        <p className={colorPrice}>
           <span ref={krwPriceRef}>
             {upbitMarket.tp > 1 ? upbitMarket.tp.toLocaleString() : upbitMarket.tp}
           </span>
-          {/* <br />
-          {upbitBtcMarket && upbitBtcPrice
-            ? Number(
-                (upbitBtcMarket.tp * upbitBtcPrice.tp).toFixed(priceDecimalLength)
-              ).toLocaleString()
-            : ''} */}
-        </AskBidParagraph>
-        <AskBidParagraph state={upbitMarket.scp} className='opacity-60'>
+        </p>
+        <p className={classNames('opacity-60', colorPrice)}>
           <span ref={usdPriceRef}>
             {upbitMarket.binance_price
               ? Number(upbitMarket.binance_price) * upbitForex.basePrice > 1
@@ -225,23 +231,17 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
                   )
               : null}
           </span>
-        </AskBidParagraph>
+        </p>
       </td>
       <td className='font-mono text-right market-td-padding whitespace-nowrap'>
-        <AskBidParagraph state={upbitMarket.scp}>{upbitChangeRate.toFixed(2)}%</AskBidParagraph>
-        <AskBidParagraph state={upbitMarket.scp} className='opacity-60'>
-          {upbitMarket.scp.toLocaleString()}
-          {/* {binanceChangeRate && binanceChangeRate.toFixed(2) + '%'} */}
-        </AskBidParagraph>
+        <p className={colorPrice}>{upbitChangeRate.toFixed(2)}%</p>
+        <p className={classNames('opacity-60', colorPrice)}>{upbitMarket.scp.toLocaleString()}</p>
       </td>
-
       <td className='font-mono text-right market-td-padding whitespace-nowrap'>
         {typeof upbitMarket.premium === 'number' && (
           <>
-            <AskBidParagraph state={upbitMarket.premium}>
-              {upbitMarket.premium.toFixed(2).padStart(2, '0')}%
-            </AskBidParagraph>
-            <AskBidParagraph state={upbitMarket.premium} className='opacity-60'>
+            <p className={colorPremium}>{upbitMarket.premium.toFixed(2).padStart(2, '0')}%</p>
+            <p className={classNames('opacity-60', colorPremium)}>
               {upbitMarket.binance_price &&
                 Number(
                   (
@@ -249,7 +249,7 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
                     Number(upbitMarket.binance_price) * upbitForex.basePrice
                   ).toFixed(priceDecimalLength)
                 ).toLocaleString()}
-            </AskBidParagraph>
+            </p>
           </>
         )}
       </td>

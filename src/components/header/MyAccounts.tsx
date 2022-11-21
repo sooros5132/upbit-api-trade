@@ -1,11 +1,10 @@
-import { memo, useMemo, useRef, useState } from 'react';
+import { memo, useMemo } from 'react';
 import isEqual from 'react-fast-compare';
 import { IUpbitAccounts } from 'src-server/types/upbit';
 import { BsDot } from 'react-icons/bs';
 import { apiUrls } from 'src/lib/apiUrls';
 import { useExchangeStore } from 'src/store/exchangeSockets';
 import shallow from 'zustand/shallow';
-import { AskBidParagraph } from '../modules/Typography';
 import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai';
 import { useSiteSettingStore } from 'src/store/siteSetting';
 
@@ -47,9 +46,15 @@ const AccountItem = memo(({ account, visibleBalance }: IAccountItemProps) => {
       ? `${apiUrls.upbit.marketHref + 'KRW-' + currency}`
       : 'https://upbit.com/investments/balance';
 
+  const colorPrice =
+    !profitAndLoss || profitAndLoss === 0
+      ? 'text-gray-400'
+      : profitAndLoss > 0
+      ? 'text-teal-500'
+      : 'text-rose-500';
   return (
     <>
-      <div className='flex items-center text-sm'>
+      <div className='flex items-center font-mono text-sm'>
         <BsDot />
         <a href={upbitLink} rel='noreferrer' target='_blank'>
           <span className='font-bold hover:underline'>{currency}</span>
@@ -57,13 +62,13 @@ const AccountItem = memo(({ account, visibleBalance }: IAccountItemProps) => {
         {currency !== 'KRW' ? (
           <div className='dropdown dropdown-hover dropdown-end'>
             <label tabIndex={0}>
-              <AskBidParagraph state={profitAndLoss}>
+              <p className={colorPrice}>
                 &nbsp;
                 {visibleBalance && `${Math.round(currentPrice * totalBalance).toLocaleString()}₩ `}
                 {`${profitAndLoss.toFixed(2)}%`}
-              </AskBidParagraph>
+              </p>
             </label>
-            <div className='dropdown-content grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 bg-base-300 p-2 [&>p:nth-child(even)]:text-right [&>p:nth-child(even)]:font-mono'>
+            <div className='dropdown-content grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 bg-base-300 p-2 [&>p:nth-child(even)]:text-right'>
               <p>매수가</p>
               <p>{avg_buy_price.toLocaleString()}</p>
               <p>현재가</p>
@@ -71,13 +76,11 @@ const AccountItem = memo(({ account, visibleBalance }: IAccountItemProps) => {
               <p>매수금액</p>
               <p>{Math.round(totalPurchaseValue).toLocaleString()}</p>
               <p>평가금액</p>
-              <AskBidParagraph state={profitAndLoss}>
-                {Math.round(appraisedValue).toLocaleString()}
-              </AskBidParagraph>
+              <p className={colorPrice}>{Math.round(appraisedValue).toLocaleString()}</p>
               <p>평가손익</p>
-              <AskBidParagraph state={profitAndLoss}>
+              <p className={colorPrice}>
                 {Math.round(appraisedValue - totalPurchaseValue).toLocaleString()}
-              </AskBidParagraph>
+              </p>
               <p>보유수량</p>
               <p>{totalBalance.toFixed(8)}</p>
             </div>
@@ -85,12 +88,12 @@ const AccountItem = memo(({ account, visibleBalance }: IAccountItemProps) => {
         ) : (
           <div className='dropdown dropdown-hover dropdown-end'>
             <label tabIndex={0}>
-              <AskBidParagraph state={profitAndLoss}>
+              <p className={colorPrice}>
                 &nbsp;
                 {`${Math.round(balance + locked).toLocaleString()}₩`}
-              </AskBidParagraph>
+              </p>
             </label>
-            <div className='dropdown-content grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 bg-base-300 p-2 [&>p:nth-child(even)]:text-right [&>p:nth-child(even)]:font-mono'>
+            <div className='dropdown-content grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 bg-base-300 p-2 [&>p:nth-child(even)]:text-right'>
               <p>보유</p>
               <p>{Math.round(balance + locked).toLocaleString()}</p>
               <p>사용 가능</p>
