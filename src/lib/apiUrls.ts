@@ -41,6 +41,14 @@ export const apiUrls = {
       price: '/ticker/price'
     }
   },
+  coinmarketcap: {
+    path: '/api/v1/coinmarketcap',
+    cryptocurrency: {
+      quotes: {
+        latest: '/cryptocurrency/quotes/latest'
+      }
+    }
+  },
   coincodex: {
     origin: 'https://coincodex.com/api',
     path: '/api/v1',
