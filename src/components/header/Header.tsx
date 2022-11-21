@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { AiFillSetting } from 'react-icons/ai';
 import Link from 'next/link';
-import TradingViewTapeWidget from '../tradingview/Tape';
 import { useUpbitAuthStore } from 'src/store/upbitAuth';
 import MyAccounts from './MyAccounts';
 import RegisterUpbitApiFormDialog from './RegisterUpbitApiFormDialog';
@@ -13,7 +12,10 @@ import { GoPrimitiveDot } from 'react-icons/go';
 import { useExchangeStore } from 'src/store/exchangeSockets';
 import { toast } from 'react-toastify';
 import { IoMdRefresh } from 'react-icons/io';
-import classNames from 'classnames';
+import useSWR from 'swr';
+import { apiUrls } from 'src/lib/apiUrls';
+import { IUpbitForex } from 'src/types/upbit';
+import axios from 'axios';
 
 const Header: React.FC = () => {
   const upbitAuth = useUpbitAuthStore();
@@ -228,6 +230,10 @@ const Header: React.FC = () => {
                 </div>
               </div>
             </li>
+            <div className='m-0 divider' />
+            <li className='disabled'>
+              <UsdKrwForex />
+            </li>
           </ul>
         </div>
       </div>
@@ -243,6 +249,20 @@ const Header: React.FC = () => {
         />
       )}
     </nav>
+  );
+};
+
+const UsdKrwForex = () => {
+  const { data: forexRecent } = useSWR<IUpbitForex>(
+    apiUrls.upbit.rewriteUrl + apiUrls.upbit.forex.recent
+  );
+
+  return (
+    <div className='tooltip tooltip-bottom' data-tip='계산에 적용된 달러 환율입니다.'>
+      <span className='text-base-content'>
+        USD/KRW {forexRecent?.basePrice?.toLocaleString() || '환율 오류'}
+      </span>
+    </div>
   );
 };
 

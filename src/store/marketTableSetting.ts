@@ -9,6 +9,7 @@ interface IMarketTableSettingState {
   highlight: boolean;
   stickyChart: boolean;
   searchValue: string;
+  currency: 'USD' | 'KRW';
 }
 
 interface IMarketTableSettingStore extends IMarketTableSettingState {
@@ -17,6 +18,7 @@ interface IMarketTableSettingStore extends IMarketTableSettingState {
   setSearchValue: (searchValue: string) => void;
   addFavoriteSymbol: (symbol: string) => void;
   removeFavoriteSymbol: (symbol: string) => void;
+  setCurrency: (currency: IMarketTableSettingState['currency']) => void;
 }
 
 const defaultState: IMarketTableSettingState = {
@@ -25,12 +27,13 @@ const defaultState: IMarketTableSettingState = {
   favoriteSymbols: {},
   highlight: true,
   stickyChart: false,
-  searchValue: ''
+  searchValue: '',
+  currency: 'KRW'
 };
 
 export const useMarketTableSettingStore = create(
   persist<IMarketTableSettingStore>(
-    (set, get) => ({
+    (set) => ({
       ...defaultState,
       setSortColumn(column) {
         set({ sortColumn: column });
@@ -48,6 +51,9 @@ export const useMarketTableSettingStore = create(
             [symbol]: true
           }
         }));
+      },
+      setCurrency(currency) {
+        set({ currency });
       },
       removeFavoriteSymbol(symbol: string) {
         set((state) => {

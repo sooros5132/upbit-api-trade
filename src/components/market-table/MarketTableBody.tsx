@@ -9,15 +9,18 @@ import { MarketTableItem } from '.';
 import { IMarketTableItem } from './MarketTable';
 
 export interface TableBodyProps {
-  sortColumn: keyof IMarketTableItem;
-  sortType: 'ASC' | 'DESC';
   // upbitMarketSnapshot?: Record<string, IMarketTableItem>;
   // binanceMarketSnapshot?: Record<string, IBinanceSocketMessageTicker>;
 }
 
-const TableBody: React.FC<TableBodyProps> = ({ sortColumn, sortType }) => {
-  const { favoriteSymbols, searchValue } = useMarketTableSettingStore(
-    ({ favoriteSymbols, searchValue }) => ({ favoriteSymbols, searchValue }),
+const TableBody: React.FC<TableBodyProps> = () => {
+  const { sortColumn, sortType, favoriteSymbols, searchValue } = useMarketTableSettingStore(
+    ({ sortColumn, sortType, favoriteSymbols, searchValue }) => ({
+      sortColumn,
+      sortType,
+      favoriteSymbols,
+      searchValue
+    }),
     shallow
   );
   const { searchedSymbols, upbitForex } = useExchangeStore(

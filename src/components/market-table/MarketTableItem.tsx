@@ -24,7 +24,10 @@ export interface TableItemProps {
 const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }) => {
   const krwPriceRef = useRef<HTMLSpanElement>(null);
   const usdPriceRef = useRef<HTMLSpanElement>(null);
-  const highlight = useMarketTableSettingStore((state) => state.highlight, shallow);
+  const { highlight, currency } = useMarketTableSettingStore(
+    ({ highlight, currency }) => ({ highlight, currency }),
+    shallow
+  );
   const upbitMarket = useExchangeStore((state) => state.upbitMarketDatas[krwSymbol], shallow);
   const marketSymbol = upbitMarket.cd.replace(marketRegex, '');
 
@@ -122,7 +125,81 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
   //   ""
   // ).length;
 
-  const priceDecimalLength = String(upbitMarket.tp).replace(/^[0-9]+\.?/, '').length;
+  const krwPriceNum = Number(
+    currency === 'KRW' ? upbitMarket.tp : upbitMarket.tp / upbitForex.basePrice
+  );
+  const usdPriceNum = upbitMarket.binance_price
+    ? Number(
+        currency === 'KRW'
+          ? Number(upbitMarket.binance_price) * upbitForex.basePrice
+          : upbitMarket.binance_price
+      )
+    : NaN;
+
+  const krwPriceInteger = String(krwPriceNum).replace(/\.[0-9]+$/, '');
+  const krwPriceDecimal = String(
+    krwPriceNum > 0.000001 ? krwPriceNum : krwPriceNum.toFixed(8)
+  ).replace(/^\-?[0-9]+\.?/, '');
+
+  const usdPriceInteger = String(usdPriceNum).replace(/\.[0-9]+$/, '');
+  const usdPriceDecimal = String(
+    usdPriceNum > 0.000001 ? usdPriceNum : usdPriceNum.toFixed(8)
+  ).replace(/^\-?[0-9]+\.?/, '');
+
+  const krwPrice = `${Number(krwPriceInteger).toLocaleString()}${
+    krwPriceDecimal
+      ? `.${Number('.' + krwPriceDecimal).toFixed(
+          currency === 'KRW' ? krwPriceDecimal.length : usdPriceDecimal.length
+        )}`.slice(2)
+      : ''
+  }`;
+  const usdPrice = `${Number(usdPriceInteger).toLocaleString()}${
+    usdPriceDecimal
+      ? `.${Number('.' + usdPriceDecimal).toFixed(
+          currency === 'KRW' ? krwPriceDecimal.length : usdPriceDecimal.length
+        )}`.slice(2)
+      : ''
+  }`;
+
+  const krwChangeInteger = String(upbitMarket.scp).replace(/\.[0-9]+$/, '');
+  const krwChangeDecimal = String(upbitMarket.scp).replace(/^\-?[0-9]+\.?/, '');
+
+  const usdChangeInteger = (upbitMarket.scp / upbitForex.basePrice)
+    .toFixed(0)
+    .replace(/\.[0-9]+$/, '');
+
+  const usdChangeDecimal = (upbitMarket.scp / upbitForex.basePrice)
+    .toFixed(currency === 'KRW' ? krwPriceDecimal.length : usdPriceDecimal.length)
+    .replace(/^\-?[0-9]+\.?/, '');
+  const priceChage =
+    currency === 'KRW'
+      ? `${Number(krwChangeInteger).toLocaleString()}${
+          krwChangeDecimal
+            ? `.${Number('.' + krwChangeDecimal)
+                .toFixed(krwPriceDecimal.length)
+                .slice(2)}`
+            : ''
+        }`
+      : `${Number(usdChangeInteger).toLocaleString()}${
+          usdChangeDecimal
+            ? `.${Number('.' + usdChangeDecimal)
+                .toFixed(usdPriceDecimal.length)
+                .slice(2)}`
+            : ''
+        }`;
+
+  const premiumPriceNum = krwPriceNum - usdPriceNum;
+  const premiumPriceInteger = premiumPriceNum.toFixed(0).replace(/\.[0-9]+$/, '');
+  const premiumPriceDecimal = premiumPriceNum
+    .toFixed(currency === 'KRW' ? krwPriceDecimal.length : usdPriceDecimal.length)
+    .replace(/^\-?[0-9]+\.?/, '');
+  const premiumPrice = `${Number(premiumPriceInteger).toLocaleString()}${
+    premiumPriceDecimal
+      ? `.${Number('.' + premiumPriceDecimal)
+          .toFixed(currency === 'KRW' ? krwPriceDecimal.length : usdPriceDecimal.length)
+          .slice(2)}`
+      : ''
+  }`;
 
   const colorPrice =
     !upbitMarket.scp || upbitMarket.scp === 0
@@ -213,29 +290,15 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
       </td>
       <td className='font-mono text-right market-td-padding whitespace-nowrap'>
         <p className={colorPrice}>
-          <span ref={krwPriceRef}>
-            {upbitMarket.tp > 1 ? upbitMarket.tp.toLocaleString() : upbitMarket.tp}
-          </span>
+          <span ref={krwPriceRef}>{krwPrice}</span>
         </p>
         <p className={classNames('opacity-60', colorPrice)}>
-          <span ref={usdPriceRef}>
-            {upbitMarket.binance_price
-              ? Number(upbitMarket.binance_price) * upbitForex.basePrice > 1
-                ? Number(
-                    (Number(upbitMarket.binance_price) * upbitForex.basePrice).toFixed(
-                      priceDecimalLength
-                    )
-                  ).toLocaleString()
-                : Number(Number(upbitMarket.binance_price) * upbitForex.basePrice).toFixed(
-                    priceDecimalLength
-                  )
-              : null}
-          </span>
+          <span ref={usdPriceRef}>{upbitMarket.binance_price ? usdPrice : null}</span>
         </p>
       </td>
       <td className='font-mono text-right market-td-padding whitespace-nowrap'>
         <p className={colorPrice}>{upbitChangeRate.toFixed(2)}%</p>
-        <p className={classNames('opacity-60', colorPrice)}>{upbitMarket.scp.toLocaleString()}</p>
+        <p className={classNames('opacity-60', colorPrice)}>{priceChage}</p>
       </td>
       <td className='font-mono text-right market-td-padding whitespace-nowrap'>
         {typeof upbitMarket.premium === 'number' && (
@@ -243,12 +306,10 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
             <p className={colorPremium}>{upbitMarket.premium.toFixed(2).padStart(2, '0')}%</p>
             <p className={classNames('opacity-60', colorPremium)}>
               {upbitMarket.binance_price &&
-                Number(
-                  (
-                    upbitMarket.tp -
-                    Number(upbitMarket.binance_price) * upbitForex.basePrice
-                  ).toFixed(priceDecimalLength)
-                ).toLocaleString()}
+                premiumPrice.padStart(
+                  currency === 'KRW' ? krwPriceDecimal.length : usdPriceDecimal.length,
+                  '0'
+                )}
             </p>
           </>
         )}

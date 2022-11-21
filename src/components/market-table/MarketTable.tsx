@@ -10,7 +10,7 @@ import { RiCloseCircleLine } from 'react-icons/ri';
 import formatInTimeZone from 'date-fns-tz/formatInTimeZone';
 import { ko as koLocale } from 'date-fns/locale';
 import { BackgroundBlueBox, BackgroundRedBox } from '../modules/Box';
-import { MarketTableBody } from '.';
+import { MarketTableBody, MarketTableHead } from '.';
 export interface IMarketTableItem extends IUpbitSocketMessageTickerSimple {
   korean_name?: string;
   english_name?: string;
@@ -24,41 +24,11 @@ interface MarketTableProps {
 }
 
 const MarketTable: React.FC<MarketTableProps> = ({ isLastUpdatePage }) => {
-  const { sortColumn, sortType, searchValue, setSortColumn, setSortType, setSearchValue } =
-    useMarketTableSettingStore();
-
-  const { upbitForex, lastUpdatedAt } = useExchangeStore(({ lastUpdatedAt, upbitForex }) => {
+  const { lastUpdatedAt } = useExchangeStore(({ lastUpdatedAt }) => {
     return {
-      upbitForex,
       lastUpdatedAt
     };
   }, shallow);
-
-  const handleClickThead = (columnName: keyof IMarketTableItem) => () => {
-    if (columnName === sortColumn) {
-      setSortType(sortType === 'ASC' ? 'DESC' : 'ASC');
-      return;
-    }
-    setSortType('DESC');
-    setSortColumn(columnName);
-  };
-
-  const handleChangeMarketSearchInput = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    setSearchValue(value);
-
-    const { searchSymbols, sortSymbolList } = useExchangeStore.getState();
-    searchSymbols(value);
-    sortSymbolList(sortColumn, sortType);
-  };
-
-  const handleClickClearSearchInputButton = () => {
-    setSearchValue('');
-
-    const { searchSymbols, sortSymbolList } = useExchangeStore.getState();
-    searchSymbols('');
-    sortSymbolList(sortColumn, sortType);
-  };
 
   return (
     <div className='max-w-screen-xl mx-auto mb-4 text-xs sm:text-sm'>
@@ -121,162 +91,87 @@ const MarketTable: React.FC<MarketTableProps> = ({ isLastUpdatePage }) => {
             </div>
           </noscript>
           <div className='flex items-center justify-between my-2'>
-            <div className='tooltip tooltip-right' data-tip='계산에 적용된 달러 환율입니다.'>
-              USD/KRW {upbitForex?.basePrice?.toLocaleString()}
+            <div className='flex'>
+              <UsdKrwToggle />
             </div>
-            <div className='border rounded-md form-control border-base-300 '>
-              <label className='input-group input-group-sm '>
-                <input
-                  type='text'
-                  placeholder='BTC, 비트, Bitcoin'
-                  value={searchValue}
-                  onChange={handleChangeMarketSearchInput}
-                  className='input input-sm bg-transparent w-[170px] focus:outline-offset-0 focus:rounded-l-md'
-                />
-                <span
-                  className='text-xl text-gray-600 bg-transparent cursor-pointer px-1.5 justify-end'
-                  onClick={handleClickClearSearchInputButton}
-                >
-                  <RiCloseCircleLine />
-                </span>
-              </label>
-            </div>
+            <MarketSearch />
           </div>
         </>
       )}
       <table className='table w-full [&_td]:text-xs sm:[&_td]:text-sm  table-compact'>
-        <thead>
-          <tr className='[&>td]:text-gray-600 [&>th:first-child]:z-0 [&>th:first-child]:rounded-none [&>th:last-child]:rounded-none'>
-            <th className='w-[1.25em] market-td-padding'></th>
-            <th className='w-auto market-td-padding'>
-              <div
-                className='flex'
-                // className='flex tooltip'
-                // data-tip={
-                //   <div>
-                //     <p>거래소로 이동</p>
-                //     <p>차트 변경</p>
-                //   </div>
-                // }
-              >
-                <div className='flex cursor-pointer' onClick={handleClickThead('korean_name')}>
-                  <span>이름</span>
-                  <div className='flex items-center'>
-                    {sortColumn === 'korean_name' ? (
-                      sortType === 'ASC' ? (
-                        <BiUpArrowAlt />
-                      ) : (
-                        <BiDownArrowAlt />
-                      )
-                    ) : null}
-                  </div>
-                </div>
-              </div>
-            </th>
-            <th className='market-td-padding w-[20%]'>
-              <div
-                className='flex justify-end'
-                // className='flex justify-end tooltip'
-                // data-tip={
-                //   <div>
-                //     <p>업비트 현재가</p>
-                //     <p>바이낸스 현재가</p>
-                //   </div>
-                // }
-              >
-                <div className='flex cursor-pointer' onClick={handleClickThead('tp')}>
-                  <span>현재가</span>
-                  <div className='flex items-center'>
-                    {sortColumn === 'tp' ? (
-                      sortType === 'ASC' ? (
-                        <BiUpArrowAlt />
-                      ) : (
-                        <BiDownArrowAlt />
-                      )
-                    ) : null}
-                  </div>
-                </div>
-              </div>
-            </th>
-            <th className='market-td-padding w-[10%]'>
-              <div
-                className='flex justify-end'
-                // className='flex justify-end tooltip'
-                // data-tip={
-                //   <div>
-                //     <p>일일 변동 퍼센트</p>
-                //     <p>일일 변동 가격</p>
-                //   </div>
-                // }
-              >
-                <div className='flex cursor-pointer' onClick={handleClickThead('scr')}>
-                  <span>변동</span>
-                  <div className='flex items-center'>
-                    {sortColumn === 'scr' ? (
-                      sortType === 'ASC' ? (
-                        <BiUpArrowAlt />
-                      ) : (
-                        <BiDownArrowAlt />
-                      )
-                    ) : null}
-                  </div>
-                </div>
-              </div>
-            </th>
-            <th className='market-td-padding w-[10%]'>
-              <div
-                className='flex justify-end'
-                // className='flex justify-end tooltip'
-                // data-tip={
-                //   <div>
-                //     <p>원화 프리미엄</p>
-                //     <p>업비트-바이낸스 가격 차이</p>
-                //   </div>
-                // }
-              >
-                <div className='flex cursor-pointer' onClick={handleClickThead('premium')}>
-                  <span>김프</span>
-                  <div className='flex items-center'>
-                    {sortColumn === 'premium' ? (
-                      sortType === 'ASC' ? (
-                        <BiUpArrowAlt />
-                      ) : (
-                        <BiDownArrowAlt />
-                      )
-                    ) : null}
-                  </div>
-                </div>
-              </div>
-            </th>
-            <th className='market-td-padding w-[10%]'>
-              <div
-                className='flex justify-end'
-                // className='flex justify-end tooltip'
-                // data-tip={
-                //   <div>
-                //     <p>업비트 거래량</p>
-                //     <p>바이낸스 거래량</p>
-                //   </div>
-                // }
-              >
-                <div className='flex cursor-pointer' onClick={handleClickThead('atp24h')}>
-                  <span>거래량</span>
-                  <div className='flex items-center'>
-                    {sortColumn === 'atp24h' ? (
-                      sortType === 'ASC' ? (
-                        <BiUpArrowAlt />
-                      ) : (
-                        <BiDownArrowAlt />
-                      )
-                    ) : null}
-                  </div>
-                </div>
-              </div>
-            </th>
-          </tr>
-        </thead>
-        <MarketTableBody sortColumn={sortColumn} sortType={sortType} />
+        <MarketTableHead />
+        <MarketTableBody />
       </table>
+    </div>
+  );
+};
+
+const UsdKrwToggle = () => {
+  const currency = useMarketTableSettingStore((state) => state.currency, shallow);
+
+  const handleChange = () => {
+    useMarketTableSettingStore.getState().setCurrency(currency === 'KRW' ? 'USD' : 'KRW');
+  };
+
+  return (
+    <div className='flex-center'>
+      KRW&nbsp;
+      <input
+        onChange={handleChange}
+        type='checkbox'
+        className='bg-opacity-100 border-opacity-100 toggle toggle-xs'
+        checked={currency === 'KRW' ? false : true}
+      />
+      &nbsp;USD
+    </div>
+  );
+};
+
+const MarketSearch = () => {
+  const { sortColumn, sortType, searchValue, setSearchValue } = useMarketTableSettingStore(
+    ({ sortColumn, sortType, searchValue, setSearchValue }) => ({
+      sortColumn,
+      sortType,
+      searchValue,
+      setSearchValue
+    }),
+    shallow
+  );
+
+  const handleChangeMarketSearchInput = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setSearchValue(value);
+
+    const { searchSymbols, sortSymbolList } = useExchangeStore.getState();
+    searchSymbols(value);
+    sortSymbolList(sortColumn, sortType);
+  };
+
+  const handleClickClearSearchInputButton = () => {
+    setSearchValue('');
+
+    const { searchSymbols, sortSymbolList } = useExchangeStore.getState();
+    searchSymbols('');
+    sortSymbolList(sortColumn, sortType);
+  };
+
+  return (
+    <div className='border rounded-md form-control border-base-300 '>
+      <label className='input-group input-group-sm '>
+        <input
+          type='text'
+          placeholder='BTC, 비트, Bitcoin'
+          value={searchValue}
+          onChange={handleChangeMarketSearchInput}
+          className='input input-sm bg-transparent w-[170px] focus:outline-offset-0 focus:rounded-l-md'
+        />
+        <span
+          className='text-xl text-gray-600 bg-transparent cursor-pointer px-1.5 justify-end'
+          onClick={handleClickClearSearchInputButton}
+        >
+          <RiCloseCircleLine />
+        </span>
+      </label>
     </div>
   );
 };
