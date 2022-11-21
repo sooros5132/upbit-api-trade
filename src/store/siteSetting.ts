@@ -7,7 +7,7 @@ const MAX_FONT_SIZE = 18;
 
 interface ISiteSettingState {
   _hasHydrated: boolean;
-  theme: 'dark' | 'light';
+  theme: 'dark' | 'light' | 'black';
   fontSize: number;
   showMyAccounts: boolean;
   headerHeight?: number;
@@ -24,7 +24,7 @@ interface ISiteSettingStore extends ISiteSettingState {
 
 const defaultState: ISiteSettingState = {
   _hasHydrated: false,
-  theme: 'dark',
+  theme: 'black',
   fontSize: 14,
   showMyAccounts: true,
   visibleBalances: true
@@ -68,7 +68,9 @@ export const useSiteSettingStore = create(
     {
       name: 'siteSetting', // unique name
       onRehydrateStorage: () => (state) => {
-        state?.setHasHydrated(true);
+        if (state) {
+          state._hasHydrated = true;
+        }
       },
       partialize: (state) =>
         Object.fromEntries(

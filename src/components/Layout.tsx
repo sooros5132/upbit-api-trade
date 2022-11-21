@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import shallow from 'zustand/shallow';
-import { useThemeStore } from 'src/store/theme';
+import { useSiteSettingStore } from 'src/store/siteSetting';
 import Header from './header/Header';
 import Footer from './footer/Footer';
 
@@ -9,7 +9,7 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-  const themeStore = useThemeStore((state) => state, shallow);
+  const theme = useSiteSettingStore((state) => state.theme, shallow);
 
   // React.useEffect(() => {
   //   const handleRouteChangeStart = (url: string) => {
@@ -20,10 +20,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   // }, [router.events, router]);
 
   useEffect(() => {
-    if (themeStore.mode) {
-      document.documentElement.dataset.theme = themeStore.mode;
+    if (theme) {
+      document.documentElement.dataset.theme = theme;
     }
-  }, [themeStore]);
+  }, [theme]);
 
   return (
     <div className='flex flex-col h-full min-h-screen'>

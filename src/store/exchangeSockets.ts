@@ -9,6 +9,7 @@ import { isEqual, keyBy, sortBy } from 'lodash';
 import { IBinanceSocketMessageTicker } from 'src/types/binance';
 import { krwRegex } from 'src/utils/regex';
 import { useMarketTableSettingStore } from './marketTableSetting';
+import { useSiteSettingStore } from './siteSetting';
 
 interface IExchangeState {
   sortedUpbitMarketSymbolList: Array<string>;
@@ -275,7 +276,8 @@ const useExchangeStore = create<IExchangeStore>(
     sortSymbolList(sortColumn, sortType) {
       const { upbitForex, searchedSymbols, upbitMarketDatas } = get();
       if (!upbitForex) return;
-      const { favoriteSymbols, hydrated } = useMarketTableSettingStore.getState();
+      const hydrated = useSiteSettingStore.getState()._hasHydrated;
+      const favoriteSymbols = useMarketTableSettingStore.getState().favoriteSymbols;
       const favoriteList: IMarketTableItem[] = [];
       const normalList = hydrated
         ? searchedSymbols

@@ -2,6 +2,7 @@ import { memo, useEffect } from 'react';
 import isEqual from 'react-fast-compare';
 import { useExchangeStore } from 'src/store/exchangeSockets';
 import { useMarketTableSettingStore } from 'src/store/marketTableSetting';
+import { useSiteSettingStore } from 'src/store/siteSetting';
 import { IUpbitForex } from 'src/types/upbit';
 import shallow from 'zustand/shallow';
 import { MarketTableItem } from '.';
@@ -15,20 +16,15 @@ export interface TableBodyProps {
 }
 
 const TableBody: React.FC<TableBodyProps> = ({ sortColumn, sortType }) => {
-  const { hydrated, favoriteSymbols, searchValue } = useMarketTableSettingStore(
-    ({ hydrated, favoriteSymbols, searchValue }) => ({ hydrated, favoriteSymbols, searchValue }),
+  const { favoriteSymbols, searchValue } = useMarketTableSettingStore(
+    ({ favoriteSymbols, searchValue }) => ({ favoriteSymbols, searchValue }),
     shallow
   );
   const { searchedSymbols, upbitForex } = useExchangeStore(
     ({ searchedSymbols, upbitForex }) => ({ searchedSymbols, upbitForex }),
     shallow
   );
-
-  useEffect(() => {
-    const { hydrated, setHydrated } = useMarketTableSettingStore.getState();
-
-    if (!hydrated) setHydrated();
-  }, []);
+  const hydrated = useSiteSettingStore((state) => state._hasHydrated, shallow);
 
   useEffect(() => {
     useExchangeStore.getState().sortSymbolList(sortColumn, sortType);
