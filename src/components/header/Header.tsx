@@ -16,6 +16,8 @@ import useSWR from 'swr';
 import { apiUrls } from 'src/lib/apiUrls';
 import { IUpbitForex } from 'src/types/upbit';
 import axios from 'axios';
+import { ICoincodexGetMetadata } from 'src/types/coincodex';
+import numeral from 'numeral';
 
 const Header: React.FC = () => {
   const upbitAuth = useUpbitAuthStore();
@@ -130,8 +132,9 @@ const Header: React.FC = () => {
             </button>
           </a>
         </Link>
-        <div className='px-2.5 basis-full'>
-          <TradingViewTapeWidget />
+        <div className='px-2.5 basis-full text-center'>
+          {/* <TradingViewTapeWidget /> */}
+          <MarketInfo />
         </div>
         <div className='dropdown dropdown-end'>
           <label tabIndex={0} className='m-1 text-xl btn btn-circle btn-ghost btn-sm bg-base-200'>
@@ -249,6 +252,71 @@ const Header: React.FC = () => {
         />
       )}
     </nav>
+  );
+};
+
+type ICoincodexGetMetadataPick = Pick<
+  ICoincodexGetMetadata,
+  | 'btc_dominance'
+  | 'btc_dominance_24h_change_percent'
+  | 'btc_growth'
+  | 'total_market_cap'
+  | 'total_market_cap_24h_change_percent'
+  | 'total_volume'
+  | 'total_volume_24h_change_percent'
+  | 'fiat_rates'
+  | 'eth_gas'
+>;
+
+const MarketInfo = () => {
+  const { data: forex } = useSWR<IUpbitForex>(
+    apiUrls.upbit.rewriteUrl + apiUrls.upbit.forex.recent
+  );
+  const { data: metadata } = useSWR<ICoincodexGetMetadataPick>(
+    apiUrls.coincodex.path + apiUrls.coincodex.getMetadata,
+    async (url) => {
+      const res = await axios
+        .get<ICoincodexGetMetadataPick>(url)
+        .then((res) => res.data)
+        .catch((res) => res);
+
+      return res;
+    },
+    {
+      revalidateOnFocus: false,
+      refreshInterval: 60 * 1000
+    }
+  );
+
+  return (
+    <div className='flex flex-nowrap items-center gap-x-2 text-xs font-mono sm:gap-x-3'>
+      {forex?.basePrice && (
+        <span>
+          <span className='text-opacity-70 text-primary-content whitespace-nowrap'>USD/KRW</span>{' '}
+          <span className='whitespace-nowrap'>{forex?.basePrice.toLocaleString()}₩</span>
+        </span>
+      )}
+      {metadata?.btc_dominance && (
+        <span>
+          <span className='text-opacity-70 text-primary-content whitespace-nowrap'>BTC.D</span>{' '}
+          <span className='whitespace-nowrap'>{metadata.btc_dominance}% </span>
+        </span>
+      )}
+      {metadata?.total_market_cap && (
+        <span>
+          <span className='text-opacity-70 text-primary-content whitespace-nowrap'>Total</span>{' '}
+          <span className='whitespace-nowrap'>
+            {numeral(metadata.total_market_cap).format('0.0a').toUpperCase()}
+          </span>
+        </span>
+      )}
+      {metadata?.eth_gas && (
+        <span>
+          <span className='text-opacity-70 text-primary-content whitespace-nowrap'>ETH.Gas</span>{' '}
+          <span className='whitespace-nowrap'>{metadata.eth_gas?.standard}Gwei</span>
+        </span>
+      )}
+    </div>
   );
 };
 
