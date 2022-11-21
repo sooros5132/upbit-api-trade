@@ -6,7 +6,7 @@ const MIN_FONT_SIZE = 12;
 const MAX_FONT_SIZE = 18;
 
 interface ISiteSettingState {
-  _hasHydrated: boolean;
+  hydrated: boolean;
   theme: 'dark' | 'light' | 'black';
   fontSize: number;
   showMyAccounts: boolean;
@@ -15,7 +15,7 @@ interface ISiteSettingState {
 }
 
 interface ISiteSettingStore extends ISiteSettingState {
-  setHasHydrated: (_hasHydrated: boolean) => void;
+  setHydrated: () => void;
   setShowMyAccounts: (show: boolean) => void;
   changeTheme: (mode: ISiteSettingState['theme']) => void;
   changeFontSize: (fontSize: number) => void;
@@ -23,7 +23,7 @@ interface ISiteSettingStore extends ISiteSettingState {
 }
 
 const defaultState: ISiteSettingState = {
-  _hasHydrated: false,
+  hydrated: false,
   theme: 'black',
   fontSize: 14,
   showMyAccounts: true,
@@ -34,10 +34,9 @@ export const useSiteSettingStore = create(
   persist<ISiteSettingStore>(
     (set, get) => ({
       ...defaultState,
-
-      setHasHydrated(state) {
+      setHydrated() {
         set({
-          _hasHydrated: state
+          hydrated: true
         });
       },
       setShowMyAccounts(show: boolean) {
@@ -67,14 +66,9 @@ export const useSiteSettingStore = create(
     }),
     {
       name: 'siteSetting', // unique name
-      onRehydrateStorage: () => (state) => {
-        if (state) {
-          state._hasHydrated = true;
-        }
-      },
       partialize: (state) =>
         Object.fromEntries(
-          Object.entries(state).filter(([key]) => !['_hasHydrated'].includes(key))
+          Object.entries(state).filter(([key]) => !['hydrated'].includes(key))
         ) as ISiteSettingStore,
       getStorage: () => localStorage // (optional) by default, 'localStorage' is used
       // partialize: (state) =>

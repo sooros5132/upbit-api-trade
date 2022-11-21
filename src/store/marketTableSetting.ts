@@ -3,7 +3,6 @@ import create from 'zustand';
 import { persist } from 'zustand/middleware';
 
 interface IMarketTableSettingState {
-  hydrated: boolean;
   sortColumn: keyof IMarketTableItem;
   sortType: 'ASC' | 'DESC';
   favoriteSymbols: Record<string, boolean>;
@@ -13,7 +12,6 @@ interface IMarketTableSettingState {
 }
 
 interface IMarketTableSettingStore extends IMarketTableSettingState {
-  setHydrated: () => void;
   setSortColumn: (column: keyof IMarketTableItem) => void;
   setSortType: (type: 'ASC' | 'DESC') => void;
   setSearchValue: (searchValue: string) => void;
@@ -22,7 +20,6 @@ interface IMarketTableSettingStore extends IMarketTableSettingState {
 }
 
 const defaultState: IMarketTableSettingState = {
-  hydrated: false,
   sortColumn: 'tp',
   sortType: 'DESC',
   favoriteSymbols: {},
@@ -35,7 +32,6 @@ export const useMarketTableSettingStore = create(
   persist<IMarketTableSettingStore>(
     (set, get) => ({
       ...defaultState,
-      setHydrated: () => set({ hydrated: true }),
       setSortColumn(column) {
         set({ sortColumn: column });
       },

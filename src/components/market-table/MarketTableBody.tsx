@@ -24,7 +24,7 @@ const TableBody: React.FC<TableBodyProps> = ({ sortColumn, sortType }) => {
     ({ searchedSymbols, upbitForex }) => ({ searchedSymbols, upbitForex }),
     shallow
   );
-  const hydrated = useSiteSettingStore((state) => state._hasHydrated, shallow);
+  const hydrated = useSiteSettingStore((state) => state.hydrated, shallow);
 
   useEffect(() => {
     useExchangeStore.getState().sortSymbolList(sortColumn, sortType);

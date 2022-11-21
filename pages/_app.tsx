@@ -7,6 +7,10 @@ import { useTradingViewSettingStore } from 'src/store/tradingViewSetting';
 import { ToastContainer } from 'react-toastify';
 import 'src/styles/globals.css';
 import 'react-toastify/dist/ReactToastify.css';
+import { useEffect } from 'react';
+import shallow from 'zustand/shallow';
+import { useSiteSettingStore } from 'src/store/siteSetting';
+import { useExchangeStore } from 'src/store/exchangeSockets';
 
 // 'sm': '640px',
 // 'md': '768px',
@@ -49,6 +53,7 @@ gtag('js', new Date());
 
 gtag('config', 'G-VYNSSXH1VE');`}
       </Script>
+      <PreventRerenderingWorks />
       <Layout>
         <Component {...pageProps} />
         <ToastContainer closeButton theme='dark' closeOnClick={false} position='bottom-right' />
@@ -56,5 +61,63 @@ gtag('config', 'G-VYNSSXH1VE');`}
     </>
   );
 }
+
+const PreventRerenderingWorks = () => {
+  const theme = useSiteSettingStore((state) => state.theme, shallow);
+
+  // React.useEffect(() => {
+  //   const handleRouteChangeStart = (url: string) => {
+
+  //   };
+  //   router.events.on('routeChangeStart', handleRouteChangeStart);
+  //   return () => router.events.off('routeChangeStart', handleRouteChangeStart);
+  // }, [router.events, router]);
+
+  useEffect(() => {
+    if (theme) {
+      document.documentElement.dataset.theme = theme;
+    }
+  }, [theme]);
+
+  useEffect(() => {
+    useSiteSettingStore.getState().setHydrated();
+  }, []);
+
+  return <SiteTitleSeo />;
+};
+
+const SiteTitleSeo = () => {
+  const { selectedMarketSymbol, selectedExchange } = useTradingViewSettingStore();
+  const marketSymbol = 'KRW-' + selectedMarketSymbol;
+  // selectedExchange === 'UPBIT'
+  //   ? 'KRW-' + selectedMarketSymbol
+  //   : selectedExchange === 'BINANCE'
+  //   ? selectedMarketSymbol + 'USDT'
+  //   : '';
+  const upbitMarket = useExchangeStore((state) => state.upbitMarketDatas[marketSymbol], shallow);
+
+  const usdPriceNum = Number(upbitMarket?.binance_price);
+  const krwPriceNum = Number(upbitMarket?.tp);
+
+  const krwPrice = krwPriceNum > 1 ? krwPriceNum.toLocaleString() : upbitMarket?.tp;
+  const usdPrice = usdPriceNum > 1 ? usdPriceNum.toLocaleString() : upbitMarket?.binance_price;
+
+  let title = 'SOOROS';
+  if (upbitMarket) {
+    // const titleSymbol = `KRW-${selectedMarketSymbol || 'BTC'}`;
+    switch (selectedExchange) {
+      case 'BINANCE': {
+        title = upbitMarket.binance_price ? `${selectedMarketSymbol} ${usdPrice}$` : '';
+        break;
+      }
+      case 'UPBIT': {
+        title = `${selectedMarketSymbol} ${krwPrice}₩`;
+        break;
+      }
+    }
+  }
+
+  return <NextSeo title={title} />;
+};
 
 export default MyApp;

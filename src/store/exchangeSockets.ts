@@ -276,7 +276,7 @@ const useExchangeStore = create<IExchangeStore>(
     sortSymbolList(sortColumn, sortType) {
       const { upbitForex, searchedSymbols, upbitMarketDatas } = get();
       if (!upbitForex) return;
-      const hydrated = useSiteSettingStore.getState()._hasHydrated;
+      const hydrated = useSiteSettingStore.getState().hydrated;
       const favoriteSymbols = useMarketTableSettingStore.getState().favoriteSymbols;
       const favoriteList: IMarketTableItem[] = [];
       const normalList = hydrated

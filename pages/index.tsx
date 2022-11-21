@@ -21,8 +21,10 @@ import config from 'site-config';
 
 const Home: NextPage = () => {
   const stickyChart = useMarketTableSettingStore((state) => state.stickyChart, shallow);
-  const headerHeight = useSiteSettingStore((state) => state.headerHeight, shallow);
-  const [isMounted, setMounted] = useState(false);
+  const { hydrated, headerHeight } = useSiteSettingStore(
+    ({ hydrated, headerHeight }) => ({ hydrated, headerHeight }),
+    shallow
+  );
 
   useSWR(
     config.path + apiUrls.upbit.accounts,
@@ -34,10 +36,6 @@ const Home: NextPage = () => {
     }
   );
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   return (
     <main className='relative w-full px-3 mx-auto max-w-7xl'>
       <div className='overflow-x-auto overflow-y-hidden'>
@@ -46,9 +44,9 @@ const Home: NextPage = () => {
         </div>
       </div>
       <div
-        className={isMounted && stickyChart && headerHeight ? `sticky left-0 z-[1]` : undefined}
+        className={hydrated && stickyChart && headerHeight ? `sticky left-0 z-[1]` : undefined}
         style={
-          isMounted && stickyChart && headerHeight
+          hydrated && stickyChart && headerHeight
             ? {
                 top: headerHeight
               }
@@ -89,7 +87,7 @@ const Home: NextPage = () => {
           </BackgroundRedBox>
         </div>
       </noscript>
-      {isMounted && <ExchangeMarket />}
+      {hydrated && <ExchangeMarket />}
     </main>
   );
 };

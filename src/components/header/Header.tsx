@@ -17,10 +17,11 @@ import classNames from 'classnames';
 
 const Header: React.FC = () => {
   const upbitAuth = useUpbitAuthStore();
-  const { showMyAccounts, setShowMyAccounts } = useSiteSettingStore(
-    ({ setShowMyAccounts, showMyAccounts }) => ({
+  const { showMyAccounts, setShowMyAccounts, hydrated } = useSiteSettingStore(
+    ({ setShowMyAccounts, showMyAccounts, hydrated }) => ({
       setShowMyAccounts,
-      showMyAccounts
+      showMyAccounts,
+      hydrated
     }),
     shallow
   );
@@ -29,8 +30,6 @@ const Header: React.FC = () => {
     shallow
   );
   const [openRegisterUpbitApiDialog, setOpenRegisterUpbitApiDialog] = useState(false);
-  const [accountEl, setAccountEl] = useState<null | HTMLElement>(null);
-  const [isMounted, setMounted] = useState(false);
   const headerRef = useRef<HTMLHeadElement>(null);
   const { connectedUpbit, connectedBinance } = useExchangeStore(
     ({ upbitSocket, binanceSocket }) => {
@@ -49,10 +48,6 @@ const Header: React.FC = () => {
     },
     shallow
   );
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     if (!headerRef.current) {
@@ -79,7 +74,6 @@ const Header: React.FC = () => {
       switch (prop) {
         case 'logout': {
           upbitAuth.deleteKeys();
-          setAccountEl(null);
           break;
         }
         case 'showMyAccounts': {
@@ -104,10 +98,6 @@ const Header: React.FC = () => {
         }
       }
     };
-
-  const handleClickOpenMenu = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAccountEl(event.currentTarget);
-  };
 
   const handleClickConnectSocket = (prop: 'upbit' | 'binance') => () => {
     switch (prop) {
@@ -171,7 +161,7 @@ const Header: React.FC = () => {
                 />
               </button>
             </li>
-            {isMounted && upbitAuth.secretKey
+            {hydrated && upbitAuth.secretKey
               ? [
                   <div key={'header-menu-divider'} className='m-0 divider' />,
                   <li
@@ -241,7 +231,7 @@ const Header: React.FC = () => {
           </ul>
         </div>
       </div>
-      {isMounted && showMyAccounts && upbitAuth.accounts.length ? (
+      {hydrated && showMyAccounts && upbitAuth.accounts.length ? (
         <div className='xl:mx-auto'>
           <MyAccounts upbitAccounts={upbitAuth.accounts} />
         </div>
