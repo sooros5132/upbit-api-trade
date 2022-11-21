@@ -68,7 +68,7 @@ export const useSiteSettingStore = create(
       name: 'siteSetting', // unique name
       partialize: (state) =>
         Object.fromEntries(
-          Object.entries(state).filter(([key]) => !['hydrated'].includes(key))
+          Object.entries(state).filter(([key]) => !['hydrated', 'theme'].includes(key))
         ) as ISiteSettingStore,
       getStorage: () => localStorage // (optional) by default, 'localStorage' is used
       // partialize: (state) =>
