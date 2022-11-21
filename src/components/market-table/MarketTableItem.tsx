@@ -13,6 +13,7 @@ import { apiUrls } from 'src/lib/apiUrls';
 import { marketRegex } from 'src/utils/regex';
 import { koPriceLabelFormat } from 'src/utils/utils';
 import shallow from 'zustand/shallow';
+import numeral from 'numeral';
 
 export interface TableItemProps {
   krwSymbol: string;
@@ -136,70 +137,25 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
       )
     : NaN;
 
-  const krwPriceInteger = String(krwPriceNum).replace(/\.[0-9]+$/, '');
-  const krwPriceDecimal = String(
-    krwPriceNum > 0.000001 ? krwPriceNum : krwPriceNum.toFixed(8)
-  ).replace(/^\-?[0-9]+\.?/, '');
+  const krwTooSmallNumber = 0.000001 > krwPriceNum;
+  const usdTooSmallNumber = 0.000001 > usdPriceNum;
 
-  const usdPriceInteger = String(usdPriceNum).replace(/\.[0-9]+$/, '');
-  const usdPriceDecimal = String(
-    usdPriceNum > 0.000001 ? usdPriceNum : usdPriceNum.toFixed(8)
-  ).replace(/^\-?[0-9]+\.?/, '');
+  const krwPriceDecimal = String(krwTooSmallNumber ? krwPriceNum.toFixed(8) : krwPriceNum).replace(
+    /^\-?[0-9]+\.?/,
+    ''
+  );
+  const usdPriceDecimal = String(usdTooSmallNumber ? usdPriceNum.toFixed(8) : usdPriceNum).replace(
+    /^\-?[0-9]+\.?/,
+    ''
+  );
 
-  const krwPrice = `${Number(krwPriceInteger).toLocaleString()}${
-    krwPriceDecimal
-      ? `.${Number('.' + krwPriceDecimal).toFixed(
-          currency === 'KRW' ? krwPriceDecimal.length : usdPriceDecimal.length
-        )}`.slice(2)
-      : ''
-  }`;
-  const usdPrice = `${Number(usdPriceInteger).toLocaleString()}${
-    usdPriceDecimal
-      ? `.${Number('.' + usdPriceDecimal).toFixed(
-          currency === 'KRW' ? krwPriceDecimal.length : usdPriceDecimal.length
-        )}`.slice(2)
-      : ''
-  }`;
+  const krwPricePad = ''.padStart(krwPriceDecimal.length, '0');
+  const usdPricePad = ''.padStart(usdPriceDecimal.length, '0');
 
-  const krwChangeInteger = String(upbitMarket.scp).replace(/\.[0-9]+$/, '');
-  const krwChangeDecimal = String(upbitMarket.scp).replace(/^\-?[0-9]+\.?/, '');
-
-  const usdChangeInteger = (upbitMarket.scp / upbitForex.basePrice)
-    .toFixed(0)
-    .replace(/\.[0-9]+$/, '');
-
-  const usdChangeDecimal = (upbitMarket.scp / upbitForex.basePrice)
-    .toFixed(currency === 'KRW' ? krwPriceDecimal.length : usdPriceDecimal.length)
-    .replace(/^\-?[0-9]+\.?/, '');
-  const priceChage =
-    currency === 'KRW'
-      ? `${Number(krwChangeInteger).toLocaleString()}${
-          krwChangeDecimal
-            ? `.${Number('.' + krwChangeDecimal)
-                .toFixed(krwPriceDecimal.length)
-                .slice(2)}`
-            : ''
-        }`
-      : `${Number(usdChangeInteger).toLocaleString()}${
-          usdChangeDecimal
-            ? `.${Number('.' + usdChangeDecimal)
-                .toFixed(usdPriceDecimal.length)
-                .slice(2)}`
-            : ''
-        }`;
-
-  const premiumPriceNum = krwPriceNum - usdPriceNum;
-  const premiumPriceInteger = premiumPriceNum.toFixed(0).replace(/\.[0-9]+$/, '');
-  const premiumPriceDecimal = premiumPriceNum
-    .toFixed(currency === 'KRW' ? krwPriceDecimal.length : usdPriceDecimal.length)
-    .replace(/^\-?[0-9]+\.?/, '');
-  const premiumPrice = `${Number(premiumPriceInteger).toLocaleString()}${
-    premiumPriceDecimal
-      ? `.${Number('.' + premiumPriceDecimal)
-          .toFixed(currency === 'KRW' ? krwPriceDecimal.length : usdPriceDecimal.length)
-          .slice(2)}`
-      : ''
-  }`;
+  const usdChange = upbitMarket.scp / upbitForex.basePrice;
+  const usdPremium = upbitMarket.binance_price
+    ? upbitMarket.tp / upbitForex.basePrice - Number(upbitMarket.binance_price)
+    : 0;
 
   const colorPrice =
     !upbitMarket.scp || upbitMarket.scp === 0
@@ -290,26 +246,73 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
       </td>
       <td className='font-mono text-right market-td-padding whitespace-nowrap'>
         <p className={colorPrice}>
-          <span ref={krwPriceRef}>{krwPrice}</span>
+          <span ref={krwPriceRef}>
+            {krwTooSmallNumber
+              ? `0.${krwPriceDecimal}`
+              : numeral(krwPriceNum).format(
+                  `0,0[.]${currency === 'KRW' ? krwPricePad : usdPricePad}`
+                )}
+          </span>
         </p>
         <p className={classNames('opacity-60', colorPrice)}>
-          <span ref={usdPriceRef}>{upbitMarket.binance_price ? usdPrice : null}</span>
+          <span ref={usdPriceRef}>
+            {upbitMarket?.binance_price
+              ? usdTooSmallNumber
+                ? `0.${usdPriceDecimal}`
+                : numeral(usdPriceNum).format(
+                    `0,0[.]${currency === 'KRW' ? krwPricePad : usdPricePad}`
+                  )
+              : null}
+          </span>
         </p>
       </td>
       <td className='font-mono text-right market-td-padding whitespace-nowrap'>
         <p className={colorPrice}>{upbitChangeRate.toFixed(2)}%</p>
-        <p className={classNames('opacity-60', colorPrice)}>{priceChage}</p>
+        <p
+          className={classNames(
+            'opacity-60',
+            colorPrice,
+            krwTooSmallNumber || 0.000001 > usdChange
+              ? 'text-[0.625rem] sm:font-size-inherit'
+              : null
+          )}
+        >
+          {currency === 'KRW'
+            ? krwTooSmallNumber
+              ? `0.${upbitMarket.scp}`
+              : numeral(upbitMarket.scp).format(`0,0[.][${krwPricePad}]`)
+            : 0.000001 > usdChange
+            ? `${usdChange.toFixed(usdPriceDecimal.length)}`
+            : numeral(usdChange).format(`0,0[.][${usdPricePad}]`)}
+        </p>
       </td>
-      <td className='font-mono text-right market-td-padding whitespace-nowrap'>
+      <td className={classNames('font-mono text-right market-td-padding whitespace-nowrap')}>
         {typeof upbitMarket.premium === 'number' && (
           <>
             <p className={colorPremium}>{upbitMarket.premium.toFixed(2).padStart(2, '0')}%</p>
-            <p className={classNames('opacity-60', colorPremium)}>
-              {upbitMarket.binance_price &&
-                premiumPrice.padStart(
-                  currency === 'KRW' ? krwPriceDecimal.length : usdPriceDecimal.length,
-                  '0'
-                )}
+            <p
+              className={classNames(
+                'opacity-60',
+                colorPremium,
+                krwTooSmallNumber || 0.000001 > usdPremium
+                  ? 'text-[0.625rem] sm:font-size-inherit'
+                  : null
+              )}
+            >
+              {upbitMarket.binance_price
+                ? currency === 'KRW'
+                  ? krwTooSmallNumber
+                    ? `${upbitMarket.tp - Number(upbitMarket.binance_price) * upbitForex.basePrice}`
+                    : numeral(
+                        upbitMarket.tp - Number(upbitMarket.binance_price) * upbitForex.basePrice
+                      ).format(`0,0[.][${krwPricePad}]`)
+                  : 0.000001 > usdPremium
+                  ? (
+                      upbitMarket.tp / upbitForex.basePrice -
+                      Number(upbitMarket.binance_price)
+                    ).toFixed(usdPriceDecimal.length)
+                  : numeral(usdPremium).format(`0,0[.][${usdPricePad}]`)
+                : null}
             </p>
           </>
         )}
