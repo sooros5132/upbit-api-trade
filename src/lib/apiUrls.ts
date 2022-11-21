@@ -40,5 +40,12 @@ export const apiUrls = {
     ticker: {
       price: '/ticker/price'
     }
+  },
+  coincodex: {
+    origin: 'https://coincodex.com/api',
+    path: '/api/v1',
+    rewritePath: '/api/coincodex',
+    getCoin: '/coincodex/get_coin/',
+    getMetadata: '/coincodex/get_metadata'
   }
 } as const;

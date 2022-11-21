@@ -23,6 +23,10 @@ module.exports = withBundleAnalyzer({
       {
         source: '/api/binance/:path*',
         destination: 'https://www.binance.com/api/v3/:path*'
+      },
+      {
+        source: '/api/coincodex/:path*',
+        destination: 'https://coincodex.com/api/:path*'
       }
     ];
 
