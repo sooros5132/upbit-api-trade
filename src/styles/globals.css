@@ -7,6 +7,10 @@
     z-index: 1;
   }
 
+  .font-size-inherit {
+    font-size: inherit;
+  }
+
   .flex-align-items-center {
     @apply flex items-center;
   }

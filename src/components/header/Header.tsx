@@ -289,7 +289,7 @@ const MarketInfo = () => {
   );
 
   return (
-    <div className='flex flex-nowrap items-center gap-x-2 text-xs font-mono sm:gap-x-3'>
+    <div className='flex flex-nowrap items-center gap-x-2 text-xs sm:text-sm font-mono sm:gap-x-3'>
       {forex?.basePrice && (
         <span>
           <span className='text-opacity-70 text-primary-content whitespace-nowrap'>USD/KRW</span>{' '}

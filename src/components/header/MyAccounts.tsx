@@ -54,7 +54,7 @@ const AccountItem = memo(({ account, visibleBalance }: IAccountItemProps) => {
       : 'text-rose-500';
   return (
     <>
-      <div className='flex items-center font-mono text-sm'>
+      <div className='flex items-center font-mono text-xs sm:text-sm'>
         <BsDot />
         <a href={upbitLink} rel='noreferrer' target='_blank'>
           <span className='font-bold hover:underline'>{currency}</span>
