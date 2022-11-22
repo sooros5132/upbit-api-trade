@@ -7,6 +7,7 @@ import { useExchangeStore } from 'src/store/exchangeSockets';
 import shallow from 'zustand/shallow';
 import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai';
 import { useSiteSettingStore } from 'src/store/siteSetting';
+import classNames from 'classnames';
 
 interface IAccountItemProps {
   account: IUpbitAccounts & { currentPrice?: number; totalBalance: number };
@@ -170,7 +171,14 @@ const MyAccounts = memo(({ upbitAccounts: upbitAccountsTemp }: IMyAccountsProps)
           data-tip='평가금액 표시/숨기기'
           onClick={() => setVisibleBalances(!visibleBalances)}
         >
-          {visibleBalances ? <AiFillEye /> : <AiFillEyeInvisible />}
+          <label className={classNames('swap swap-rotate', visibleBalances ? 'swap-active' : '')}>
+            <span className='swap-on fill-current'>
+              <AiFillEye />
+            </span>
+            <span className='swap-off fill-current'>
+              <AiFillEyeInvisible />
+            </span>
+          </label>
         </button>
       </div>
     </div>
