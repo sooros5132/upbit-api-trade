@@ -268,15 +268,7 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
       </td>
       <td className='font-mono text-right market-td-padding whitespace-nowrap'>
         <p className={colorPrice}>{upbitChangeRate.toFixed(2)}%</p>
-        <p
-          className={classNames(
-            'opacity-60',
-            colorPrice,
-            krwTooSmallNumber || 0.000001 > usdChange
-              ? 'text-[0.625rem] sm:font-size-inherit'
-              : null
-          )}
-        >
+        <p className={classNames('opacity-60', colorPrice)}>
           {currency === 'KRW'
             ? krwTooSmallNumber
               ? `0.${upbitMarket.scp}`
@@ -290,15 +282,7 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
         {typeof upbitMarket.premium === 'number' && (
           <>
             <p className={colorPremium}>{upbitMarket.premium.toFixed(2).padStart(2, '0')}%</p>
-            <p
-              className={classNames(
-                'opacity-60',
-                colorPremium,
-                krwTooSmallNumber || 0.000001 > usdPremium
-                  ? 'text-[0.625rem] sm:font-size-inherit'
-                  : null
-              )}
-            >
+            <p className={classNames('opacity-60', colorPremium)}>
               {upbitMarket.binance_price
                 ? currency === 'KRW'
                   ? krwTooSmallNumber
