@@ -1,7 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import React, { memo } from 'react';
 import isEqual from 'react-fast-compare';
-import { BiUpArrowAlt, BiDownArrowAlt } from 'react-icons/bi';
 import { IUpbitSocketMessageTickerSimple } from 'src/types/upbit';
 import { useExchangeStore } from 'src/store/exchangeSockets';
 import { useMarketTableSettingStore } from 'src/store/marketTableSetting';
@@ -114,12 +113,12 @@ const UsdKrwToggle = () => {
   };
 
   return (
-    <div className='flex-center'>
+    <div className='flex-center cursor-pointer text-zinc-400' onClick={handleChange}>
       KRW&nbsp;
       <input
-        onChange={handleChange}
+        // onChange={handleChange}
         type='checkbox'
-        className='bg-opacity-100 border-opacity-100 toggle toggle-xs'
+        className='bg-opacity-100 border-opacity-100 toggle toggle-xs rounded-full border-zinc-500 transition-all'
         checked={currency === 'KRW' ? false : true}
       />
       &nbsp;USD
