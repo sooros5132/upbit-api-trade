@@ -120,6 +120,7 @@ const UsdKrwToggle = () => {
         type='checkbox'
         className='bg-opacity-100 border-opacity-100 toggle toggle-xs rounded-full border-zinc-500 transition-all'
         checked={currency === 'KRW' ? false : true}
+        readOnly
       />
       &nbsp;USD
     </div>
