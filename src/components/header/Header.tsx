@@ -18,6 +18,9 @@ import { IUpbitForex } from 'src/types/upbit';
 import axios from 'axios';
 import { ICoincodexGetMetadata } from 'src/types/coincodex';
 import numeral from 'numeral';
+import formatInTimeZone from 'date-fns-tz/formatInTimeZone';
+import { ko as koLocale } from 'date-fns/locale';
+import classNames from 'classnames';
 
 const Header: React.FC = () => {
   const upbitAuth = useUpbitAuthStore();
@@ -233,10 +236,10 @@ const Header: React.FC = () => {
                 </div>
               </div>
             </li>
-            <div className='m-0 divider' />
+            {/* <div className='m-0 divider' />
             <li className='disabled'>
               <UsdKrwForex />
-            </li>
+            </li> */}
           </ul>
         </div>
       </div>
@@ -291,48 +294,140 @@ const MarketInfo = () => {
   return (
     <div className='flex flex-nowrap items-center gap-x-2 text-xs sm:text-sm font-mono sm:gap-x-3'>
       {forex?.basePrice && (
-        <span>
-          <span className='text-opacity-70 text-primary-content whitespace-nowrap'>USD/KRW</span>{' '}
-          <span className='whitespace-nowrap'>{forex?.basePrice.toLocaleString()}₩</span>
-        </span>
+        <div className='dropdown dropdown-hover [&>span]:whitespace-nowrap'>
+          <span className='text-zinc-500'>USD/KRW</span>{' '}
+          <span>{forex?.basePrice.toLocaleString()}₩</span>
+          <div className='dropdown-content bg-base-300 p-2 whitespace-nowrap'>
+            <div>
+              <span>달러/원 환율</span>
+            </div>
+            <div className='text-zinc-500'>
+              <span>
+                {formatInTimeZone(new Date(forex.timestamp), 'Asia/Seoul', 'yyyy-MM-dd HH:mm:ss', {
+                  locale: koLocale
+                })}
+              </span>
+            </div>
+          </div>
+        </div>
       )}
       {metadata?.btc_dominance && (
-        <span>
-          <span className='text-opacity-70 text-primary-content whitespace-nowrap'>BTC.D</span>{' '}
-          <span className='whitespace-nowrap'>{metadata.btc_dominance}% </span>
-        </span>
+        <div className='dropdown dropdown-hover [&>span]:whitespace-nowrap'>
+          <span className='text-zinc-500'>BTC.D</span> <span>{metadata.btc_dominance}% </span>
+          <div className='dropdown-content bg-base-300 p-2 whitespace-nowrap'>
+            <div>비트코인 시장 점유율</div>
+            <div className='grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 bg-base-300 p-2 [&>p:nth-child(even)]:text-right'>
+              <p>24시간 변동</p>
+              <p
+                className={
+                  !metadata.btc_dominance_24h_change_percent ||
+                  metadata.btc_dominance_24h_change_percent === 0
+                    ? 'text-gray-400'
+                    : metadata.btc_dominance_24h_change_percent > 0
+                    ? 'text-teal-500'
+                    : 'text-rose-500'
+                }
+              >
+                {metadata.btc_dominance_24h_change_percent}%
+              </p>
+            </div>
+          </div>
+        </div>
       )}
       {metadata?.total_market_cap && (
-        <span>
-          <span className='text-opacity-70 text-primary-content whitespace-nowrap'>Total</span>{' '}
-          <span className='whitespace-nowrap'>
-            {numeral(metadata.total_market_cap).format('0.0a').toUpperCase()}
-          </span>
-        </span>
+        <div className='dropdown dropdown-hover [&>span]:whitespace-nowrap'>
+          <span className='text-zinc-500'>Total</span>{' '}
+          <span>{numeral(metadata.total_market_cap).format('0.0a').toUpperCase()}</span>
+          <div className='dropdown-content bg-base-300 p-2 whitespace-nowrap'>
+            <div>코인 시장 토탈(달러)</div>
+            <div className='grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 bg-base-300 p-2 [&>p:nth-child(even)]:text-right'>
+              <p>24시간 변동</p>
+              <p
+                className={
+                  !metadata.total_market_cap_24h_change_percent ||
+                  metadata.total_market_cap_24h_change_percent === 0
+                    ? 'text-gray-400'
+                    : metadata.total_market_cap_24h_change_percent > 0
+                    ? 'text-teal-500'
+                    : 'text-rose-500'
+                }
+              >
+                {metadata.total_market_cap_24h_change_percent}%
+              </p>
+            </div>
+          </div>
+        </div>
       )}
       {metadata?.eth_gas && (
-        <span>
-          <span className='text-opacity-70 text-primary-content whitespace-nowrap'>ETH.Gas</span>{' '}
-          <span className='whitespace-nowrap'>{metadata.eth_gas?.standard}Gwei</span>
-        </span>
+        <div
+          className={classNames(
+            'dropdown dropdown-hover [&>span]:whitespace-nowrap',
+            forex ? 'dropdown-end' : null
+          )}
+        >
+          <span className='text-zinc-500'>ETH.Gas</span>{' '}
+          <span>{metadata.eth_gas.standard}Gwei</span>
+          <div className='dropdown-content bg-base-300 p-2'>
+            <div>
+              <span>이더리움 가스 비용</span>
+            </div>
+            <div className='m-0 divider' />
+            <div className='flex items-center flex-nowrap gap-x-2 [&>div>div:nth-of-type(3)]:text-zinc-500 whitespace-nowrap'>
+              <div className='text-green-300'>
+                <div className='mb-1'>느림</div>
+                <div>
+                  <b>{metadata.eth_gas.slow}Gwei</b>
+                </div>
+                <div>{metadata.eth_gas.slow_estimation}secs</div>
+              </div>
+              <div className='text-blue-200'>
+                <div className='mb-1'>보통</div>
+                <div>
+                  <b>{metadata.eth_gas.standard}Gwei</b>
+                </div>
+                <div>{metadata.eth_gas.standard_estimation}secs</div>
+              </div>
+              <div className='text-red-300'>
+                <div className='mb-1'>빠름</div>
+                <div>
+                  <b>{metadata.eth_gas.fast}Gwei</b>
+                </div>
+                <div>{metadata.eth_gas.fast_estimation}secs</div>
+              </div>
+            </div>
+            <div className='m-0 divider' />
+            <div className='text-zinc-500'>
+              <span>
+                {formatInTimeZone(
+                  new Date(metadata.eth_gas.timestamp),
+                  'Asia/Seoul',
+                  'yyyy-MM-dd HH:mm:ss',
+                  {
+                    locale: koLocale
+                  }
+                )}
+              </span>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
 };
 
-const UsdKrwForex = () => {
-  const { data: forexRecent } = useSWR<IUpbitForex>(
-    apiUrls.upbit.rewriteUrl + apiUrls.upbit.forex.recent
-  );
+// const UsdKrwForex = () => {
+//   const { data: forexRecent } = useSWR<IUpbitForex>(
+//     apiUrls.upbit.rewriteUrl + apiUrls.upbit.forex.recent
+//   );
 
-  return (
-    <div className='tooltip tooltip-bottom' data-tip='계산에 적용된 달러 환율입니다.'>
-      <span className='text-base-content'>
-        USD/KRW {forexRecent?.basePrice?.toLocaleString() || '환율 오류'}
-      </span>
-    </div>
-  );
-};
+//   return (
+//     <div className='tooltip tooltip-bottom' data-tip='계산에 적용된 달러 환율입니다.'>
+//       <span className='text-base-content'>
+//         USD/KRW {forexRecent?.basePrice?.toLocaleString() || '환율 오류'}
+//       </span>
+//     </div>
+//   );
+// };
 
 Header.displayName = 'Header';
 
