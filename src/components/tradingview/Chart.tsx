@@ -1,16 +1,16 @@
 import React, { memo, useCallback, useEffect, useState } from 'react';
 import isEqual from 'react-fast-compare';
-import { useSiteSettingStore } from 'src/store/siteSetting';
 import { useTradingViewSettingStore } from 'src/store/tradingViewSetting';
 
 interface TradingViewChartProps {
+  pointerEvents?: React.CSSProperties['pointerEvents'];
   chart?: {
     symbol: string;
     exchange: string;
   };
 }
 
-const TradingViewChart: React.FC<TradingViewChartProps> = ({ chart }) => {
+const TradingViewChart: React.FC<TradingViewChartProps> = ({ chart, pointerEvents }) => {
   const [hydrated, setHydrated] = useState(false);
   const { selectedMarketSymbol, selectedExchange, scriptLoaded } = useTradingViewSettingStore();
   const symbol =
@@ -61,7 +61,7 @@ const TradingViewChart: React.FC<TradingViewChartProps> = ({ chart }) => {
   }, []);
 
   if (scriptLoaded || !hydrated) {
-    return <div className='h-full' id={'tradingview_4a4c4'} />;
+    return <div className='h-full' id={'tradingview_4a4c4'} style={{ pointerEvents }} />;
   }
 
   return (

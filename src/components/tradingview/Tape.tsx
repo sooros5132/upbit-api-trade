@@ -1,7 +1,11 @@
 import React from 'react';
 import isEqual from 'react-fast-compare';
 
-const TradingViewTapeWidget: React.FC = () => {
+export interface TradingViewTapeWidgetProps {
+  pointerEvents?: React.CSSProperties['pointerEvents'];
+}
+
+const TradingViewTapeWidget: React.FC<TradingViewTapeWidgetProps> = ({ pointerEvents }) => {
   const tapeWidgetRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
@@ -61,7 +65,7 @@ const TradingViewTapeWidget: React.FC = () => {
     };
   }, []);
 
-  return <div ref={tapeWidgetRef} />;
+  return <div ref={tapeWidgetRef} style={{ pointerEvents }} />;
 };
 
 TradingViewTapeWidget.displayName = 'TradingViewTapeWidget';

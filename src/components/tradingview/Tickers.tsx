@@ -1,7 +1,11 @@
 import React from 'react';
 import isEqual from 'react-fast-compare';
 
-const TradingViewTickersWidget: React.FC = () => {
+export interface TradingViewTickersWidgetProps {
+  pointerEvents?: React.CSSProperties['pointerEvents'];
+}
+
+const TradingViewTickersWidget: React.FC<TradingViewTickersWidgetProps> = ({ pointerEvents }) => {
   const tickersWidgetRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
@@ -53,7 +57,7 @@ const TradingViewTickersWidget: React.FC = () => {
     };
   }, []);
 
-  return <div ref={tickersWidgetRef} />;
+  return <div ref={tickersWidgetRef} style={{ pointerEvents }} />;
 };
 
 TradingViewTickersWidget.displayName = 'TradingViewTickersWidget';

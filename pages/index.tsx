@@ -40,7 +40,7 @@ const Home: NextPage = () => {
     <main className='relative w-full px-3 mx-auto max-w-7xl'>
       <div className='overflow-x-auto overflow-y-hidden'>
         <div className='w-[1200px] xl:w-full mx-auto'>
-          <TradingViewTickers />
+          <TradingViewTickers pointerEvents='none' />
         </div>
       </div>
       <div
