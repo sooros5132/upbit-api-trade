@@ -47,6 +47,7 @@ const TradingViewChart: React.FC<TradingViewChartProps> = ({ chart, pointerEvent
         container_id: 'tradingview_4a4c4',
         withdateranges: true,
         save_image: false,
+        // toolbar_bg: 'transparent',
         overrides: {
           'mainSeriesProperties.barStyle.downColor': '#f43f52',
           'mainSeriesProperties.barStyle.upColor': '#14b8a6',
@@ -54,7 +55,8 @@ const TradingViewChart: React.FC<TradingViewChartProps> = ({ chart, pointerEvent
           // 'paneProperties.background': theme.color.mainDrakBackground,
           'paneProperties.vertGridProperties.color': '#363c4e',
           'paneProperties.horzGridProperties.color': '#363c4e',
-          'scalesProperties.textColor': '#AAA',
+          'scalesProperties.lineColor': 'rgba(255, 255, 255, 0.6)',
+          'scalesProperties.textColor': 'rgba(255, 255, 255, 0.6)',
           // 'mainSeriesProperties.candleStyle.wickUpColor': '#336854',
           // 'mainSeriesProperties.candleStyle.wickDownColor': '#7f323f',
           // 'mainSeriesProperties.showCountdown': true,
@@ -64,7 +66,15 @@ const TradingViewChart: React.FC<TradingViewChartProps> = ({ chart, pointerEvent
           'mainSeriesProperties.candleStyle.borderUpColor': '#14b8a6',
           'mainSeriesProperties.candleStyle.borderDownColor': '#f43f52',
           'mainSeriesProperties.candleStyle.wickUpColor': '#14b8a6',
-          'mainSeriesProperties.candleStyle.wickDownColor': '#f43f52'
+          'mainSeriesProperties.candleStyle.wickDownColor': '#f43f52',
+          'mainSeriesProperties.showCountdown': true,
+          volumePaneSize: 'medium',
+          'scalesProperties.fontSize': 10,
+          'paneProperties.vertGridProperties.style': 1,
+          'paneProperties.horzGridProperties.style': 1,
+          'paneProperties.backgroundType': 'solid',
+          'paneProperties.crossHairProperties.color': 'rgba(255, 255, 255, 0.3)',
+          'mainSeriesProperties.highLowAvgPrice.highLowPriceLabelsVisible': true
         },
         studies_overrides: {
           'volume.volume.color.0': '#14b8a6',
