@@ -115,7 +115,7 @@ const TradingViewChart: React.FC<TradingViewChartProps> = ({ chart, pointerEvent
         <div className='tradingview-widget-copyright flex-shrink-0 flex-grow-0'>
           TradingView 제공{' '}
           <a
-            href='https://kr.tradingview.com/symbols/NASDAQ-AAPL/'
+            href={`https://kr.tradingview.com/symbols/${symbol}/`}
             rel='noopener noreferrer'
             target='_blank'
           >
