@@ -39,7 +39,7 @@ const Home: NextPage = () => {
   return (
     <main className='relative w-full px-3 mx-auto max-w-7xl'>
       <div className='overflow-x-auto overflow-y-hidden'>
-        <div className='w-[1200px] xl:w-full mx-auto'>
+        <div className='mx-auto'>
           <TradingViewTickers pointerEvents='none' />
         </div>
       </div>
@@ -53,7 +53,7 @@ const Home: NextPage = () => {
             : undefined
         }
       >
-        <div className='h-[300px] min-h-[300px] sm:h-[30vh] lg:min-h-[500px] lg:h-[40vh]'>
+        <div className='h-[300px] min-h-[300px] sm:h-[40vh] lg:min-h-[500px] lg:h-[45vh]  [&_.tradingview-widget-copyright]:!leading-4'>
           <TradingViewChart />
         </div>
       </div>

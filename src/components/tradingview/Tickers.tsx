@@ -7,6 +7,28 @@ export interface TradingViewTickersWidgetProps {
 
 const TradingViewTickersWidget: React.FC<TradingViewTickersWidgetProps> = ({ pointerEvents }) => {
   const tickersWidgetRef = React.useRef<HTMLDivElement>(null);
+  const symbols = [
+    {
+      proName: 'FOREXCOM:NSXUSD',
+      title: 'US 100'
+    },
+    {
+      description: '',
+      proName: 'KRX:KOSPI'
+    },
+    {
+      description: '',
+      proName: 'BINANCE:BTCUSDT'
+    },
+    {
+      description: '',
+      proName: 'BINANCE:ETHUSDT'
+    },
+    {
+      description: '',
+      proName: 'CRYPTOCAP:BTC.D'
+    }
+  ];
 
   React.useEffect(() => {
     if (!tickersWidgetRef.current) return;
@@ -20,28 +42,7 @@ const TradingViewTickersWidget: React.FC<TradingViewTickersWidgetProps> = ({ poi
     scriptEl.type = 'text/javascript';
     scriptEl.src = 'https://s3.tradingview.com/external-embedding/embed-widget-tickers.js';
     scriptEl.innerHTML = `{
-  "symbols": [
-    {
-      "proName": "FOREXCOM:NSXUSD",
-      "title": "US 100"
-    },
-    {
-      "description": "",
-      "proName": "KRX:KOSPI"
-    },
-    {
-      "description": "",
-      "proName": "BINANCE:BTCUSDT"
-    },
-    {
-      "description": "",
-      "proName": "BINANCE:ETHUSDT"
-    },
-    {
-      "description": "",
-      "proName": "CRYPTOCAP:BTC.D"
-    }
-  ],
+  "symbols": ${JSON.stringify(symbols)},
   "colorTheme": "dark",
   "isTransparent": true,
   "showSymbolLogo": true,
@@ -57,7 +58,25 @@ const TradingViewTickersWidget: React.FC<TradingViewTickersWidgetProps> = ({ poi
     };
   }, []);
 
-  return <div ref={tickersWidgetRef} style={{ pointerEvents }} />;
+  return (
+    <div>
+      <div className='overflow-x-auto overflow-y-hidden'>
+        <div
+          className='xl:w-full mx-auto'
+          style={symbols.length > 1 ? { width: symbols.length * 240 } : undefined}
+        >
+          <div ref={tickersWidgetRef} style={{ pointerEvents }} />
+        </div>
+      </div>
+
+      <div className='tradingview-widget-copyright'>
+        TradingView 제공{' '}
+        <a href='https://kr.tradingview.com' rel='noopener noreferrer' target='_blank'>
+          <span className='blue-text'>쿼트</span>
+        </a>
+      </div>
+    </div>
+  );
 };
 
 TradingViewTickersWidget.displayName = 'TradingViewTickersWidget';

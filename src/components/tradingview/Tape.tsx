@@ -65,7 +65,17 @@ const TradingViewTapeWidget: React.FC<TradingViewTapeWidgetProps> = ({ pointerEv
     };
   }, []);
 
-  return <div ref={tapeWidgetRef} style={{ pointerEvents }} />;
+  return (
+    <div>
+      <div ref={tapeWidgetRef} style={{ pointerEvents }} />
+      <div className='tradingview-widget-copyright'>
+        TradingView 제공{' '}
+        <a href='https://kr.tradingview.com' rel='noopener noreferrer' target='_blank'>
+          <span className='blue-text'>쿼트</span>
+        </a>
+      </div>
+    </div>
+  );
 };
 
 TradingViewTapeWidget.displayName = 'TradingViewTapeWidget';

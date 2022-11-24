@@ -43,18 +43,24 @@ const TradingViewChart: React.FC<TradingViewChartProps> = ({ chart, pointerEvent
         enable_publishing: false,
         allow_symbol_change: true,
         disabledFeatures: ['border_around_the_chart', 'save_shortcut', 'header_symbol_search'],
-        studies: ['MASimple@tv-basicstudies'], // 'BB@tv-basicstudies'
+        studies: [
+          'MASimple@tv-basicstudies'
+          // 'BB@tv-basicstudies'
+        ],
         container_id: 'tradingview_4a4c4',
         withdateranges: true,
         save_image: false,
         // toolbar_bg: 'transparent',
         overrides: {
+          paneProperties: {
+            background: '#ffffff',
+            backgroundGradientEndColor: '#ffffff',
+            backgroundGradientStartColor: '#ffffff',
+            backgroundType: 'solid'
+          },
           'mainSeriesProperties.barStyle.downColor': '#f43f52',
           'mainSeriesProperties.barStyle.upColor': '#14b8a6',
-          'paneProperties.background': '#000000',
           // 'paneProperties.background': theme.color.mainDrakBackground,
-          'paneProperties.vertGridProperties.color': '#363c4e',
-          'paneProperties.horzGridProperties.color': '#363c4e',
           'scalesProperties.lineColor': 'rgba(255, 255, 255, 0.6)',
           'scalesProperties.textColor': 'rgba(255, 255, 255, 0.6)',
           // 'mainSeriesProperties.candleStyle.wickUpColor': '#336854',
@@ -70,10 +76,7 @@ const TradingViewChart: React.FC<TradingViewChartProps> = ({ chart, pointerEvent
           'mainSeriesProperties.showCountdown': true,
           volumePaneSize: 'medium',
           'scalesProperties.fontSize': 10,
-          'paneProperties.vertGridProperties.style': 1,
-          'paneProperties.horzGridProperties.style': 1,
           'paneProperties.backgroundType': 'solid',
-          'paneProperties.crossHairProperties.color': 'rgba(255, 255, 255, 0.3)',
           'mainSeriesProperties.highLowAvgPrice.highLowPriceLabelsVisible': true
         },
         studies_overrides: {
@@ -106,7 +109,21 @@ const TradingViewChart: React.FC<TradingViewChartProps> = ({ chart, pointerEvent
   }, []);
 
   if (scriptLoaded || !hydrated) {
-    return <div className='h-full' id={'tradingview_4a4c4'} style={{ pointerEvents }} />;
+    return (
+      <div className='h-full flex flex-col'>
+        <div className='flex-1' id={'tradingview_4a4c4'} style={{ pointerEvents }} />
+        <div className='tradingview-widget-copyright flex-shrink-0 flex-grow-0'>
+          TradingView 제공{' '}
+          <a
+            href='https://kr.tradingview.com/symbols/NASDAQ-AAPL/'
+            rel='noopener noreferrer'
+            target='_blank'
+          >
+            <span className='blue-text'>{symbol} 차트</span>
+          </a>
+        </div>
+      </div>
+    );
   }
 
   return (
