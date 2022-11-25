@@ -52,12 +52,12 @@ const TradingViewChart: React.FC<TradingViewChartProps> = ({ chart, pointerEvent
         save_image: false,
         // toolbar_bg: 'transparent',
         overrides: {
-          paneProperties: {
-            background: '#ffffff',
-            backgroundGradientEndColor: '#ffffff',
-            backgroundGradientStartColor: '#ffffff',
-            backgroundType: 'solid'
-          },
+          // paneProperties: {
+          //   background: '#ffffff',
+          //   backgroundGradientEndColor: '#ffffff',
+          //   backgroundGradientStartColor: '#ffffff',
+          //   backgroundType: 'solid'
+          // },
           'mainSeriesProperties.barStyle.downColor': '#f43f52',
           'mainSeriesProperties.barStyle.upColor': '#14b8a6',
           // 'paneProperties.background': theme.color.mainDrakBackground,
