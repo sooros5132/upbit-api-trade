@@ -18,9 +18,12 @@ import axios from 'axios';
 import { BackgroundRedBox } from 'src/components/modules/Box';
 import Link from 'next/link';
 import config from 'site-config';
+import { TVChart } from 'src/components/TVChart';
+import { useTradingViewSettingStore } from 'src/store/tradingViewSetting';
 
 const Home: NextPage = () => {
   const stickyChart = useMarketTableSettingStore((state) => state.stickyChart, shallow);
+
   const { hydrated, headerHeight } = useSiteSettingStore(
     ({ hydrated, headerHeight }) => ({ hydrated, headerHeight }),
     shallow
@@ -54,7 +57,8 @@ const Home: NextPage = () => {
         }
       >
         <div className='h-[300px] min-h-[300px] sm:h-[40vh] lg:min-h-[500px] lg:h-[45vh]  [&_.tradingview-widget-copyright]:!leading-4'>
-          <TradingViewChart />
+          {hydrated && <Chart />}
+          {/* <TradingViewChart />; */}
         </div>
       </div>
 
@@ -92,9 +96,32 @@ const Home: NextPage = () => {
   );
 };
 
+const Chart = () => {
+  const { selectedExchange, selectedMarketSymbol } = useTradingViewSettingStore(
+    ({ selectedExchange, selectedMarketSymbol }) => ({ selectedExchange, selectedMarketSymbol }),
+    shallow
+  );
 
+  useEffect(() => {
+    useExchangeStore.getState().changeUpbitTradeCodes(['KRW-' + selectedMarketSymbol]);
+  }, [selectedMarketSymbol]);
 
+  switch (selectedExchange) {
+    case 'BINANCE': {
+      return <TradingViewChart />;
     }
+    case 'UPBIT': {
+      return <TVChart symbol={selectedMarketSymbol + 'KRW'} currency={selectedMarketSymbol} />;
+    }
+    default: {
+      return null;
+    }
+  }
+};
+
+const ExchangeMarket: React.FC = () => {
+  const [isReady, setIsReady] = useState(false);
+  const { data: forexRecent } = useSWR(apiUrls.upbit.rewriteUrl + apiUrls.upbit.forex.recent);
 
   useEffect(() => {
     if (isReady) {

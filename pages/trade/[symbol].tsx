@@ -1,9 +1,11 @@
 import type { GetServerSideProps, NextPage } from 'next';
 import React, { useEffect, useState } from 'react';
-import TradingViewChart from 'src/components/tradingview/Chart';
 import { useUpbitAuthStore } from 'src/store/upbitAuth';
 import { useRouter } from 'next/router';
 import { krwRegex } from 'src/utils/regex';
+import { useSiteSettingStore } from 'src/store/siteSetting';
+import shallow from 'zustand/shallow';
+import { TVChart } from 'src/components/TVChart';
 
 interface TradeProps {
   symbol: string;
@@ -11,6 +13,7 @@ interface TradeProps {
 
 const Trade: NextPage<TradeProps> = ({ symbol }) => {
   const upbitAuthStore = useUpbitAuthStore();
+  const hydrated = useSiteSettingStore((state) => state.hydrated, shallow);
   const [isMounted, setMounted] = useState(false);
   const router = useRouter();
   const [chart, setChart] = useState({
@@ -21,22 +24,22 @@ const Trade: NextPage<TradeProps> = ({ symbol }) => {
   useEffect(() => {
     const { symbol } = router.query;
     if (typeof symbol !== 'string') return;
-    setChart({
-      exchange: 'UPBIT',
-      symbol: symbol.replace(krwRegex, '') + 'KRW'
-    });
+    // setChart({
+    //   exchange: 'UPBIT',
+    //   symbol: symbol.replace(krwRegex, '') + 'KRW'
+    // });
   }, [router.query]);
 
   return (
-    <main className='flex flex-auto w-full'>
-      <div className='px-1.5 sm:px-2.5 xl:max-w-7xl xl:mx-auto'>
+    <main className='flex flex-auto'>
+      <div className='w-full px-1.5 sm:px-2.5 xl:max-w-7xl xl:mx-auto'>
         <div>
           <p className='text-3xl'>
             <b>{router.query.symbol}</b>
           </p>
         </div>
         <div>
-          <TradingViewChart chart={chart} />
+          <TVChart />
         </div>
       </div>
     </main>

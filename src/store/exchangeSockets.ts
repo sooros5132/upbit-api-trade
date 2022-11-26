@@ -2,7 +2,12 @@ import create from 'zustand';
 import type { GetState, StateCreator } from 'zustand';
 import { NamedSet } from 'zustand/middleware';
 import { IMarketTableItem } from 'src/components/market-table/MarketTable';
-import { IUpbitForex, IUpbitMarket, IUpbitSocketMessageTickerSimple } from 'src/types/upbit';
+import {
+  IUpbitForex,
+  IUpbitMarket,
+  IUpbitSocketMessageTickerSimple,
+  IUpbitSocketMessageTradeSimple
+} from 'src/types/upbit';
 import { apiUrls } from 'src/lib/apiUrls';
 import { v4 as uuidv4 } from 'uuid';
 import { isEqual, keyBy, sortBy } from 'lodash';
@@ -10,7 +15,9 @@ import { IBinanceSocketMessageTicker } from 'src/types/binance';
 import { krwRegex } from 'src/utils/regex';
 import { useMarketTableSettingStore } from './marketTableSetting';
 import { useSiteSettingStore } from './siteSetting';
+import { useTradingViewSettingStore } from './tradingViewSetting';
 
+type SocketMessage = string;
 interface IExchangeState {
   sortedUpbitMarketSymbolList: Array<string>;
   upbitForex?: IUpbitForex;
@@ -24,6 +31,9 @@ interface IExchangeState {
   lastUpdatedAt: Date;
   socketTimeout: number;
   throttleDelay: number;
+  upbitTradeMessage?: IUpbitSocketMessageTradeSimple;
+  upbitTickerCodes: Array<string>;
+  upbitTradeCodes: Array<string>;
 }
 
 const defaultState: IExchangeState = {
@@ -38,7 +48,10 @@ const defaultState: IExchangeState = {
   binanceSocket: undefined,
   lastUpdatedAt: new Date(),
   socketTimeout: 5 * 1000,
-  throttleDelay: 200
+  throttleDelay: 200,
+  upbitTradeMessage: undefined,
+  upbitTickerCodes: [],
+  upbitTradeCodes: []
 };
 
 interface IExchangeStore extends IExchangeState {
@@ -47,12 +60,17 @@ interface IExchangeStore extends IExchangeState {
   setBinanceMarkets: (markets: IExchangeState['binanceMarkets']) => void;
   setBinanceMarketDatas: (marketDatas: IExchangeState['binanceMarketDatas']) => void;
   distroyAll: () => void;
-  connectUpbitSocket: (markets?: Array<IUpbitMarket>) => void;
+  changeUpbitTradeCodes: (tradeCodes?: IExchangeState['upbitTradeCodes']) => void;
+  connectUpbitSocket: (setting?: {
+    tickerCodes?: IExchangeState['upbitTickerCodes'];
+    tradeCodes?: IExchangeState['upbitTradeCodes'];
+  }) => void;
   disconnectUpbitSocket: () => void;
   connectBinanceSocket: (markets?: Array<String>) => void;
   disconnectBinanceSocket: () => void;
   searchSymbols: (searchValue: string) => void;
   sortSymbolList: (sortColumn: keyof IMarketTableItem, sortType: 'ASC' | 'DESC') => void;
+  reconnectUpbitSocket: (message: string) => void;
 }
 
 const useExchangeStore = create<IExchangeStore>(
@@ -72,20 +90,70 @@ const useExchangeStore = create<IExchangeStore>(
     setBinanceMarketDatas(marketDatas) {
       set({ binanceMarketDatas: { ...marketDatas } });
     },
-    connectUpbitSocket() {
-      let lastActivity = Date.now();
-      const { socketTimeout, throttleDelay, upbitMarkets } = get();
+    changeUpbitTradeCodes(tradeCodes) {
+      const { upbitTickerCodes, connectUpbitSocket } = get();
+      if (upbitTickerCodes.length > 0) {
+        connectUpbitSocket({ tickerCodes: upbitTickerCodes, tradeCodes });
+      }
+    },
+    connectUpbitSocket(setting) {
+      const { upbitMarkets, upbitTickerCodes, upbitTradeCodes } = get();
+      const { selectedExchange, selectedMarketSymbol } = useTradingViewSettingStore.getState();
       //? 업빗 소켓 설정
-      const ticket = uuidv4(); // * 구분할 값을 넘겨야 함.
-      const type = 'ticker'; // * 현재가 -> ticker, 체결 -> trade, 호가 ->orderbook
-      const krwSymbols = upbitMarkets.map((c) => c.market); // * 구독할 코인들
+      const tickerCodes =
+        setting?.tickerCodes && Array.isArray(setting.tickerCodes) && setting.tickerCodes.length > 0
+          ? setting.tickerCodes
+          : Array.isArray(upbitTickerCodes) && upbitTickerCodes.length > 0
+          ? upbitTickerCodes
+          : upbitMarkets.map((c) => c.market);
+      const tradeCodes =
+        setting?.tradeCodes && Array.isArray(setting.tradeCodes) && setting.tradeCodes.length > 0
+          ? setting.tradeCodes
+          : selectedExchange === 'UPBIT'
+          ? ['KRW-' + selectedMarketSymbol]
+          : Array.isArray(upbitTradeCodes) && upbitTradeCodes.length > 0
+          ? upbitTradeCodes
+          : undefined;
+      //? 업빗 소켓 설정
 
       const format = 'SIMPLE'; // socket 간소화된 필드명
       const isOnlySnapshot = true; // socket 시세 스냅샷만 제공
       const isOnlyRealtime = true; // socket 실시간 시세만 제공
-      //? 업빗 소켓 설정
 
-      const dataBuffer: IExchangeState['upbitMarketDatas'] = get().upbitMarketDatas || {};
+      /**
+       * https://docs.upbit.com/docs/upbit-quotation-websocket
+       * 보내야 할 Field (* 은 필수)
+       * ticket* - string - 고유한 유니크값
+       * type* - string - "ticker": 현재가, "trade": 체결, "orderbook": 호가
+       * codes* - Array<string> - 무조건 대문자로
+       * isOnlySnapshot - boolean - 시세 스냅샷만 제공
+       * isOnlyRealtime - boolean - 실시간 시세만 제공
+       * format - string - "SIMPLE": 간소화된 필드명, "DEFAULT": 생략 가능
+       */
+      const message: Array<any> = [];
+      message.push({ ticket: uuidv4() }, { type: 'ticker', codes: tickerCodes, isOnlyRealtime });
+      if (tradeCodes && Array.isArray(tradeCodes)) {
+        message.push({ type: 'trade', codes: tradeCodes, isOnlyRealtime });
+      }
+      message.push({ format });
+
+      const { upbitSocket, reconnectUpbitSocket } = get();
+
+      if (upbitSocket && upbitSocket.readyState === upbitSocket.OPEN) {
+        upbitSocket.send(JSON.stringify(message));
+      } else {
+        set({
+          upbitTradeCodes: tradeCodes,
+          upbitTickerCodes: tickerCodes
+        });
+        reconnectUpbitSocket(JSON.stringify(message));
+      }
+    },
+    reconnectUpbitSocket(message: SocketMessage) {
+      const { socketTimeout, throttleDelay, upbitMarketDatas } = get();
+      let lastActivity = Date.now();
+
+      const dataBuffer: IExchangeState['upbitMarketDatas'] = upbitMarketDatas || {};
 
       let unapplied = 0;
       setInterval(() => {
@@ -107,36 +175,47 @@ const useExchangeStore = create<IExchangeStore>(
 
         const handleOpen: WebSocket['onopen'] = function () {
           lastActivity = Date.now();
-          newSocket.send(
-            JSON.stringify([{ ticket }, { type, codes: krwSymbols, isOnlyRealtime }, { format }])
-          );
+          newSocket.send(message);
         };
 
         const handleMessage: WebSocket['onmessage'] = async function (evt) {
           lastActivity = Date.now();
-          const message = JSON.parse(await evt.data.text()) as IUpbitSocketMessageTickerSimple;
+          const message = JSON.parse(await evt.data.text()) as
+            | IUpbitSocketMessageTickerSimple
+            | IUpbitSocketMessageTradeSimple;
 
-          unapplied++;
+          switch (message?.ty) {
+            case 'ticker': {
+              unapplied++;
 
-          const { upbitForex, binanceMarketDatas } = get();
-          const binanceMarketSymbol = message.cd.replace(krwRegex, '') + 'USDT';
-          const binanceMarket = binanceMarketDatas[binanceMarketSymbol];
+              const { upbitForex, binanceMarketDatas } = get();
+              const binanceMarketSymbol = message.cd.replace(krwRegex, '') + 'USDT';
+              const binanceMarket = binanceMarketDatas[binanceMarketSymbol];
 
-          if (!upbitForex || !binanceMarket) {
-            dataBuffer[message.cd] = { ...dataBuffer[message.cd], ...message };
-          } else {
-            const binanceKrwPrice = binanceMarket
-              ? Number(binanceMarket.data.c) * upbitForex.basePrice
-              : undefined;
-            const premium = binanceKrwPrice ? (1 - binanceKrwPrice / message.tp) * 100 : undefined;
+              if (!upbitForex || !binanceMarket) {
+                dataBuffer[message.cd] = { ...dataBuffer[message.cd], ...message };
+              } else {
+                const binanceKrwPrice = binanceMarket
+                  ? Number(binanceMarket.data.c) * upbitForex.basePrice
+                  : undefined;
+                const premium = binanceKrwPrice
+                  ? (1 - binanceKrwPrice / message.tp) * 100
+                  : undefined;
 
-            dataBuffer[message.cd] = {
-              ...dataBuffer[message.cd],
-              ...message,
-              binance_price: binanceMarket.data.c,
-              binance_volume: binanceMarket.data.q,
-              premium: premium
-            };
+                dataBuffer[message.cd] = {
+                  ...dataBuffer[message.cd],
+                  ...message,
+                  binance_price: binanceMarket.data.c,
+                  binance_volume: binanceMarket.data.q,
+                  premium: premium
+                };
+              }
+              break;
+            }
+            case 'trade': {
+              set({ upbitTradeMessage: message });
+              break;
+            }
           }
         };
         let timer: NodeJS.Timer | undefined;
@@ -238,7 +317,7 @@ const useExchangeStore = create<IExchangeStore>(
       if (socket) {
         socket?.close();
       }
-      set({ upbitSocket: undefined });
+      set({ upbitSocket: undefined, upbitTickerCodes: [], upbitTradeCodes: [] });
     },
     disconnectBinanceSocket() {
       const socket = get().binanceSocket;
