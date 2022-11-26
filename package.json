@@ -8,7 +8,8 @@
     "export": "next build & next export",
     "start": "next start",
     "lint": "next lint",
-    "test": "jest --detectOpenHandles --forceExit"
+    "test": "jest --detectOpenHandles --forceExit",
+    "vercel-locally-deploy": "vercel build && vercel deploy --prebuilt"
   },
   "dependencies": {
     "@next/bundle-analyzer": "^12.3.1",
