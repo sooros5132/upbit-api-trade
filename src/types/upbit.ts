@@ -115,7 +115,7 @@ export interface IUpbitApiTicker {
 }
 
 export interface IUpbitSocketMessageTickerSimple {
-  ty: string;
+  ty: 'ticker';
   cd: string;
   op: number;
   hp: number;
@@ -151,21 +151,73 @@ export interface IUpbitSocketMessageTickerSimple {
   st: string;
 }
 
+export interface IUpbitSocketMessageTradeSimple {
+  ty: 'trade'; //									타입
+  cd: string; //									마켓 코드 (ex. KRW-BTC)
+  tp: number; //									체결 가격
+  tv: number; //									체결량
+  ab: 'ASK' | 'BID'; //						매수/매도 구분 ASK: 매도, BID: 매수
+  pcp: number; //									전일 종가
+  c: 'RISE' | 'EVEN' | 'FALL'; //	전일 대비 - RISE: 상승, EVEN: 보합, FALL: 하락
+  cp: number; //									부호 없는 전일 대비 값
+  td: string; //									체결 일자(UTC 기준) yyyy-MM-dd
+  ttm: string; //									체결 시각(UTC 기준) HH:mm:ss
+  ttms: number; //								체결 타임스탬프 (millisecond)
+  tms: number; //									타임스탬프 (millisecond)
+  sid: number; //									체결 번호 (Unique)
+  st: 'SNAPSHOT' | 'REALTIME'; //	스트림 타입 - SNAPSHOT : 스냅샷, REALTIME 실시간
+}
+
 export interface IUpbitCandle {
-  market: string; // 마켓명
-  candle_date_time_utc: string; // 캔들 기준 시각(UTC 기준)포맷: yyyy-MM-dd'T'HH:mm:ss
-  candle_date_time_kst: string; // 캔들 기준 시각(KST 기준)포맷: yyyy-MM-dd'T'HH:mm:ss
-  opening_price: number; // 시가
-  high_price: number; // 고가
-  low_price: number; // 저가
-  trade_price: number; // 종가
-  timestamp: number; // 마지막 틱이 저장된 시각
-  candle_acc_trade_price: number; // 누적 거래 금액
-  candle_acc_trade_volume: number; // 누적 거래량
-  unit?: number; //분 단위(유닛)
-  prev_closing_price?: number; // 전일 종가(UTC 0시 기준)
-  change_price?: number; // 전일 종가 대비 변화 금액
-  change_rate?: number; // 전일 종가 대비 변화량
-  converted_trade_price?: number; // 종가 환산 화폐 단위로 환산된 가격(요청에 convertingPriceUnit 파라미터 없을 시 해당 필드 포함되지 않음.)
-  first_day_of_period?: string; // 캔들 기간의 가장 첫 날
+  market: string; //									마켓명
+  candle_date_time_utc: string; //		캔들 기준 시각(UTC 기준)포맷: yyyy-MM-dd'T'HH:mm:ss
+  candle_date_time_kst: string; //		캔들 기준 시각(KST 기준)포맷: yyyy-MM-dd'T'HH:mm:ss
+  opening_price: number; //						시가
+  high_price: number; //							고가
+  low_price: number; //								저가
+  trade_price: number; //							종가
+  timestamp: number; //								마지막 틱이 저장된 시각
+  candle_acc_trade_price: number; //	누적 거래 금액
+  candle_acc_trade_volume: number; //	누적 거래량
+  unit?: number; //										분 단위(유닛)
+  prev_closing_price?: number; //			전일 종가(UTC 0시 기준)
+  change_price?: number; //						전일 종가 대비 변화 금액
+  change_rate?: number; //						전일 종가 대비 변화량
+  converted_trade_price?: number; //	종가 환산 화폐 단위로 환산된 가격(요청에 convertingPriceUnit 파라미터 없을 시 해당 필드 포함되지 않음.)
+  first_day_of_period?: string; //		캔들 기간의 가장 첫 날
+}
+
+export interface ITVUpbitSymbolInfo {
+  symbol: Array<string>;
+  currency: Array<string>;
+  ticker: Array<string>;
+  description: Array<string>;
+  'upbit-symbol': Array<string>;
+  'base-currency': Array<string>;
+  'exchange-listed': string;
+  'exchange-traded': string;
+  minmovement: number;
+  fractional: boolean;
+  pricescale: Array<number>;
+  'has-intraday': boolean;
+  'has-no-volume': Array<boolean>;
+  type: Array<string>;
+  timezone: string;
+  'session-regular': string;
+  'has-daily': boolean;
+  'has-weekly-and-monthly': boolean;
+  'intraday-multipliers': Array<Array<string>>;
+  'supported-resolutions': Array<Array<string>>;
+}
+
+export interface ITVUpbitHistory {
+  s: string;
+  t: Array<number>;
+  o: Array<number>;
+  l: Array<number>;
+  h: Array<number>;
+  c: Array<number>;
+  v: Array<number>;
+  errmsg?: string;
+  nextTime?: number;
 }

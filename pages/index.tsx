@@ -92,27 +92,9 @@ const Home: NextPage = () => {
   );
 };
 
-const ExchangeMarket: React.FC = () => {
-  const [isReady, setIsReady] = useState(false);
-  const { data: forexRecent } = useSWR(
-    apiUrls.upbit.rewriteUrl + apiUrls.upbit.forex.recent,
-    async (url) => {
-      const forexResult = await axios
-        .get<Array<IUpbitForex>>(url + '?codes=FRX.KRWUSD')
-        .then((res) => res.data);
 
-      if (!Array.isArray(forexResult) || !forexResult[0]) return;
 
-      if (forexResult[0].basePrice < 0) return;
-
-      useExchangeStore.setState({ upbitForex: forexResult[0] });
-
-      return forexResult[0];
-    },
-    {
-      refreshInterval: 60 * 1000
     }
-  );
 
   useEffect(() => {
     if (isReady) {

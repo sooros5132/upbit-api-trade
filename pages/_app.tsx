@@ -11,6 +11,11 @@ import { useEffect } from 'react';
 import shallow from 'zustand/shallow';
 import { useSiteSettingStore } from 'src/store/siteSetting';
 import { useExchangeStore } from 'src/store/exchangeSockets';
+import axios from 'axios';
+import { apiUrls } from 'src/lib/apiUrls';
+import useSWR from 'swr';
+import { ICoincodexGetMetadataPick } from 'src/types/coincodex';
+import { IUpbitForex } from 'src/types/upbit';
 
 // 'sm': '640px',
 // 'md': '768px',
@@ -83,7 +88,53 @@ const PreventRerenderingWorks = () => {
     useSiteSettingStore.getState().setHydrated();
   }, []);
 
-  return <SiteTitleSeo />;
+  return (
+    <>
+      <SWRFetchers />
+      <SiteTitleSeo />
+    </>
+  );
+};
+
+// 사이트에서 필수로 요구하는 SWR들
+const SWRFetchers = () => {
+  useSWR(
+    apiUrls.upbit.rewriteUrl + apiUrls.upbit.forex.recent,
+    async (url) => {
+      const forexResult = await axios
+        .get<Array<IUpbitForex>>(url + '?codes=FRX.KRWUSD')
+        .then((res) => res.data);
+
+      if (!Array.isArray(forexResult) || !forexResult[0]) return;
+
+      if (forexResult[0].basePrice < 0) return;
+
+      useExchangeStore.setState({ upbitForex: forexResult[0] });
+
+      return forexResult[0];
+    },
+    {
+      refreshInterval: 60 * 1000
+    }
+  );
+
+  useSWR<ICoincodexGetMetadataPick>(
+    apiUrls.coincodex.path + apiUrls.coincodex.getMetadata,
+    async (url) => {
+      const res = await axios
+        .get<ICoincodexGetMetadataPick>(url)
+        .then((res) => res.data)
+        .catch((res) => res);
+
+      return res;
+    },
+    {
+      revalidateOnFocus: false,
+      refreshInterval: 60 * 1000
+    }
+  );
+
+  return null;
 };
 
 const SiteTitleSeo = () => {

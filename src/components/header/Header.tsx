@@ -16,7 +16,7 @@ import useSWR from 'swr';
 import { apiUrls } from 'src/lib/apiUrls';
 import { IUpbitForex } from 'src/types/upbit';
 import axios from 'axios';
-import { ICoincodexGetMetadata } from 'src/types/coincodex';
+import type { ICoincodexGetMetadataPick } from 'src/types/coincodex';
 import numeral from 'numeral';
 import formatInTimeZone from 'date-fns-tz/formatInTimeZone';
 import { ko as koLocale } from 'date-fns/locale';
@@ -258,37 +258,12 @@ const Header: React.FC = () => {
   );
 };
 
-type ICoincodexGetMetadataPick = Pick<
-  ICoincodexGetMetadata,
-  | 'btc_dominance'
-  | 'btc_dominance_24h_change_percent'
-  | 'btc_growth'
-  | 'total_market_cap'
-  | 'total_market_cap_24h_change_percent'
-  | 'total_volume'
-  | 'total_volume_24h_change_percent'
-  | 'fiat_rates'
-  | 'eth_gas'
->;
-
 const MarketInfo = () => {
   const { data: forex } = useSWR<IUpbitForex>(
     apiUrls.upbit.rewriteUrl + apiUrls.upbit.forex.recent
   );
   const { data: metadata } = useSWR<ICoincodexGetMetadataPick>(
-    apiUrls.coincodex.path + apiUrls.coincodex.getMetadata,
-    async (url) => {
-      const res = await axios
-        .get<ICoincodexGetMetadataPick>(url)
-        .then((res) => res.data)
-        .catch((res) => res);
-
-      return res;
-    },
-    {
-      revalidateOnFocus: false,
-      refreshInterval: 60 * 1000
-    }
+    apiUrls.coincodex.path + apiUrls.coincodex.getMetadata
   );
 
   return (

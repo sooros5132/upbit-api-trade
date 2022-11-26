@@ -410,3 +410,16 @@ export interface ICoincodexGetMetadata {
     pako: boolean;
   }>;
 }
+
+export type ICoincodexGetMetadataPick = Pick<
+  ICoincodexGetMetadata,
+  | 'btc_dominance'
+  | 'btc_dominance_24h_change_percent'
+  | 'btc_growth'
+  | 'total_market_cap'
+  | 'total_market_cap_24h_change_percent'
+  | 'total_volume'
+  | 'total_volume_24h_change_percent'
+  | 'fiat_rates'
+  | 'eth_gas'
+>;
