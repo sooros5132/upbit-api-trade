@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "test": "jest --detectOpenHandles --forceExit",
-    "vercel-locally-deploy": "vercel build && vercel deploy --prebuilt"
+    "vercel-locally-deploy": "vercel build && vercel --prebuilt"
   },
   "dependencies": {
     "@next/bundle-analyzer": "^12.3.1",
@@ -23,6 +23,7 @@
     "lodash": "^4.17.21",
     "next": "12.3.1",
     "next-connect": "^0.13.0",
+    "next-http-proxy-middleware": "^1.2.5",
     "next-seo": "^5.5.0",
     "numeral": "^2.0.6",
     "postcss": "^8.4.17",
