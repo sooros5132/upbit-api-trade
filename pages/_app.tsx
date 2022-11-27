@@ -158,11 +158,11 @@ const SiteTitleSeo = () => {
     // const titleSymbol = `KRW-${selectedMarketSymbol || 'BTC'}`;
     switch (selectedExchange) {
       case 'BINANCE': {
-        title = upbitMarket.binance_price ? `${selectedMarketSymbol} ${usdPrice}$` : '';
+        title = upbitMarket.binance_price ? `${usdPrice} ${selectedMarketSymbol}/USDT` : '';
         break;
       }
       case 'UPBIT': {
-        title = `${selectedMarketSymbol} ${krwPrice}₩`;
+        title = `${krwPrice} ${selectedMarketSymbol}/KRW`;
         break;
       }
     }
