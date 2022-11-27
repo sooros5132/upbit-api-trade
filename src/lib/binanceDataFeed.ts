@@ -261,7 +261,6 @@ const binanceDataFeed = (): ChartingLibraryWidgetOptions['datafeed'] => {
       subscriberUID,
       onResetCacheNeededCallback
     ) => {
-      setTimeout(onResetCacheNeededCallback, 5000);
       // console.log('[!] subscribeBars', { symbolInfo, resolution, subscriberUID });
       const symbol = symbolInfo.ticker;
       const unSubscribe = useExchangeStore.subscribe((state) => {
