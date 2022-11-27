@@ -2,11 +2,11 @@ import type { NextPage } from 'next';
 import React, { useEffect, useState } from 'react';
 import MarketTable, { IMarketTableItem } from 'src/components/market-table/MarketTable';
 import TradingViewChart from 'src/components/tradingview/Chart';
-import { IUpbitApiTicker, IUpbitForex, IUpbitMarket } from 'src/types/upbit';
+import { IUpbitApiTicker, IUpbitMarket } from 'src/types/upbit';
 import { useUpbitAuthStore } from 'src/store/upbitAuth';
 import { apiUrls } from 'src/lib/apiUrls';
 import useSWR from 'swr';
-import { IBinanceSocketMessageTicker, IBinanceTickerPrice } from 'src/types/binance';
+import { IBinanceSocketTicker, IBinanceTickerPrice } from 'src/types/binance';
 import { useExchangeStore } from 'src/store/exchangeSockets';
 import { krwRegex } from 'src/utils/regex';
 import { keyBy } from 'lodash';
@@ -20,6 +20,9 @@ import Link from 'next/link';
 import config from 'site-config';
 import { TVChart } from 'src/components/TVChart';
 import { useTradingViewSettingStore } from 'src/store/tradingViewSetting';
+import binanceDataFeed from 'src/lib/binanceDataFeed';
+import upbitDataFeed from 'src/lib/upbitDataFeed';
+import { ResolutionString } from 'public/charting_library/charting_library';
 
 const Home: NextPage = () => {
   const stickyChart = useMarketTableSettingStore((state) => state.stickyChart, shallow);
@@ -102,16 +105,42 @@ const Chart = () => {
     shallow
   );
 
-  useEffect(() => {
-    useExchangeStore.getState().changeUpbitTradeCodes(['KRW-' + selectedMarketSymbol]);
-  }, [selectedMarketSymbol]);
+  // useEffect(() => {
+  //   switch (selectedExchange) {
+  //     case 'UPBIT': {
+  //       useExchangeStore.getState().connectUpbitSocket();
+  //       break;
+  //     }
+  //     case 'BINANCE': {
+  //       useExchangeStore.getState().connectBinanceSocket();
+  //       break;
+  //     }
+  //   }
+  // }, [selectedExchange, selectedMarketSymbol]);
 
   switch (selectedExchange) {
     case 'BINANCE': {
-      return <TradingViewChart />;
+      return (
+        <TVChart
+          key={'binance-chart'}
+          interval={'1h' as ResolutionString}
+          symbol={selectedMarketSymbol + 'USDT'}
+          currency={selectedMarketSymbol}
+          exchange={'BINANCE'}
+        />
+      );
+      // return <TradingViewChart />;
     }
     case 'UPBIT': {
-      return <TVChart symbol={selectedMarketSymbol + 'KRW'} currency={selectedMarketSymbol} />;
+      return (
+        <TVChart
+          key={'upbit-chart'}
+          interval={'60' as ResolutionString}
+          symbol={selectedMarketSymbol + 'KRW'}
+          currency={selectedMarketSymbol}
+          exchange={'UPBIT'}
+        />
+      );
     }
     default: {
       return null;
@@ -168,16 +197,13 @@ const ExchangeMarket: React.FC = () => {
 
         const binanceMarketSnapshotKeyBy = keyBy(binanceMarketSnapshot, 'symbol');
         const upbitMarketSnapshotRecord: Record<string, IMarketTableItem> = {};
-        const binanceMarketSnapshotRecord: Record<string, IBinanceSocketMessageTicker> = {};
+        const binanceMarketSnapshotRecord: Record<string, IBinanceSocketTicker> = {};
 
         for (const m of binanceMarketSnapshot) {
           binanceMarketSnapshotRecord[m.symbol] = {
-            data: {
-              p: m.price,
-              s: m.symbol
-            },
-            stream: ''
-          } as IBinanceSocketMessageTicker;
+            p: m.price,
+            s: m.symbol
+          } as IBinanceSocketTicker;
         }
 
         for (const t of upbitMarketSnapshot) {

@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 import { upbitApis } from 'src-server/utils/upbitApis';
 import MarketTable, { IMarketTableItem } from 'src/components/market-table/MarketTable';
 import { IUpbitForex, IUpbitMarket } from 'src/types/upbit';
-import { IBinanceSocketMessageTicker } from 'src/types/binance';
+import { IBinanceSocketTicker } from 'src/types/binance';
 import { useExchangeStore } from 'src/store/exchangeSockets';
 import { krwRegex } from 'src/utils/regex';
 import { binanceApis } from 'src-server/utils/binanceApis';
@@ -14,7 +14,7 @@ interface HomeProps {
   upbitForex: IUpbitForex;
   upbitMarketList: Array<IUpbitMarket>;
   upbitMarketSnapshot?: Record<string, IMarketTableItem>;
-  binanceMarketSnapshot?: Record<string, IBinanceSocketMessageTicker>;
+  binanceMarketSnapshot?: Record<string, IBinanceSocketTicker>;
   lastUpdatedAt: string;
 }
 
@@ -107,16 +107,13 @@ export const getServerSideProps: GetServerSideProps = async () => {
   const binanceSnapshotkeyByList = keyBy(binanceMarketSnapshotList, 'symbol');
 
   const upbitMarketSnapshot: Record<string, IMarketTableItem> = {};
-  const binanceMarketSnapshot: Record<string, IBinanceSocketMessageTicker> = {};
+  const binanceMarketSnapshot: Record<string, IBinanceSocketTicker> = {};
 
   for (const m of binanceMarketSnapshotList) {
     binanceMarketSnapshot[m.symbol] = {
-      data: {
-        p: m.price,
-        s: m.symbol
-      },
-      stream: ''
-    } as IBinanceSocketMessageTicker;
+      p: m.price,
+      s: m.symbol
+    } as IBinanceSocketTicker;
   }
 
   for (const t of upbitMarketSnapshotList) {

@@ -10,7 +10,7 @@ import { IMarketTableItem } from './MarketTable';
 
 export interface TableBodyProps {
   // upbitMarketSnapshot?: Record<string, IMarketTableItem>;
-  // binanceMarketSnapshot?: Record<string, IBinanceSocketMessageTicker>;
+  // binanceMarketSnapshot?: Record<string, IBinanceSocketTicker>;
 }
 
 const TableBody: React.FC<TableBodyProps> = () => {

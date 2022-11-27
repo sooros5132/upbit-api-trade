@@ -42,6 +42,18 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
     const { setSelectedMarketSymbol, setSelectedExchange } = useTradingViewSettingStore.getState();
     setSelectedMarketSymbol(symbol);
     setSelectedExchange(exchange);
+
+    switch (exchange) {
+      case 'UPBIT': {
+        useExchangeStore.getState().connectUpbitSocket();
+        break;
+      }
+      case 'BINANCE': {
+        useExchangeStore.getState().connectBinanceSocket();
+        break;
+      }
+    }
+
     window.scrollTo(0, 0);
   };
 

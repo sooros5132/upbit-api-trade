@@ -1,4 +1,5 @@
 export const PROXY_PATH = process.env.NEXT_PUBLIC_BASE_API_PROXY_ORIGIN ? '/api/proxy' : '';
+export const API_PATH = process.env.NEXT_PUBLIC_BASE_API_PATH || '/api/v1';
 
 export const apiUrls = {
   upbit: {

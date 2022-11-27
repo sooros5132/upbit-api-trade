@@ -6,6 +6,7 @@ import { krwRegex } from 'src/utils/regex';
 import { useSiteSettingStore } from 'src/store/siteSetting';
 import shallow from 'zustand/shallow';
 import { TVChart } from 'src/components/TVChart';
+import { useTradingViewSettingStore } from 'src/store/tradingViewSetting';
 
 interface TradeProps {
   symbol: string;
@@ -14,6 +15,10 @@ interface TradeProps {
 const Trade: NextPage<TradeProps> = ({ symbol }) => {
   const upbitAuthStore = useUpbitAuthStore();
   const hydrated = useSiteSettingStore((state) => state.hydrated, shallow);
+  const { selectedExchange } = useTradingViewSettingStore(
+    ({ selectedExchange }) => ({ selectedExchange }),
+    shallow
+  );
   const [isMounted, setMounted] = useState(false);
   const router = useRouter();
   const [chart, setChart] = useState({
@@ -39,7 +44,7 @@ const Trade: NextPage<TradeProps> = ({ symbol }) => {
           </p>
         </div>
         <div>
-          <TVChart />
+          <TVChart exchange={selectedExchange} />
         </div>
       </div>
     </main>

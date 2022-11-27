@@ -1,20 +1,18 @@
 import * as React from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import isEqual from 'react-fast-compare';
 import { IUpbitAccounts } from 'src-server/types/upbit';
+import binanceDataFeed from 'src/lib/binanceDataFeed';
 import { useUpbitAuthStore } from 'src/store/upbitAuth';
 // import './index.css';
 import type {
   IChartingLibraryWidget,
   IPositionLineAdapter,
-  ThemeName
-} from '../../charting_library';
-import {
-  widget,
-  ChartingLibraryWidgetOptions,
-  LanguageCode,
+  ThemeName,
+  Timezone,
   ResolutionString
 } from '../../charting_library';
+import { widget, ChartingLibraryWidgetOptions, LanguageCode } from '../../charting_library';
 import upbitDataFeed from '../../lib/upbitDataFeed';
 
 function getLanguageFromURL(): LanguageCode | null {
@@ -27,6 +25,7 @@ function getLanguageFromURL(): LanguageCode | null {
 
 export interface TVChartProps {
   symbol?: ChartingLibraryWidgetOptions['symbol'];
+  exchange: 'UPBIT' | 'BINANCE';
   currency?: string; // "BTC" | "ETH"
   interval?: ChartingLibraryWidgetOptions['interval'];
   auto_save_delay?: ChartingLibraryWidgetOptions['auto_save_delay'];
@@ -47,8 +46,9 @@ export interface TVChartProps {
 export const TVChartInner: React.FC<TVChartProps> = React.memo<TVChartProps>(
   ({
     symbol = 'BTCKRW',
+    exchange,
     currency,
-    interval = '60' as ResolutionString,
+    interval,
     auto_save_delay = 5,
     libraryPath = '/charting_library/',
     chartsStorageUrl = 'https://saveload.tradingview.com',
@@ -68,17 +68,17 @@ export const TVChartInner: React.FC<TVChartProps> = React.memo<TVChartProps>(
       if (!ref.current) {
         return;
       }
-      const datafeed = upbitDataFeed();
       const widgetOptions: ChartingLibraryWidgetOptions = {
         symbol: symbol as string,
         // BEWARE: no trailing slash is expected in feed URL
         // tslint:disable-next-line:no-any
         // datafeed: DataFeed,
-        datafeed: datafeed,
-        interval: interval as ChartingLibraryWidgetOptions['interval'],
+        datafeed: exchange === 'UPBIT' ? upbitDataFeed() : binanceDataFeed(),
+        interval: (interval || '60') as ChartingLibraryWidgetOptions['interval'],
         container: ref.current,
         library_path: libraryPath as string,
         locale: getLanguageFromURL() || 'ko',
+        timezone: (Intl.DateTimeFormat().resolvedOptions().timeZone as Timezone) || 'exchange',
         disabled_features: [
           'header_symbol_search',
           'border_around_the_chart',
@@ -93,7 +93,6 @@ export const TVChartInner: React.FC<TVChartProps> = React.memo<TVChartProps>(
         time_scale: {
           min_bar_spacing: 1
         },
-
         enabled_features: ['side_toolbar_in_fullscreen_mode', 'hide_left_toolbar_by_default'],
         charts_storage_url: chartsStorageUrl,
         charts_storage_api_version: chartsStorageApiVersion,
@@ -210,66 +209,79 @@ export const TVChartInner: React.FC<TVChartProps> = React.memo<TVChartProps>(
         //     // })
         //   });
 
-        let accountOrderLine: IPositionLineAdapter | null = tvWidget
-          .activeChart()
-          .createPositionLine()
-          .setText('매수평균')
-          .setLineLength(2)
-          .setLineStyle(1)
-          .setBodyBackgroundColor('#0ea5e9')
-          .setLineColor('#0ea5e9')
-          .setBodyTextColor('#ffffff')
-          .setQuantity('');
+        switch (exchange) {
+          case 'UPBIT': {
+            let accountOrderLine: IPositionLineAdapter | null = tvWidget
+              .activeChart()
+              .createPositionLine()
+              .setText('매수평균')
+              .setLineLength(2)
+              .setLineStyle(1)
+              .setBodyBackgroundColor('#0ea5e9')
+              .setLineColor('#0ea5e9')
+              .setBodyTextColor('#ffffff')
+              .setQuantity('');
 
-        function subscribePositionLine(accounts: Array<IUpbitAccounts>) {
-          if (!tvWidget) {
-            return;
-          }
-          const ticker = tvWidget?.activeChart()?.symbol()?.split('.')?.[2];
+            function subscribePositionLine(accounts: Array<IUpbitAccounts>) {
+              if (!tvWidget) {
+                return;
+              }
+              const ticker = tvWidget?.activeChart()?.symbol()?.split('.')?.[2];
 
-          if (!ticker) {
-            return;
-          }
+              if (!ticker) {
+                return;
+              }
 
-          const [tickerCurrency, tickerSymbol] = ticker.split('-');
+              const [tickerCurrency, tickerSymbol] = ticker.split('-');
 
-          const account = accounts.find((account) => account.currency === tickerSymbol);
+              const account = accounts.find((account) => account.currency === tickerSymbol);
 
-          if (!account) {
-            accountOrderLine?.setPrice(0);
-            return;
-          }
-          const { avg_buy_price } = account;
-          accountOrderLine?.setPrice(Number(avg_buy_price) || 0);
-        }
+              if (!account) {
+                accountOrderLine?.setPrice(0);
+                return;
+              }
+              const { avg_buy_price } = account;
+              accountOrderLine?.setPrice(Number(avg_buy_price) || 0);
+            }
 
-        // 차트가 변경되면 구독 취소하고 다시 구독
-        tvWidget
-          .activeChart()
-          .onSymbolChanged()
-          .subscribe(null, () => {
-            accountOrderLine?.remove();
-            tvWidget.activeChart().dataReady(() => {
-              accountOrderLine = tvWidget
-                .activeChart()
-                .createPositionLine()
-                .setText('매수평균')
-                .setLineLength(2)
-                .setLineStyle(1)
-                .setBodyBackgroundColor('#0ea5e9')
-                .setLineColor('#0ea5e9')
-                .setBodyTextColor('#ffffff')
-                .setQuantity('');
-              subscribePositionLine(useUpbitAuthStore.getState().accounts);
+            // 최초 1회 라인 긋고 구독
+            subscribePositionLine(useUpbitAuthStore.getState().accounts);
+            let unsubscribe = useUpbitAuthStore.subscribe(({ accounts }) => {
+              subscribePositionLine(accounts);
             });
-          });
-        // 차트가 변경되면 구독 취소하고 다시 구독
-        // 최초 1회 라인 긋고 구독
-        subscribePositionLine(useUpbitAuthStore.getState().accounts);
-        const unsubscribe = useUpbitAuthStore.subscribe(({ accounts }) => {
-          subscribePositionLine(accounts);
-        });
-        // 최초 1회 라인 긋고 구독
+            // 최초 1회 라인 긋고 구독
+
+            // 차트가 변경되면 구독 취소하고 다시 구독
+            tvWidget
+              .activeChart()
+              .onSymbolChanged()
+              .subscribe(null, () => {
+                if (unsubscribe) {
+                  unsubscribe();
+                }
+                accountOrderLine?.remove();
+                tvWidget.activeChart().dataReady(() => {
+                  accountOrderLine = tvWidget
+                    .activeChart()
+                    .createPositionLine()
+                    .setText('매수평균')
+                    .setLineLength(2)
+                    .setLineStyle(1)
+                    .setBodyBackgroundColor('#0ea5e9')
+                    .setLineColor('#0ea5e9')
+                    .setBodyTextColor('#ffffff')
+                    .setQuantity('');
+                  subscribePositionLine(useUpbitAuthStore.getState().accounts);
+                  unsubscribe = useUpbitAuthStore.subscribe(({ accounts }) => {
+                    subscribePositionLine(accounts);
+                  });
+                });
+              });
+            // 차트가 변경되면 구독 취소하고 다시 구독
+
+            break;
+          }
+        }
       });
 
       return () => {
