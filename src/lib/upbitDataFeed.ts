@@ -162,35 +162,37 @@ const upbitDataFeed = (): ChartingLibraryWidgetOptions['datafeed'] => {
 
       const symbol = symbolInfo.full_name.split('.')[2];
       const unSubscribe = useExchangeStore.subscribe((state) => {
-        const tradeMessage = state.upbitTradeMessage;
-        if (!tradeMessage) {
+        const tradeMessages = state.upbitTradeMessages;
+        if (!Array.isArray(tradeMessages) || tradeMessages.length === 0) {
           return;
         }
         // cd: code
         // tp: trade_price
         // tv: trade_volume
         // ttms: trade_timestamp
-        const { tp, cd, tv, ttms } = tradeMessage;
+        for (const tradeMessage of tradeMessages) {
+          const { tp, cd, tv, ttms } = tradeMessage;
 
-        if (symbol !== cd) {
-          return;
-        }
-        const bar = {
-          close: tp,
-          high: tp,
-          low: tp,
-          open: tp,
-          time: ttms,
-          volume: tv
-        };
-        if (symbolInfo.ticker) {
-          if (typeof lastCandles[symbolInfo.ticker] === 'undefined') {
-            lastCandles[symbolInfo.ticker] = bar;
-            onRealtimeCallback(bar);
-          } else {
-            if (lastCandles[symbolInfo.ticker]?.time < ttms) {
-              lastCandles[symbolInfo.ticker].time = ttms;
+          if (symbol !== cd) {
+            return;
+          }
+          const bar = {
+            close: tp,
+            high: tp,
+            low: tp,
+            open: tp,
+            time: ttms,
+            volume: tv
+          };
+          if (symbolInfo.ticker) {
+            if (typeof lastCandles[symbolInfo.ticker] === 'undefined') {
+              lastCandles[symbolInfo.ticker] = bar;
               onRealtimeCallback(bar);
+            } else {
+              if (lastCandles[symbolInfo.ticker]?.time < ttms) {
+                lastCandles[symbolInfo.ticker].time = ttms;
+                onRealtimeCallback(bar);
+              }
             }
           }
         }

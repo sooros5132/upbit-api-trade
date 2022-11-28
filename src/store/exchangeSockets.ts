@@ -29,10 +29,10 @@ interface IExchangeState {
   lastUpdatedAt: Date;
   socketTimeout: number;
   throttleDelay: number;
-  upbitTradeMessage?: IUpbitSocketMessageTradeSimple;
+  upbitTradeMessages: Array<IUpbitSocketMessageTradeSimple>;
   upbitTickerCodes: Array<string>;
   upbitTradeCodes: Array<string>;
-  binanceTradeMessage?: IBinanceSocketAggTrade;
+  binanceTradeMessages: Array<IBinanceSocketAggTrade>;
   binanceTickerCodes: Array<string>;
   binanceTradeCodes: Array<string>;
 }
@@ -52,10 +52,10 @@ const defaultState: IExchangeState = {
   lastUpdatedAt: new Date(),
   socketTimeout: 5 * 1000,
   throttleDelay: 200,
-  upbitTradeMessage: undefined,
+  upbitTradeMessages: [],
   upbitTickerCodes: [],
   upbitTradeCodes: [],
-  binanceTradeMessage: undefined,
+  binanceTradeMessages: [],
   binanceTickerCodes: [],
   binanceTradeCodes: []
 };
@@ -161,18 +161,21 @@ const useExchangeStore = create<IExchangeStore>(
       }
     },
     reconnectUpbitSocket(message: SocketMessage) {
-      const { socketTimeout, throttleDelay, upbitMarketDatas } = get();
+      const { socketTimeout, throttleDelay, upbitMarketDatas, upbitTradeMessages } = get();
       let lastActivity = Date.now();
 
       const dataBuffer: IExchangeState['upbitMarketDatas'] = upbitMarketDatas || {};
+      let tradeMessageBuffer: IExchangeState['upbitTradeMessages'] = upbitTradeMessages || [];
 
       let unapplied = 0;
       setInterval(() => {
         if (unapplied !== 0) {
-          unapplied = 0;
           set({
-            upbitMarketDatas: dataBuffer
+            upbitMarketDatas: dataBuffer,
+            upbitTradeMessages: tradeMessageBuffer
           });
+          unapplied = 0;
+          tradeMessageBuffer = [];
         }
       }, throttleDelay);
 
@@ -224,7 +227,7 @@ const useExchangeStore = create<IExchangeStore>(
               break;
             }
             case 'trade': {
-              set({ upbitTradeMessage: message });
+              tradeMessageBuffer.push(message);
               break;
             }
           }
@@ -300,18 +303,20 @@ const useExchangeStore = create<IExchangeStore>(
       });
     },
     reconnectBinanceSocket(message) {
-      const { socketTimeout, throttleDelay } = get();
+      const { socketTimeout, throttleDelay, binanceMarketDatas, binanceTradeMessages } = get();
       let lastActivity = Date.now();
-      const dataBuffer: IExchangeState['binanceMarketDatas'] = get().binanceMarketDatas || {};
+      const dataBuffer: IExchangeState['binanceMarketDatas'] = binanceMarketDatas || {};
+      let tradeMessageBuffer: IExchangeState['binanceTradeMessages'] = binanceTradeMessages || [];
 
       let unapplied = 0;
 
       setInterval(() => {
         if (unapplied !== 0) {
-          unapplied = 0;
           set({
-            binanceMarketDatas: dataBuffer
+            binanceMarketDatas: dataBuffer,
+            binanceTradeMessages: tradeMessageBuffer
           });
+          tradeMessageBuffer = [];
         }
       }, throttleDelay);
 
@@ -353,7 +358,8 @@ const useExchangeStore = create<IExchangeStore>(
               break;
             }
             case 'aggTrade': {
-              set({ binanceTradeMessage: message as IBinanceSocketAggTrade });
+              unapplied++;
+              tradeMessageBuffer.push(message as IBinanceSocketAggTrade);
               break;
             }
           }

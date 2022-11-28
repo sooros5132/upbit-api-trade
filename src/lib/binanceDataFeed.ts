@@ -264,35 +264,38 @@ const binanceDataFeed = (): ChartingLibraryWidgetOptions['datafeed'] => {
       // console.log('[!] subscribeBars', { symbolInfo, resolution, subscriberUID });
       const symbol = symbolInfo.ticker;
       const unSubscribe = useExchangeStore.subscribe((state) => {
-        const tradeMessage = state.binanceTradeMessage;
-        if (!tradeMessage) {
+        const tradeMessages = state.binanceTradeMessages;
+        console.log(tradeMessages.length);
+        if (!Array.isArray(tradeMessages) || tradeMessages.length === 0) {
           return;
         }
         // s: string; // Symbol
         // q: string; // Quantity
         // p: string; // Price
         // T: number; // Trade time
-        const { s, q, p, T } = tradeMessage;
+        for (const tradeMessage of tradeMessages) {
+          const { s, q, p, T } = tradeMessage;
 
-        if (symbol !== s) {
-          return;
-        }
-        const bar: Bar = {
-          close: parseFloat(p),
-          high: parseFloat(p),
-          low: parseFloat(p),
-          open: parseFloat(p),
-          time: T,
-          volume: parseFloat(q)
-        };
-        if (symbolInfo.ticker) {
-          if (typeof lastCandles[symbolInfo.ticker] === 'undefined') {
-            lastCandles[symbolInfo.ticker] = bar;
-            onRealtimeCallback(bar);
-          } else {
-            if (lastCandles[symbolInfo.ticker]?.time < T) {
-              lastCandles[symbolInfo.ticker].time = T;
+          if (symbol !== s) {
+            return;
+          }
+          const bar: Bar = {
+            close: parseFloat(p),
+            high: parseFloat(p),
+            low: parseFloat(p),
+            open: parseFloat(p),
+            time: T,
+            volume: parseFloat(q)
+          };
+          if (symbolInfo.ticker) {
+            if (typeof lastCandles[symbolInfo.ticker] === 'undefined') {
+              lastCandles[symbolInfo.ticker] = bar;
               onRealtimeCallback(bar);
+            } else {
+              if (lastCandles[symbolInfo.ticker]?.time < T) {
+                lastCandles[symbolInfo.ticker].time = T;
+                onRealtimeCallback(bar);
+              }
             }
           }
         }
