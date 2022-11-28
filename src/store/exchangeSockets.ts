@@ -51,7 +51,7 @@ const defaultState: IExchangeState = {
   binanceSocket: undefined,
   lastUpdatedAt: new Date(),
   socketTimeout: 5 * 1000,
-  throttleDelay: 200,
+  throttleDelay: 300,
   upbitTradeMessages: [],
   upbitTickerCodes: [],
   upbitTradeCodes: [],
