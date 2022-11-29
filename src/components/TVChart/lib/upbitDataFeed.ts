@@ -7,14 +7,19 @@ import {
   ResolutionString,
   Timezone
 } from 'src/charting_library/charting_library';
-import { useExchangeStore } from 'src/store/exchangeSockets';
-import { ITVUpbitHistory, ITVUpbitSymbolInfo } from 'src/types/upbit';
+import { subscribeOnUpbitStream, useExchangeStore } from 'src/store/exchangeSockets';
+import {
+  ITVUpbitHistory,
+  ITVUpbitSymbolInfo,
+  IUpbitSocketMessageTradeSimple
+} from 'src/types/upbit';
+import { getNextBarOpenTime } from './helpers';
 
 const upbitDataFeed = (): ChartingLibraryWidgetOptions['datafeed'] => {
   const datafeedUrl = 'https://crix-api-tv.upbit.com/v1/crix/tradingview';
   const symbolInfoStorage: Record<string, LibrarySymbolInfo> = {};
-  const unSubscribes: Record<string, ReturnType<typeof useExchangeStore.subscribe>> = {};
-  const lastCandles: Record<string, Bar> = {};
+  const unsubscribes: Record<string, ReturnType<typeof useExchangeStore.subscribe>> = {};
+  const lastBarsCache = new Map<string, Bar>();
   return {
     onReady: (onReadyCallback) => {
       // console.log('[!] onReady');
@@ -43,10 +48,6 @@ const upbitDataFeed = (): ChartingLibraryWidgetOptions['datafeed'] => {
     },
     async resolveSymbol(symbolName, onSymbolResolvedCallback, onResolveErrorCallback, extension) {
       // console.log('[!] resolveSymbol', symbolName);
-      // const [currency, symbol] = symbolName.split('.')[2].split('-');
-      // if (!symbol) {
-      //   return setTimeout(() => onResolveErrorCallback('error'), 0);
-      // }
       if (symbolInfoStorage[symbolName]) {
         setTimeout(() => onSymbolResolvedCallback(symbolInfoStorage[symbolName]), 0);
         return;
@@ -81,14 +82,14 @@ const upbitDataFeed = (): ChartingLibraryWidgetOptions['datafeed'] => {
               fractional: symbolInfo.fractional,
               session: symbolInfo['session-regular'] || '24x7',
               has_intraday: symbolInfo['has-intraday'] || !0,
+              has_weekly_and_monthly: symbolInfo['has-weekly-and-monthly'],
+              has_daily: symbolInfo['has-daily'],
               visible_plots_set: 'ohlcv',
               type: symbolInfo.type[i],
               supported_resolutions: symbolInfo['supported-resolutions'][
                 i
               ] as Array<ResolutionString>,
               intraday_multipliers: symbolInfo['intraday-multipliers'][i],
-              has_weekly_and_monthly: symbolInfo['has-weekly-and-monthly'],
-              has_daily: symbolInfo['has-daily'],
               data_status: 'streaming'
               // datafeedUrl: datafeedUrl
             };
@@ -135,14 +136,9 @@ const upbitDataFeed = (): ChartingLibraryWidgetOptions['datafeed'] => {
               bars.push(bar);
             }
             if (firstDataRequest && symbolInfo?.ticker) {
-              lastCandles[symbolInfo.ticker] = {
-                time: history.t[historyLength - 1],
-                close: Number(history.c[historyLength - 1]),
-                open: Number(history.o[historyLength - 1]),
-                high: Number(history.h[historyLength - 1]),
-                low: Number(history.l[historyLength - 1]),
-                volume: history?.v[historyLength - 1] ?? undefined
-              };
+              lastBarsCache.set(`0~${symbolInfo.exchange}~${symbolInfo.full_name}`, {
+                ...bars[bars.length - 1]
+              });
             }
           }
           setTimeout(() => {
@@ -160,55 +156,59 @@ const upbitDataFeed = (): ChartingLibraryWidgetOptions['datafeed'] => {
     ) => {
       // console.log('[!] subscribeBars', { symbolInfo, resolution, subscriberUID });
 
+      let lastDailyBar = lastBarsCache.get(`0~${symbolInfo.exchange}~${symbolInfo.full_name}`)!;
+      if (!lastDailyBar) {
+        return;
+      }
+
       const symbol = symbolInfo.full_name.split('.')[2];
-      const unSubscribe = useExchangeStore.subscribe((state) => {
-        const tradeMessages = state.upbitTradeMessages;
-        if (!Array.isArray(tradeMessages) || tradeMessages.length === 0) {
-          return;
-        }
+      const unsubscribe = subscribeOnUpbitStream<IUpbitSocketMessageTradeSimple>((message) => {
         // cd: code
         // tp: trade_price
         // tv: trade_volume
         // ttms: trade_timestamp
-        for (const tradeMessage of tradeMessages) {
-          const { tp, cd, tv, ttms } = tradeMessage;
+        const { tp, cd, tv, ttms, ty } = message;
 
-          if (symbol !== cd) {
-            return;
-          }
-          const bar = {
+        if (symbol !== cd || ty !== 'trade') {
+          return;
+        }
+        let bar;
+        // 다음 봉 오픈시간을 구해서 큰지 작은지 비교해야 에러가 안남.
+        const nextDailyBarTime = getNextBarOpenTime(lastDailyBar.time, resolution);
+        if (ttms >= nextDailyBarTime) {
+          bar = {
+            time: nextDailyBarTime,
             close: tp,
             high: tp,
             low: tp,
             open: tp,
-            time: ttms,
             volume: tv
           };
-          if (symbolInfo.ticker) {
-            if (typeof lastCandles[symbolInfo.ticker] === 'undefined') {
-              lastCandles[symbolInfo.ticker] = bar;
-              onRealtimeCallback(bar);
-            } else {
-              if (lastCandles[symbolInfo.ticker]?.time < ttms) {
-                lastCandles[symbolInfo.ticker].time = ttms;
-                onRealtimeCallback(bar);
-              }
-            }
-          }
+        } else {
+          bar = {
+            ...lastDailyBar,
+            high: Math.max(lastDailyBar.high, tp),
+            low: Math.min(lastDailyBar.low, tp),
+            close: tp,
+            volume: (lastDailyBar.volume || 0) + tv
+          };
         }
+        lastDailyBar = bar;
+
+        onRealtimeCallback(bar);
       });
 
-      if (unSubscribes[subscriberUID]) {
-        unSubscribes[subscriberUID]();
+      if (unsubscribes[subscriberUID]) {
+        unsubscribes[subscriberUID]();
       }
-      unSubscribes[subscriberUID] = unSubscribe;
+      unsubscribes[subscriberUID] = unsubscribe;
     },
     unsubscribeBars: (subscriberUID) => {
       // console.log('[!] unsubscribeBars', { listenerGuid: subscriberUID });
 
-      const unSubscribe = unSubscribes[subscriberUID];
-      if (unSubscribe) {
-        unSubscribe();
+      const unsubscribe = unsubscribes[subscriberUID];
+      if (unsubscribe) {
+        unsubscribe();
       }
     },
     getMarks(symbolInfo, from, to, onDataCallback, resolution) {

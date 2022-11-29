@@ -2,7 +2,8 @@ import * as React from 'react';
 import { useEffect, useRef } from 'react';
 import isEqual from 'react-fast-compare';
 import { IUpbitAccounts } from 'src-server/types/upbit';
-import binanceDataFeed from 'src/lib/binanceDataFeed';
+import binanceDataFeed from './lib/binanceDataFeed';
+import upbitDataFeed from './lib/upbitDataFeed';
 import { useUpbitAuthStore } from 'src/store/upbitAuth';
 // import './index.css';
 import type {
@@ -13,7 +14,6 @@ import type {
   ResolutionString
 } from '../../charting_library';
 import { widget, ChartingLibraryWidgetOptions, LanguageCode } from '../../charting_library';
-import upbitDataFeed from '../../lib/upbitDataFeed';
 
 function getLanguageFromURL(): LanguageCode | null {
   const regex = new RegExp('[\\?&]lang=([^&#]*)');
@@ -208,7 +208,12 @@ export const TVChartInner: React.FC<TVChartProps> = React.memo<TVChartProps>(
         //     //   state.accounts.map(account => account.)
         //     // })
         //   });
-
+        // tvWidget
+        //   .activeChart()
+        //   .onIntervalChanged()
+        //   .subscribe(null, () => {
+        //     tvWidget.load();
+        //   });
         switch (exchange) {
           case 'UPBIT': {
             let accountOrderLine: IPositionLineAdapter | null = tvWidget

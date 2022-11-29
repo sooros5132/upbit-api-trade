@@ -1,7 +1,6 @@
 import type { NextPage } from 'next';
 import React, { useEffect, useState } from 'react';
 import MarketTable, { IMarketTableItem } from 'src/components/market-table/MarketTable';
-import TradingViewChart from 'src/components/tradingview/Chart';
 import { IUpbitApiTicker, IUpbitMarket } from 'src/types/upbit';
 import { useUpbitAuthStore } from 'src/store/upbitAuth';
 import { apiUrls } from 'src/lib/apiUrls';
@@ -20,8 +19,6 @@ import Link from 'next/link';
 import config from 'site-config';
 import { TVChart } from 'src/components/TVChart';
 import { useTradingViewSettingStore } from 'src/store/tradingViewSetting';
-import binanceDataFeed from 'src/lib/binanceDataFeed';
-import upbitDataFeed from 'src/lib/upbitDataFeed';
 import { ResolutionString } from 'public/charting_library/charting_library';
 
 const Home: NextPage = () => {
