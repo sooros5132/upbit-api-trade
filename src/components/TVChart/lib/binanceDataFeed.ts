@@ -1,5 +1,4 @@
 import axios from 'axios';
-import zonedTimeToUtc from 'date-fns-tz/zonedTimeToUtc';
 import type {
   Bar,
   ChartingLibraryWidgetOptions,
@@ -7,15 +6,22 @@ import type {
   LibrarySymbolInfo,
   ResolutionString
 } from 'src/charting_library/charting_library';
-import { useExchangeStore } from 'src/store/exchangeSockets';
-import type {
+import { subscribeOnBinanceStream, useExchangeStore } from 'src/store/exchangeSockets';
+import {
   IBinanceExchangeInfo,
   IBinanceFilterPriceFilter,
+  IBinanceSocketAggTrade,
+  IBinanceSocketMessage,
   IBinanceUiKline
 } from 'src/types/binance';
-import { API_PATH } from './apiUrls';
+import { API_PATH } from '../../../lib/apiUrls';
+import { getNextBarOpenTime } from './helpers';
 
-const getBars = async ({
+// interface Bar extends ChartingLibraryBar {
+//   volume: number;
+// }
+
+const getBarsRequest = async ({
   resolution,
   symbol,
   url,
@@ -42,14 +48,13 @@ const getBars = async ({
     })
     .then((res) => res.data)
     .then((uiKlines) => {
-      return uiKlines.map((uiKline) => ({
+      return uiKlines.map<Bar>((uiKline) => ({
         time: uiKline[0],
+        close: parseFloat(uiKline[4]),
         open: parseFloat(uiKline[1]),
         high: parseFloat(uiKline[2]),
         low: parseFloat(uiKline[3]),
-        close: parseFloat(uiKline[4]),
-        volume: parseFloat(uiKline[5]),
-        closeTime: uiKline[6]
+        volume: parseFloat(uiKline[5])
       }));
       //  0	number	// 1669530900000			// Kline open time
       //  1	string	// "16568.24000000"		// Open price
@@ -103,8 +108,8 @@ const binanceResolutionRecord = {
 const binanceDataFeed = (): ChartingLibraryWidgetOptions['datafeed'] => {
   const datafeedUrl = API_PATH + '/binance/proxy/api/v3';
   const symbolInfoStorage: Record<string, LibrarySymbolInfo> = {};
-  const unSubscribes: Record<string, ReturnType<typeof useExchangeStore.subscribe>> = {};
-  const lastCandles: Record<string, Bar> = {};
+  const unsubscribes: Record<string, ReturnType<typeof useExchangeStore.subscribe>> = {};
+  const lastBarsCache = new Map<string, Bar & { isBarClosed?: boolean; isLastBar?: boolean }>();
   return {
     onReady: (onReadyCallback) => {
       // console.log('[!] onReady');
@@ -112,15 +117,20 @@ const binanceDataFeed = (): ChartingLibraryWidgetOptions['datafeed'] => {
       setTimeout(() => {
         onReadyCallback({
           supported_resolutions: [
+            '1S',
             '1',
             '3',
             '5',
-            '10',
             '15',
             '30',
             '60',
+            '120',
             '240',
+            '360',
+            '480',
+            '720',
             '1D',
+            '3D',
             '1W',
             '1M'
           ] as Array<ResolutionString>
@@ -132,6 +142,7 @@ const binanceDataFeed = (): ChartingLibraryWidgetOptions['datafeed'] => {
       onResultReadyCallback([]);
     },
     async resolveSymbol(symbolName, onSymbolResolvedCallback, onResolveErrorCallback, extension) {
+      // console.log('[!] resolveSymbol', symbolName);
       if (symbolInfoStorage[symbolName]) {
         setTimeout(() => onSymbolResolvedCallback(symbolInfoStorage[symbolName]), 0);
         return;
@@ -152,27 +163,27 @@ const binanceDataFeed = (): ChartingLibraryWidgetOptions['datafeed'] => {
             ) as IBinanceFilterPriceFilter | undefined;
 
             const symbolInfo: LibrarySymbolInfo = {
-              description: symbol.symbol || '',
+              name: symbol.symbol,
+              format: 'price',
+              full_name: symbol.symbol,
+              // base_name
+              listed_exchange: 'Binance',
+              exchange: 'Binance',
+              ticker: symbol.symbol,
+              description: symbol.baseAsset + '/' + symbol.quoteAsset,
+              timezone: 'Etc/UTC',
+              minmov: 1,
+              pricescale: Number(priceFilter?.tickSize) || 0.1,
               fractional: !1,
-              // has_seconds: true,
-              seconds_multipliers: ['1'],
+              session: '24x7',
+              has_seconds: true,
               has_intraday: true,
               has_daily: true,
-              has_weekly_and_monthly: true,
-              minmov: 1,
-              minmove2: 0,
-              name: symbol.symbol,
-              full_name: symbol.symbol,
-              ticker: symbol.symbol,
-              timezone: 'Etc/UTC',
-              pricescale: Number(priceFilter?.tickSize) || 0.1,
-              session: '24x7',
+              has_weekly_and_monthly: true, // true로 하면 time 에러가남.
+              visible_plots_set: 'ohlcv',
               type: 'crypto',
-              exchange: 'Binance',
-              listed_exchange: 'Binance',
-              format: 'price',
               supported_resolutions: [
-                '1s',
+                // '1S',
                 '1',
                 '3',
                 '5',
@@ -188,7 +199,28 @@ const binanceDataFeed = (): ChartingLibraryWidgetOptions['datafeed'] => {
                 '3D',
                 '1W',
                 '1M'
-              ] as ResolutionString[]
+              ] as ResolutionString[],
+              intraday_multipliers: [
+                // '1S',
+                '1',
+                '3',
+                '5',
+                '15',
+                '30',
+                '60',
+                '120',
+                '240',
+                '360',
+                '480',
+                '720',
+                '1D',
+                '3D',
+                '1W',
+                '1M'
+              ] as ResolutionString[],
+              data_status: 'streaming',
+              currency_code: symbol.quoteAsset,
+              seconds_multipliers: ['1']
             };
             symbolInfoStorage[symbol.symbol] = symbolInfo;
             if (symbol.symbol === symbol.symbol) {
@@ -202,7 +234,7 @@ const binanceDataFeed = (): ChartingLibraryWidgetOptions['datafeed'] => {
             } else {
               onSymbolResolvedCallback(result);
             }
-          });
+          }, 0);
         })
         .catch((err) => onResolveErrorCallback(err));
     },
@@ -214,44 +246,48 @@ const binanceDataFeed = (): ChartingLibraryWidgetOptions['datafeed'] => {
       let endTime = to * 1000;
 
       const meta: HistoryMetadata | undefined = { nextTime: undefined, noData: undefined };
-      const bars = [];
+      const bars: Bar[] = [];
 
-      do {
-        const newBars = await getBars({
-          url: datafeedUrl,
-          symbol: symbolInfo.ticker!,
-          resolution: binanceResolutionRecord[resolution] ?? resolution,
-          countBack,
-          startTime,
-          endTime
-        });
-        // 최초 캔들. 종료
-        if (Array.isArray(newBars) && newBars.length === 0) {
-          break;
-        }
-        if (newBars) {
-          const last = newBars[newBars.length - 1];
-          bars.push(...newBars);
-          startTime = last.closeTime;
-          // console.log(countBack, bars.length, countBack > bars.length);
-          // console.log(last.closeTime, Date.now(), last.closeTime > Date.now());
-
-          // 마지막 캔들. 종료
-          if (last.closeTime > Date.now()) {
+      await (async function () {
+        do {
+          const newBars = await getBarsRequest({
+            url: datafeedUrl,
+            symbol: symbolInfo.ticker!,
+            resolution: binanceResolutionRecord[resolution] ?? resolution,
+            countBack,
+            startTime,
+            endTime
+          });
+          // 최초 캔들. 종료
+          if (Array.isArray(newBars) && newBars.length === 0) {
             break;
           }
-        }
-        // 카운트만큼 받으면 종료
-      } while (countBack > bars.length);
+          if (newBars) {
+            const last = newBars[newBars.length - 1];
+            bars.push(...newBars);
+            startTime = Math.max(last.time + 1, 0);
 
-      if (symbolInfo.ticker) {
-        lastCandles[symbolInfo.ticker] = bars[bars.length - 1];
-      }
-      if (bars.length > 0) {
-        return onHistoryCallback(bars);
-      } else {
-        return onHistoryCallback(bars, { noData: true });
-      }
+            // 마지막 캔들. 종료
+            // if (last.closeTime > Date.now()) {
+            //   break;
+            // }
+          }
+          // 카운트만큼 받으면 종료
+        } while (countBack > bars.length);
+
+        setTimeout(() => {
+          if (bars.length > 0) {
+            if (symbolInfo.ticker && firstDataRequest) {
+              lastBarsCache.set(`0~${symbolInfo.exchange}~${symbolInfo.full_name}`, {
+                ...bars[bars.length - 1]
+              });
+            }
+            onHistoryCallback(bars, { noData: false });
+          } else {
+            onHistoryCallback(bars, { noData: true });
+          }
+        }, 0);
+      })();
       // return onErrorCallback('Klines data error');
     },
     subscribeBars: (
@@ -262,54 +298,72 @@ const binanceDataFeed = (): ChartingLibraryWidgetOptions['datafeed'] => {
       onResetCacheNeededCallback
     ) => {
       // console.log('[!] subscribeBars', { symbolInfo, resolution, subscriberUID });
-      const symbol = symbolInfo.ticker;
-      const unSubscribe = useExchangeStore.subscribe((state) => {
-        const tradeMessages = state.binanceTradeMessages;
-        console.log(tradeMessages.length);
-        if (!Array.isArray(tradeMessages) || tradeMessages.length === 0) {
+      const { ticker } = symbolInfo;
+      if (!ticker) {
+        return;
+      }
+      let lastDailyBar = lastBarsCache.get(`0~${symbolInfo.exchange}~${symbolInfo.full_name}`)!;
+      if (!lastDailyBar) {
+        return;
+      }
+
+      const unsubscribe = subscribeOnBinanceStream<IBinanceSocketMessage<any>>((message) => {
+        if (message.stream !== `${ticker.toLowerCase()}@aggTrade`) {
           return;
         }
-        // s: string; // Symbol
-        // q: string; // Quantity
-        // p: string; // Price
-        // T: number; // Trade time
-        for (const tradeMessage of tradeMessages) {
-          const { s, q, p, T } = tradeMessage;
 
-          if (symbol !== s) {
-            return;
-          }
-          const bar: Bar = {
-            close: parseFloat(p),
-            high: parseFloat(p),
-            low: parseFloat(p),
-            open: parseFloat(p),
-            time: T,
-            volume: parseFloat(q)
+        const aggTrade = message.data as IBinanceSocketAggTrade;
+
+        // s: string; // Symbol
+        // p: string; // Price
+        // q: string; // Quantity
+        // E: number; // Event time
+        // T: number; // Trade time
+        const {
+          // s,
+          q: quantity,
+          p,
+          // E,
+          T: time
+        } = aggTrade;
+        let bar;
+        const price = parseFloat(p);
+
+        // 다음 봉 오픈시간을 구해서 큰지 작은지 비교해야 에러가 안남.
+        const nextDailyBarTime = getNextBarOpenTime(lastDailyBar.time, resolution);
+        if (time >= nextDailyBarTime) {
+          bar = {
+            time: nextDailyBarTime,
+            open: price,
+            high: price,
+            low: price,
+            close: price,
+            volume: parseFloat(quantity)
           };
-          if (symbolInfo.ticker) {
-            if (typeof lastCandles[symbolInfo.ticker] === 'undefined') {
-              lastCandles[symbolInfo.ticker] = bar;
-              onRealtimeCallback(bar);
-            } else {
-              if (lastCandles[symbolInfo.ticker]?.time < T) {
-                lastCandles[symbolInfo.ticker].time = T;
-                onRealtimeCallback(bar);
-              }
-            }
-          }
+        } else {
+          bar = {
+            ...lastDailyBar,
+            high: Math.max(lastDailyBar.high, price),
+            low: Math.min(lastDailyBar.low, price),
+            close: price,
+            volume: (lastDailyBar.volume || 0) + parseFloat(quantity)
+          };
         }
+        lastDailyBar = bar;
+
+        onRealtimeCallback(bar);
       });
-      if (unSubscribes[subscriberUID]) {
-        unSubscribes[subscriberUID]();
+
+      if (unsubscribes[subscriberUID]) {
+        unsubscribes[subscriberUID]();
       }
-      unSubscribes[subscriberUID] = unSubscribe;
+      unsubscribes[subscriberUID] = unsubscribe;
     },
     unsubscribeBars: (subscriberUID) => {
       // console.log('[!] unsubscribeBars', { listenerGuid: subscriberUID });
-      const unSubscribe = unSubscribes[subscriberUID];
-      if (unSubscribe) {
-        unSubscribe();
+      const unsubscribe = unsubscribes[subscriberUID];
+      if (unsubscribe) {
+        unsubscribe();
       }
     },
     getMarks(symbolInfo, from, to, onDataCallback, resolution) {
@@ -318,18 +372,18 @@ const binanceDataFeed = (): ChartingLibraryWidgetOptions['datafeed'] => {
     getTimescaleMarks(symbolInfo, from, to, onDataCallback, resolution) {
       // console.log('[!] getTimescaleMarks', symbolInfo);
     },
-    async getServerTime(callback) {
+    getServerTime(callback) {
       // console.log('[!] getServerTime');
-      const serverTime = await axios
+
+      axios
         .get<{ serverTime: number }>(datafeedUrl + '/time')
         .then((res) => res.data)
         .then((serverTime) => {
-          return serverTime?.serverTime;
+          callback(Math.floor(serverTime.serverTime / 1000));
         })
         .catch(() => {
           throw 'getServerTime Error';
         });
-      callback(Math.floor(serverTime / 1000));
     }
   };
 };

@@ -198,6 +198,10 @@ const useExchangeStore = create<IExchangeStore>(
             | IUpbitSocketMessageTickerSimple
             | IUpbitSocketMessageTradeSimple;
 
+          for (const listener of upbitChannelToSubscription.values()) {
+            listener(message);
+          }
+
           switch (message?.ty) {
             case 'ticker': {
               unapplied++;
@@ -227,7 +231,7 @@ const useExchangeStore = create<IExchangeStore>(
               break;
             }
             case 'trade': {
-              tradeMessageBuffer.push(message);
+              // tradeMessageBuffer.push(message);
               break;
             }
           }
@@ -243,7 +247,7 @@ const useExchangeStore = create<IExchangeStore>(
           if (Date.now() - lastActivity > socketTimeout) {
             handleError();
           }
-        }, socketTimeout / 2);
+        }, socketTimeout);
 
         newSocket.onopen = handleOpen;
         newSocket.onmessage = handleMessage;
@@ -343,6 +347,11 @@ const useExchangeStore = create<IExchangeStore>(
           lastActivity = Date.now();
 
           const data = JSON.parse(evt.data);
+
+          for (const listener of binanceChannelToSubscription.values()) {
+            listener(data);
+          }
+
           const message = data.data as IBinanceSocketTicker | IBinanceSocketAggTrade;
           const stream = data.stream;
 
@@ -358,9 +367,9 @@ const useExchangeStore = create<IExchangeStore>(
               break;
             }
             case 'aggTrade': {
-              unapplied++;
-              tradeMessageBuffer.push(message as IBinanceSocketAggTrade);
-              break;
+              // unapplied++;
+              // tradeMessageBuffer.push(message as IBinanceSocketAggTrade);
+              // break;
             }
           }
         };
@@ -376,7 +385,7 @@ const useExchangeStore = create<IExchangeStore>(
           if (Date.now() - lastActivity > socketTimeout) {
             handleError();
           }
-        }, socketTimeout / 2);
+        }, socketTimeout);
 
         newSocket.onopen = handleOpen;
         newSocket.onmessage = handleMessage;
@@ -525,6 +534,52 @@ const useExchangeStore = create<IExchangeStore>(
   //     getStorage: () => localStorage // (optional) by default, 'localStorage' is used
   //   }
 );
+
+const upbitChannelToSubscription = new Set<(message: any) => void>();
+
+/**
+ *
+ * @param listener
+ * @returns unsubscribe function
+ */
+export function subscribeOnUpbitStream<T>(listener: (message: T) => void) {
+  upbitChannelToSubscription.add(listener);
+  return () => {
+    upbitChannelToSubscription.delete(listener);
+  };
+}
+
+/**
+ *
+ * @param listener unsubscribe function
+ * @returns unsubscribe success or failure
+ */
+export function unsubscribeFromUpbitStream<T>(listener: (message: T) => void) {
+  return upbitChannelToSubscription.delete(listener);
+}
+
+const binanceChannelToSubscription = new Set<(message: any) => void>();
+
+/**
+ *
+ * @param listener
+ * @returns unsubscribe function
+ */
+export function subscribeOnBinanceStream<T>(listener: (message: T) => void) {
+  binanceChannelToSubscription.add(listener);
+  return () => {
+    binanceChannelToSubscription.delete(listener);
+  };
+}
+
+/**
+ *
+ * @param listener unsubscribe function
+ * @returns unsubscribe success or failure
+ */
+export function unsubscribeFromBinanceStream<T>(listener: (message: T) => void) {
+  return binanceChannelToSubscription.delete(listener);
+}
 
 export type { IExchangeState };
 export { useExchangeStore };
