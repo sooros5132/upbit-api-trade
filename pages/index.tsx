@@ -120,7 +120,7 @@ const Chart = () => {
       return (
         <TVChart
           key={'binance-chart'}
-          interval={'1h' as ResolutionString}
+          interval={'15' as ResolutionString}
           symbol={selectedMarketSymbol + 'USDT'}
           currency={selectedMarketSymbol}
           exchange={'BINANCE'}
@@ -132,7 +132,7 @@ const Chart = () => {
       return (
         <TVChart
           key={'upbit-chart'}
-          interval={'60' as ResolutionString}
+          interval={'15' as ResolutionString}
           symbol={selectedMarketSymbol + 'KRW'}
           currency={selectedMarketSymbol}
           exchange={'UPBIT'}
