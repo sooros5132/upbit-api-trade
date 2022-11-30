@@ -22,22 +22,7 @@ import { useTradingViewSettingStore } from 'src/store/tradingViewSetting';
 import { ResolutionString } from 'public/charting_library/charting_library';
 
 const Home: NextPage = () => {
-  const stickyChart = useMarketTableSettingStore((state) => state.stickyChart, shallow);
-
-  const { hydrated, headerHeight } = useSiteSettingStore(
-    ({ hydrated, headerHeight }) => ({ hydrated, headerHeight }),
-    shallow
-  );
-
-  useSWR(
-    config.path + apiUrls.upbit.accounts,
-    () => {
-      useUpbitAuthStore.getState().revalidate();
-    },
-    {
-      refreshInterval: 60 * 1000
-    }
-  );
+  const hydrated = useSiteSettingStore((state) => state.hydrated, shallow);
 
   return (
     <main className='relative w-full px-3 mx-auto max-w-7xl lg:max-w-none lg:grid lg:grid-rows-[auto_1fr] lg:grid-cols-[auto_500px] lg:overflow-hidden lg:gap-2 lg:flex-auto'>

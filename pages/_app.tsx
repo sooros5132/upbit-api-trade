@@ -16,6 +16,8 @@ import { apiUrls } from 'src/lib/apiUrls';
 import useSWR from 'swr';
 import { ICoincodexGetMetadataPick } from 'src/types/coincodex';
 import { IUpbitForex } from 'src/types/upbit';
+import config from 'site-config';
+import { useUpbitAuthStore } from 'src/store/upbitAuth';
 
 // 'sm': '640px',
 // 'md': '768px',
@@ -130,6 +132,16 @@ const SWRFetchers = () => {
     },
     {
       revalidateOnFocus: false,
+      refreshInterval: 60 * 1000
+    }
+  );
+
+  useSWR(
+    config.path + apiUrls.upbit.accounts,
+    () => {
+      useUpbitAuthStore.getState().revalidate();
+    },
+    {
       refreshInterval: 60 * 1000
     }
   );
