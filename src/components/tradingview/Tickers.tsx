@@ -61,7 +61,7 @@ const TradingViewTickersWidget: React.FC<TradingViewTickersWidgetProps> = ({ poi
 
   return (
     <div>
-      <div className='overflow-x-auto overflow-y-hidden'>
+      <div className='overflow-x-auto overflow-y-hidden scrollbar-hidden'>
         <div
           className='mx-auto lg:!w-full'
           style={symbols.length > 1 ? { width: symbols.length * 240 } : undefined}

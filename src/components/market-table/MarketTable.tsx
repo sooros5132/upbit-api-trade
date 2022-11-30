@@ -30,7 +30,7 @@ const MarketTable: React.FC<MarketTableProps> = ({ isLastUpdatePage }) => {
   }, shallow);
 
   return (
-    <div className='max-w-screen-xl mx-auto mb-4 text-xs sm:text-sm lg:w-full overflow-hidden lg:m-0 flex flex-col'>
+    <div className='max-w-screen-xl mx-auto mb-4 lg:w-full overflow-hidden lg:m-0 flex flex-col'>
       {isLastUpdatePage ? (
         <div className='my-4'>
           <BackgroundBlueBox>
@@ -97,8 +97,8 @@ const MarketTable: React.FC<MarketTableProps> = ({ isLastUpdatePage }) => {
           </div>
         </>
       )}
-      <div className='overflow-y-auto flex-auto'>
-        <table className='table w-full [&_td]:text-xs sm:[&_td]:text-sm  table-compact'>
+      <div className='scrollbar-hidden overflow-y-auto flex-auto font-mono text-right [&_th]:px-0.5 [&_th]:py-1.5 [&_th]:bg-base-200 [&_td]:px-0.5 [&_td]:py-1.5 [&_td]:whitespace-nowrap [&_tbody_tr]:border-b [&_tbody_tr]:border-base-300 [&_tbody_tr]:min-w-[40px] [&_tbody_tr:hover_td]:bg-white/5'>
+        <table className='border-separate border-spacing-0 w-full'>
           <MarketTableHead />
           <MarketTableBody />
         </table>

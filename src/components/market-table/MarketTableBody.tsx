@@ -3,10 +3,8 @@ import isEqual from 'react-fast-compare';
 import { useExchangeStore } from 'src/store/exchangeSockets';
 import { useMarketTableSettingStore } from 'src/store/marketTableSetting';
 import { useSiteSettingStore } from 'src/store/siteSetting';
-import { IUpbitForex } from 'src/types/upbit';
 import shallow from 'zustand/shallow';
 import { MarketTableItem } from '.';
-import { IMarketTableItem } from './MarketTable';
 
 export interface TableBodyProps {
   // upbitMarketSnapshot?: Record<string, IMarketTableItem>;

@@ -27,11 +27,12 @@ export const TableHead = () => {
 
   return (
     <thead>
-      <tr className='[&>td]:text-gray-600 [&>th:first-child]:z-0 [&>th:first-child]:rounded-none [&>th:last-child]:rounded-none'>
-        <th className='w-[1.25em] market-td-padding'></th>
-        <th className='w-auto market-td-padding'>
+      <tr className='[&>td]:text-gray-600 [&>th:first-child]:z-0 [&>th:first-child]:rounded-none [&>th:last-child]:rounded-none text-right [&_svg]:inline-block [&>th>div]:cursor-pointer'>
+        <th className='w-[1.25em]'></th>
+        <th className='w-auto'>
           <div
-            className='flex'
+            className='text-left cursor-pointer'
+            onClick={handleClickThead('korean_name')}
             // className='flex tooltip'
             // data-tip={
             //   <div>
@@ -40,24 +41,20 @@ export const TableHead = () => {
             //   </div>
             // }
           >
-            <div className='flex cursor-pointer' onClick={handleClickThead('korean_name')}>
-              <span>이름</span>
-              <div className='flex items-center'>
-                {sortColumn === 'korean_name' ? (
-                  sortType === 'ASC' ? (
-                    <BiUpArrowAlt />
-                  ) : (
-                    <BiDownArrowAlt />
-                  )
-                ) : null}
-              </div>
-            </div>
+            <span>이름</span>
+            {sortColumn === 'korean_name' ? (
+              sortType === 'ASC' ? (
+                <BiUpArrowAlt />
+              ) : (
+                <BiDownArrowAlt />
+              )
+            ) : null}
           </div>
         </th>
-        <th className='market-td-padding w-[20%]'>
+        <th className='w-[20%]'>
           <div
-            className='flex justify-end'
-            // className='flex justify-end tooltip'
+            onClick={handleClickThead('tp')}
+            // className=' tooltip'
             // data-tip={
             //   <div>
             //     <p>업비트 현재가</p>
@@ -65,24 +62,20 @@ export const TableHead = () => {
             //   </div>
             // }
           >
-            <div className='flex cursor-pointer' onClick={handleClickThead('tp')}>
-              <span>현재가</span>
-              <div className='flex items-center'>
-                {sortColumn === 'tp' ? (
-                  sortType === 'ASC' ? (
-                    <BiUpArrowAlt />
-                  ) : (
-                    <BiDownArrowAlt />
-                  )
-                ) : null}
-              </div>
-            </div>
+            <span>현재가</span>
+            {sortColumn === 'tp' ? (
+              sortType === 'ASC' ? (
+                <BiUpArrowAlt />
+              ) : (
+                <BiDownArrowAlt />
+              )
+            ) : null}
           </div>
         </th>
-        <th className='market-td-padding w-[10%]'>
+        <th className='w-[10%]'>
           <div
-            className='flex justify-end'
-            // className='flex justify-end tooltip'
+            onClick={handleClickThead('scr')}
+            // className=' tooltip'
             // data-tip={
             //   <div>
             //     <p>일일 변동 퍼센트</p>
@@ -90,24 +83,20 @@ export const TableHead = () => {
             //   </div>
             // }
           >
-            <div className='flex cursor-pointer' onClick={handleClickThead('scr')}>
-              <span>변동</span>
-              <div className='flex items-center'>
-                {sortColumn === 'scr' ? (
-                  sortType === 'ASC' ? (
-                    <BiUpArrowAlt />
-                  ) : (
-                    <BiDownArrowAlt />
-                  )
-                ) : null}
-              </div>
-            </div>
+            <span>변동</span>
+            {sortColumn === 'scr' ? (
+              sortType === 'ASC' ? (
+                <BiUpArrowAlt />
+              ) : (
+                <BiDownArrowAlt />
+              )
+            ) : null}
           </div>
         </th>
-        <th className='market-td-padding w-[10%]'>
+        <th className='w-[10%]'>
           <div
-            className='flex justify-end'
-            // className='flex justify-end tooltip'
+            onClick={handleClickThead('premium')}
+            // className=' tooltip'
             // data-tip={
             //   <div>
             //     <p>원화 프리미엄</p>
@@ -115,24 +104,20 @@ export const TableHead = () => {
             //   </div>
             // }
           >
-            <div className='flex cursor-pointer' onClick={handleClickThead('premium')}>
-              <span>김프</span>
-              <div className='flex items-center'>
-                {sortColumn === 'premium' ? (
-                  sortType === 'ASC' ? (
-                    <BiUpArrowAlt />
-                  ) : (
-                    <BiDownArrowAlt />
-                  )
-                ) : null}
-              </div>
-            </div>
+            <span>김프</span>
+            {sortColumn === 'premium' ? (
+              sortType === 'ASC' ? (
+                <BiUpArrowAlt />
+              ) : (
+                <BiDownArrowAlt />
+              )
+            ) : null}
           </div>
         </th>
-        <th className='market-td-padding w-[10%]'>
+        <th className='w-[10%]'>
           <div
-            className='flex justify-end'
-            // className='flex justify-end tooltip'
+            onClick={handleClickThead('atp24h')}
+            // className=' tooltip'
             // data-tip={
             //   <div>
             //     <p>업비트 거래량</p>
@@ -140,18 +125,14 @@ export const TableHead = () => {
             //   </div>
             // }
           >
-            <div className='flex cursor-pointer' onClick={handleClickThead('atp24h')}>
-              <span>거래량</span>
-              <div className='flex items-center'>
-                {sortColumn === 'atp24h' ? (
-                  sortType === 'ASC' ? (
-                    <BiUpArrowAlt />
-                  ) : (
-                    <BiDownArrowAlt />
-                  )
-                ) : null}
-              </div>
-            </div>
+            <span>거래량</span>
+            {sortColumn === 'atp24h' ? (
+              sortType === 'ASC' ? (
+                <BiUpArrowAlt />
+              ) : (
+                <BiDownArrowAlt />
+              )
+            ) : null}
           </div>
         </th>
       </tr>

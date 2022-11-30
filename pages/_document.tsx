@@ -13,7 +13,7 @@ class CustomDocument extends Document {
             rel='stylesheet'
           />
         </Head>
-        <body>
+        <body className='antialiased'>
           <Main />
           <NextScript />
         </body>
