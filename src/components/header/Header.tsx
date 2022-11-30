@@ -32,10 +32,7 @@ const Header: React.FC = () => {
     }),
     shallow
   );
-  const { highlight, stickyChart } = useMarketTableSettingStore(
-    ({ highlight, stickyChart }) => ({ highlight, stickyChart }),
-    shallow
-  );
+  const { highlight } = useMarketTableSettingStore(({ highlight }) => ({ highlight }), shallow);
   const [openRegisterUpbitApiDialog, setOpenRegisterUpbitApiDialog] = useState(false);
   const headerRef = useRef<HTMLHeadElement>(null);
   const { connectedUpbit, connectedBinance } = useExchangeStore(
@@ -56,24 +53,24 @@ const Header: React.FC = () => {
     shallow
   );
 
-  useEffect(() => {
-    if (!headerRef.current) {
-      return;
-    }
-    const headerEl = headerRef.current;
+  // useEffect(() => {
+  //   if (!headerRef.current) {
+  //     return;
+  //   }
+  //   const headerEl = headerRef.current;
 
-    useSiteSettingStore.setState({ headerHeight: headerEl.offsetHeight });
+  //   useSiteSettingStore.setState({ headerHeight: headerEl.offsetHeight });
 
-    const handleResize = (evt: UIEvent) => {
-      useSiteSettingStore.setState({ headerHeight: headerEl.offsetHeight });
-    };
+  //   const handleResize = (evt: UIEvent) => {
+  //     useSiteSettingStore.setState({ headerHeight: headerEl.offsetHeight });
+  //   };
 
-    window.addEventListener('resize', handleResize);
+  //   window.addEventListener('resize', handleResize);
 
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, [showMyAccounts]);
+  //   return () => {
+  //     window.removeEventListener('resize', handleResize);
+  //   };
+  // }, [showMyAccounts]);
 
   const handleClickMenuItem =
     (prop: 'logout' | 'showMyAccounts' | 'highlight' | 'upbitApiConnect' | 'stickyChart') =>
@@ -93,12 +90,12 @@ const Header: React.FC = () => {
           }));
           break;
         }
-        case 'stickyChart': {
-          useMarketTableSettingStore.setState((state) => ({
-            stickyChart: !state.stickyChart
-          }));
-          break;
-        }
+        // case 'stickyChart': {
+        //   useMarketTableSettingStore.setState((state) => ({
+        //     stickyChart: !state.stickyChart
+        //   }));
+        //   break;
+        // }
         case 'upbitApiConnect': {
           setOpenRegisterUpbitApiDialog(true);
           break;
@@ -158,7 +155,7 @@ const Header: React.FC = () => {
                 />
               </button>
             </li>
-            <li onClickCapture={handleClickMenuItem('stickyChart')}>
+            {/* <li onClickCapture={handleClickMenuItem('stickyChart')}>
               <button className='justify-between font-normal btn btn-ghost'>
                 <span className='label-text'>차트 상단 고정</span>
                 <input
@@ -168,7 +165,7 @@ const Header: React.FC = () => {
                   className='checkbox checkbox-sm'
                 />
               </button>
-            </li>
+            </li> */}
             {hydrated && upbitAuth.secretKey
               ? [
                   <div key={'header-menu-divider'} className='m-0 divider' />,

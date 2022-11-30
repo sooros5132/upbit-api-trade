@@ -47,14 +47,15 @@ const Home: NextPage = () => {
         </div>
       </div>
       <div
-        className={hydrated && stickyChart && headerHeight ? `sticky left-0 z-[1]` : undefined}
-        style={
-          hydrated && stickyChart && headerHeight
-            ? {
-                top: headerHeight
-              }
-            : undefined
-        }
+        className='lg:col-start-1 lg:row-start-2'
+        // className={hydrated && stickyChart && headerHeight ? `sticky left-0 z-[1]` : undefined}
+        // style={
+        //   hydrated && stickyChart && headerHeight
+        //     ? {
+        //         top: headerHeight
+        //       }
+        //     : undefined
+        // }
       >
         <div className='h-[300px] min-h-[300px] sm:h-[40vh] lg:min-h-[500px] lg:h-[45vh]  [&_.tradingview-widget-copyright]:!leading-4'>
           {hydrated && <Chart />}
