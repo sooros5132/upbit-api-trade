@@ -162,6 +162,12 @@ const binanceDataFeed = (): ChartingLibraryWidgetOptions['datafeed'] => {
               (filter) => filter.filterType === 'PRICE_FILTER'
             ) as IBinanceFilterPriceFilter | undefined;
 
+            // 맨 뒤 0들 지우고 소수점 자리수 구한 다음 10제곱 계산.
+            const pricescale = Math.pow(
+              10,
+              priceFilter?.tickSize?.replace(/0+$/, '')?.split('.')?.[1]?.length ?? 1
+            );
+
             const symbolInfo: LibrarySymbolInfo = {
               name: symbol.symbol,
               format: 'price',
@@ -173,7 +179,7 @@ const binanceDataFeed = (): ChartingLibraryWidgetOptions['datafeed'] => {
               description: symbol.baseAsset + '/' + symbol.quoteAsset,
               timezone: 'Etc/UTC',
               minmov: 1,
-              pricescale: Number(priceFilter?.tickSize) || 0.1,
+              pricescale: pricescale,
               fractional: !1,
               session: '24x7',
               has_seconds: true,
@@ -223,7 +229,7 @@ const binanceDataFeed = (): ChartingLibraryWidgetOptions['datafeed'] => {
               seconds_multipliers: ['1']
             };
             symbolInfoStorage[symbol.symbol] = symbolInfo;
-            if (symbol.symbol === symbol.symbol) {
+            if (symbolName === symbol.symbol) {
               result = symbolInfo;
             }
           }
