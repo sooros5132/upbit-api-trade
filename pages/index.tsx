@@ -40,7 +40,7 @@ const Home: NextPage = () => {
   );
 
   return (
-    <main className='relative w-full px-3 mx-auto max-w-7xl lg:max-w-none lg:grid lg:grid-rows-[auto_auto] lg:grid-cols-[auto_500px] lg:overflow-hidden lg:gap-2'>
+    <main className='relative w-full px-3 mx-auto max-w-7xl lg:max-w-none lg:grid lg:grid-rows-[auto_1fr] lg:grid-cols-[auto_500px] lg:overflow-hidden lg:gap-2 lg:flex-auto'>
       <div className='overflow-x-auto overflow-y-hidden lg:col-span-2 lg:row-span-1'>
         <div className='mx-auto'>
           <TradingViewTickers pointerEvents='none' />
