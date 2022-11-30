@@ -40,8 +40,8 @@ const Home: NextPage = () => {
   );
 
   return (
-    <main className='relative w-full px-3 mx-auto max-w-7xl'>
-      <div className='overflow-x-auto overflow-y-hidden'>
+    <main className='relative w-full px-3 mx-auto max-w-7xl lg:max-w-none lg:grid lg:grid-rows-[auto_auto] lg:grid-cols-[auto_500px] lg:overflow-hidden lg:gap-2'>
+      <div className='overflow-x-auto overflow-y-hidden lg:col-span-2 lg:row-span-1'>
         <div className='mx-auto'>
           <TradingViewTickers pointerEvents='none' />
         </div>
@@ -57,7 +57,7 @@ const Home: NextPage = () => {
         //     : undefined
         // }
       >
-        <div className='h-[300px] min-h-[300px] sm:h-[40vh] lg:min-h-[500px] lg:h-[45vh]  [&_.tradingview-widget-copyright]:!leading-4'>
+        <div className='h-[300px] min-h-[300px] sm:h-[40vh] lg:min-h-[500px] lg:h-full [&_.tradingview-widget-copyright]:!leading-4'>
           {hydrated && <Chart />}
           {/* <TradingViewChart />; */}
         </div>
@@ -92,7 +92,9 @@ const Home: NextPage = () => {
           </BackgroundRedBox>
         </div>
       </noscript>
-      {hydrated && <ExchangeMarket />}
+      <div className='lg:m-0 lg:overflow-hidden lg:flex lg:flex-col lg:col-start-2 lg:row-start-2'>
+        {hydrated && <ExchangeMarket />}
+      </div>
     </main>
   );
 };

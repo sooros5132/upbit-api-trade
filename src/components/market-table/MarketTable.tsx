@@ -30,7 +30,7 @@ const MarketTable: React.FC<MarketTableProps> = ({ isLastUpdatePage }) => {
   }, shallow);
 
   return (
-    <div className='max-w-screen-xl mx-auto mb-4 text-xs sm:text-sm'>
+    <div className='max-w-screen-xl mx-auto mb-4 text-xs sm:text-sm lg:w-full overflow-hidden lg:m-0 flex flex-col'>
       {isLastUpdatePage ? (
         <div className='my-4'>
           <BackgroundBlueBox>
@@ -89,7 +89,7 @@ const MarketTable: React.FC<MarketTableProps> = ({ isLastUpdatePage }) => {
               </BackgroundRedBox>
             </div>
           </noscript>
-          <div className='flex items-center justify-between my-2'>
+          <div className='flex items-center justify-between my-2 flex-auto flex-shrink-0 flex-grow-0'>
             <div className='flex'>
               <UsdKrwToggle />
             </div>
@@ -97,10 +97,12 @@ const MarketTable: React.FC<MarketTableProps> = ({ isLastUpdatePage }) => {
           </div>
         </>
       )}
-      <table className='table w-full [&_td]:text-xs sm:[&_td]:text-sm  table-compact'>
-        <MarketTableHead />
-        <MarketTableBody />
-      </table>
+      <div className='overflow-y-auto flex-auto'>
+        <table className='table w-full [&_td]:text-xs sm:[&_td]:text-sm  table-compact'>
+          <MarketTableHead />
+          <MarketTableBody />
+        </table>
+      </div>
     </div>
   );
 };

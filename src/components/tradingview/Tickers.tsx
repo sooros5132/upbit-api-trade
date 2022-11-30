@@ -63,7 +63,7 @@ const TradingViewTickersWidget: React.FC<TradingViewTickersWidgetProps> = ({ poi
     <div>
       <div className='overflow-x-auto overflow-y-hidden'>
         <div
-          className='xl:w-full mx-auto'
+          className='mx-auto lg:!w-full'
           style={symbols.length > 1 ? { width: symbols.length * 240 } : undefined}
         >
           <div ref={tickersWidgetRef} style={{ pointerEvents }} />
