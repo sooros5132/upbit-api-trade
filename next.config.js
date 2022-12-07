@@ -39,7 +39,7 @@ module.exports = withBundleAnalyzer({
 
     return rewrites;
   },
-  reactStrictMode: true,
+  reactStrictMode: false,
   webpack(conf) {
     conf.module.rules.push({
       test: /\.svg$/,
