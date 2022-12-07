@@ -80,7 +80,8 @@ export const useUpbitAuthStore = create(
       name: 'upbitAuth', // unique name,
       serialize: (state) => window.btoa(JSON.stringify(state)),
       deserialize: (str) => JSON.parse(window.atob(str)),
-      getStorage: () => localStorage // (optional) by default, 'localStorage' is used
+      getStorage: () => localStorage, // (optional) by default, 'localStorage' is used
+      version: 0.1
     }
   )
 );

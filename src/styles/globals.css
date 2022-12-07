@@ -91,6 +91,18 @@
   .highlight {
     animation: highlight-keyframes 0.3s ease-out;
   }
+
+  .btn-order {
+    @apply bg-green-700 text-green-300 hover:bg-green-800;
+  }
+
+  .btn-order-ask {
+    @apply bg-rose-700 text-rose-300 hover:bg-rose-800;
+  }
+
+  .btn-order-bid {
+    @apply bg-teal-700 text-teal-300 hover:bg-teal-800;
+  }
 }
 
 @keyframes highlight-keyframes {

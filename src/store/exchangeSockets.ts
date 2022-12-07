@@ -3,17 +3,17 @@ import { IMarketTableItem } from 'src/components/market-table/MarketTable';
 import {
   IUpbitForex,
   IUpbitMarket,
+  IUpbitSocketMessageOrderbookSimple,
   IUpbitSocketMessageTickerSimple,
   IUpbitSocketMessageTradeSimple
 } from 'src/types/upbit';
 import { apiUrls } from 'src/lib/apiUrls';
 import { v4 as uuidv4 } from 'uuid';
-import { isEqual, keyBy, sortBy } from 'lodash';
+import { sortBy } from 'lodash';
 import { IBinanceSocketAggTrade, IBinanceSocketTicker } from 'src/types/binance';
 import { krwRegex } from 'src/utils/regex';
 import { useMarketTableSettingStore } from './marketTableSetting';
 import { useSiteSettingStore } from './siteSetting';
-import { useTradingViewSettingStore } from './tradingViewSetting';
 
 type SocketMessage = string;
 interface IExchangeState {
@@ -30,6 +30,7 @@ interface IExchangeState {
   socketTimeout: number;
   throttleDelay: number;
   upbitTradeMessages: Array<IUpbitSocketMessageTradeSimple>;
+  upbitOrderbook?: IUpbitSocketMessageOrderbookSimple;
   upbitTickerCodes: Array<string>;
   upbitTradeCodes: Array<string>;
   binanceTradeMessages: Array<IBinanceSocketAggTrade>;
@@ -53,6 +54,7 @@ const defaultState: IExchangeState = {
   socketTimeout: 5 * 1000,
   throttleDelay: 300,
   upbitTradeMessages: [],
+  upbitOrderbook: undefined,
   upbitTickerCodes: [],
   upbitTradeCodes: [],
   binanceTradeMessages: [],
@@ -66,22 +68,26 @@ interface IExchangeStore extends IExchangeState {
   setBinanceMarkets: (markets: IExchangeState['binanceMarkets']) => void;
   setBinanceMarketDatas: (marketDatas: IExchangeState['binanceMarketDatas']) => void;
   distroyAll: () => void;
-  changeUpbitTradeCodes: (tradeCodes?: IExchangeState['upbitTradeCodes']) => void;
+  addUpbitTradeCode: (tradeCode: string) => void;
+  deleteUpbitTradeCode: (tradeCode: string) => void;
+  resetUpbitTradeCode: () => void;
   connectUpbitSocket: (setting?: {
     tickerCodes?: IExchangeState['upbitTickerCodes'];
     tradeCodes?: IExchangeState['upbitTradeCodes'];
   }) => void;
   disconnectUpbitSocket: () => void;
-  changeBinanceTradeCodes: (tradeCodes?: IExchangeState['binanceTradeCodes']) => void;
+  addBinanceTradeCode: (tradeCodes: string) => void;
+  deleteBinanceTradeCode: (tradeCodes: string) => void;
+  resetBinanceTradeCode: () => void;
   connectBinanceSocket: (setting?: {
     tickerCodes?: IExchangeState['binanceTickerCodes'];
     tradeCodes?: IExchangeState['binanceTradeCodes'];
   }) => void;
-  reconnectBinanceSocket: (message: string) => void;
+  reconnectBinanceSocket: () => void;
   disconnectBinanceSocket: () => void;
   searchSymbols: (searchValue: string) => void;
   sortSymbolList: (sortColumn: keyof IMarketTableItem, sortType: 'ASC' | 'DESC') => void;
-  reconnectUpbitSocket: (message: string) => void;
+  reconnectUpbitSocket: () => void;
 }
 
 const useExchangeStore = create<IExchangeStore>(
@@ -101,15 +107,29 @@ const useExchangeStore = create<IExchangeStore>(
     setBinanceMarketDatas(marketDatas) {
       set({ binanceMarketDatas: { ...marketDatas } });
     },
-    changeUpbitTradeCodes(tradeCodes) {
-      const { upbitTickerCodes, connectUpbitSocket } = get();
-      if (upbitTickerCodes.length > 0) {
-        connectUpbitSocket({ tickerCodes: upbitTickerCodes, tradeCodes });
+    addUpbitTradeCode(tradeCode) {
+      const { upbitTradeCodes, connectUpbitSocket } = get();
+
+      const newCodes = [...upbitTradeCodes];
+      if (!newCodes.find((code) => code === tradeCode)) {
+        newCodes.push(tradeCode);
+        set({ upbitTradeCodes: newCodes });
+        connectUpbitSocket();
       }
+    },
+    deleteUpbitTradeCode(tradeCode) {
+      const { upbitTradeCodes, connectUpbitSocket } = get();
+      const filterdCodes = upbitTradeCodes.filter((c) => c !== tradeCode);
+      set({
+        upbitTradeCodes: filterdCodes
+      });
+      connectUpbitSocket();
+    },
+    resetUpbitTradeCode() {
+      set({ upbitTradeCodes: [] });
     },
     connectUpbitSocket(setting) {
       const { upbitMarkets, upbitTickerCodes, upbitTradeCodes } = get();
-      const { selectedExchange, selectedMarketSymbol } = useTradingViewSettingStore.getState();
       //? 업빗 소켓 설정
       const tickerCodes =
         setting?.tickerCodes && Array.isArray(setting.tickerCodes) && setting.tickerCodes.length > 0
@@ -117,14 +137,8 @@ const useExchangeStore = create<IExchangeStore>(
           : Array.isArray(upbitTickerCodes) && upbitTickerCodes.length > 0
           ? upbitTickerCodes
           : upbitMarkets.map((c) => c.market);
-      const tradeCodes =
-        setting?.tradeCodes && Array.isArray(setting.tradeCodes) && setting.tradeCodes.length > 0
-          ? setting.tradeCodes
-          : selectedExchange === 'UPBIT'
-          ? ['KRW-' + selectedMarketSymbol]
-          : Array.isArray(upbitTradeCodes) && upbitTradeCodes.length > 0
-          ? upbitTradeCodes
-          : undefined;
+      const tradeCodes = upbitTradeCodes;
+
       //? 업빗 소켓 설정
 
       const format = 'SIMPLE'; // socket 간소화된 필드명
@@ -143,36 +157,62 @@ const useExchangeStore = create<IExchangeStore>(
        */
       const message: Array<any> = [];
       message.push({ ticket: uuidv4() }, { type: 'ticker', codes: tickerCodes, isOnlyRealtime });
-      if (tradeCodes && Array.isArray(tradeCodes)) {
+      if (tradeCodes && Array.isArray(tradeCodes) && tradeCodes.length > 0) {
         message.push({ type: 'trade', codes: tradeCodes, isOnlyRealtime });
+        message.push({ type: 'orderbook', codes: tradeCodes, isOnlyRealtime });
       }
       message.push({ format });
 
       const { upbitSocket, reconnectUpbitSocket } = get();
 
+      set({
+        upbitTradeCodes: tradeCodes,
+        upbitTickerCodes: tickerCodes
+      });
       if (upbitSocket && upbitSocket.readyState === upbitSocket.OPEN) {
         upbitSocket.send(JSON.stringify(message));
       } else {
-        set({
-          upbitTradeCodes: tradeCodes,
-          upbitTickerCodes: tickerCodes
-        });
-        reconnectUpbitSocket(JSON.stringify(message));
+        reconnectUpbitSocket();
       }
     },
-    reconnectUpbitSocket(message: SocketMessage) {
-      const { socketTimeout, throttleDelay, upbitMarketDatas, upbitTradeMessages } = get();
+    reconnectUpbitSocket() {
+      const {
+        socketTimeout,
+        throttleDelay,
+        upbitMarketDatas,
+        upbitTradeMessages,
+        upbitOrderbook,
+        upbitTradeCodes,
+        upbitTickerCodes
+      } = get();
+      const format = 'SIMPLE'; // socket 간소화된 필드명
+      const isOnlySnapshot = true; // socket 시세 스냅샷만 제공
+      const isOnlyRealtime = true; // socket 실시간 시세만 제공
+
+      const message: Array<any> = [];
+      message.push(
+        { ticket: uuidv4() },
+        { type: 'ticker', codes: upbitTickerCodes, isOnlyRealtime }
+      );
+      if (upbitTradeCodes && Array.isArray(upbitTradeCodes) && upbitTradeCodes.length > 0) {
+        message.push({ type: 'trade', codes: upbitTradeCodes, isOnlyRealtime });
+        message.push({ type: 'orderbook', codes: upbitTradeCodes, isOnlyRealtime });
+      }
+      message.push({ format });
+
       let lastActivity = Date.now();
 
       const dataBuffer: IExchangeState['upbitMarketDatas'] = upbitMarketDatas || {};
       let tradeMessageBuffer: IExchangeState['upbitTradeMessages'] = upbitTradeMessages || [];
+      let orderbookBuffer: IExchangeState['upbitOrderbook'] = upbitOrderbook;
 
       let unapplied = 0;
       setInterval(() => {
         if (unapplied !== 0) {
           set({
             upbitMarketDatas: dataBuffer,
-            upbitTradeMessages: tradeMessageBuffer
+            upbitTradeMessages: tradeMessageBuffer,
+            upbitOrderbook: orderbookBuffer
           });
           unapplied = 0;
           tradeMessageBuffer = [];
@@ -189,14 +229,15 @@ const useExchangeStore = create<IExchangeStore>(
 
         const handleOpen: WebSocket['onopen'] = function () {
           lastActivity = Date.now();
-          newSocket.send(message);
+          newSocket.send(JSON.stringify(message));
         };
 
         const handleMessage: WebSocket['onmessage'] = async function (evt) {
           lastActivity = Date.now();
           const message = JSON.parse(await evt.data.text()) as
             | IUpbitSocketMessageTickerSimple
-            | IUpbitSocketMessageTradeSimple;
+            | IUpbitSocketMessageTradeSimple
+            | IUpbitSocketMessageOrderbookSimple;
 
           for (const listener of upbitChannelToSubscription.values()) {
             listener(message);
@@ -231,7 +272,11 @@ const useExchangeStore = create<IExchangeStore>(
               break;
             }
             case 'trade': {
-              // tradeMessageBuffer.push(message);
+              tradeMessageBuffer.push(message);
+              break;
+            }
+            case 'orderbook': {
+              orderbookBuffer = message;
               break;
             }
           }
@@ -256,58 +301,69 @@ const useExchangeStore = create<IExchangeStore>(
 
       init();
     },
-    changeBinanceTradeCodes(tradeCodes) {
-      const { binanceTickerCodes, connectBinanceSocket } = get();
-      if (binanceTickerCodes.length > 0) {
-        connectBinanceSocket({ tickerCodes: binanceTickerCodes, tradeCodes });
+    addBinanceTradeCode(tradeCode) {
+      const { binanceSocket, binanceTradeCodes } = get();
+      const newCodes = [...binanceTradeCodes];
+
+      if (!newCodes.find((code) => code === tradeCode)) {
+        newCodes.push(tradeCode);
+        if (binanceSocket && binanceSocket.readyState === binanceSocket.OPEN) {
+          binanceSocket.send(
+            JSON.stringify({
+              method: 'SUBSCRIBE',
+              params: [tradeCode],
+              id: binanceSocketMessageId++
+            })
+          );
+        }
       }
+
+      set({ binanceTradeCodes: newCodes });
+    },
+    deleteBinanceTradeCode(tradeCode) {
+      const { binanceSocket, binanceTradeCodes } = get();
+      const filterdCodes = binanceTradeCodes.filter((c) => c !== tradeCode);
+
+      if (binanceSocket && binanceSocket.readyState === binanceSocket.OPEN) {
+        binanceSocket.send(
+          JSON.stringify({
+            method: 'UNSUBSCRIBE',
+            params: [tradeCode],
+            id: binanceSocketMessageId++
+          })
+        );
+      }
+      set({ binanceTradeCodes: filterdCodes });
+    },
+    resetBinanceTradeCode() {
+      set({ binanceTradeCodes: [] });
     },
     connectBinanceSocket(setting) {
       const { upbitMarkets, binanceTickerCodes, binanceTradeCodes } = get();
-      const { selectedExchange, selectedMarketSymbol } = useTradingViewSettingStore.getState();
       const tickerCodes =
         setting?.tickerCodes && Array.isArray(setting.tickerCodes) && setting.tickerCodes.length > 0
           ? setting.tickerCodes
           : Array.isArray(binanceTickerCodes) && binanceTickerCodes.length > 0
           ? binanceTickerCodes
           : upbitMarkets.map((m) => m.market.replace(krwRegex, '').toLowerCase() + 'usdt@ticker');
-      const tradeCodes =
-        setting?.tradeCodes && Array.isArray(setting.tradeCodes) && setting.tradeCodes.length > 0
-          ? setting.tradeCodes
-          : selectedExchange === 'BINANCE'
-          ? [`${selectedMarketSymbol.toLowerCase()}usdt@aggTrade`]
-          : Array.isArray(binanceTradeCodes) && binanceTradeCodes.length > 0
-          ? binanceTradeCodes
-          : [];
+      const tradeCodes = binanceTradeCodes.concat(setting?.tradeCodes || []);
 
-      const message = {
-        method: 'SUBSCRIBE',
-        params: tickerCodes.concat(tradeCodes),
-        id: binanceSocketMessageId++
-      };
-
-      const { binanceSocket, reconnectBinanceSocket } = get();
-      if (binanceSocket && binanceSocket.readyState === binanceSocket.OPEN) {
-        if (binanceTradeCodes.length > 0) {
-          binanceSocket.send(
-            JSON.stringify({
-              method: 'UNSUBSCRIBE',
-              params: binanceTradeCodes,
-              id: binanceSocketMessageId++
-            })
-          );
-        }
-        binanceSocket.send(JSON.stringify(message));
-      } else {
-        reconnectBinanceSocket(JSON.stringify(message));
-      }
       set({
         binanceTradeCodes: tradeCodes,
         binanceTickerCodes: tickerCodes
       });
+      const { reconnectBinanceSocket } = get();
+      reconnectBinanceSocket();
     },
-    reconnectBinanceSocket(message) {
-      const { socketTimeout, throttleDelay, binanceMarketDatas, binanceTradeMessages } = get();
+    reconnectBinanceSocket() {
+      const {
+        socketTimeout,
+        throttleDelay,
+        binanceMarketDatas,
+        binanceTradeMessages,
+        binanceTradeCodes,
+        binanceTickerCodes
+      } = get();
       let lastActivity = Date.now();
       const dataBuffer: IExchangeState['binanceMarketDatas'] = binanceMarketDatas || {};
       let tradeMessageBuffer: IExchangeState['binanceTradeMessages'] = binanceTradeMessages || [];
@@ -339,7 +395,13 @@ const useExchangeStore = create<IExchangeStore>(
         const handleOpen: WebSocket['onopen'] = function () {
           if (newSocket) {
             lastActivity = Date.now();
-            newSocket.send(message);
+            newSocket.send(
+              JSON.stringify({
+                method: 'SUBSCRIBE',
+                params: binanceTickerCodes.concat(binanceTradeCodes),
+                id: binanceSocketMessageId++
+              })
+            );
           }
         };
 

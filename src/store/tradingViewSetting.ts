@@ -39,7 +39,8 @@ export const useTradingViewSettingStore = create(
       partialize: (state) =>
         Object.fromEntries(
           Object.entries(state).filter(([key]) => !['scriptLoaded'].includes(key))
-        ) as ITradingViewSettingStore
+        ) as ITradingViewSettingStore,
+      version: 0.1
     }
   )
 );

@@ -151,6 +151,21 @@ export interface IUpbitSocketMessageTickerSimple {
   st: string;
 }
 
+export interface IUpbitSocketMessageOrderbookSimple {
+  ty: 'orderbook';
+  cd: string; // 마켓 코드 (ex. KRW-BTC)	String
+  tas: number; // 호가 매도 총 잔량	Double
+  tbs: number; // 호가 매수 총 잔량	Double
+  obu: Array<{
+    // 호가	List of Objects
+    ap: number; // 매도 호가	Double
+    bp: number; // 매수 호가	Double
+    as: number; // 매도 잔량	Double
+    bs: number; // 매수 잔량	Double
+  }>;
+  tms: number; // 타임스탬프 (millisecond)	Long
+}
+
 export interface IUpbitSocketMessageTradeSimple {
   ty: 'trade'; //									타입
   cd: string; //									마켓 코드 (ex. KRW-BTC)

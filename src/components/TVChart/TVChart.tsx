@@ -228,18 +228,10 @@ export const TVChartInner: React.FC<TVChartProps> = React.memo<TVChartProps>(
               .setQuantity('');
 
             function subscribePositionLine(accounts: Array<IUpbitAccounts>) {
-              if (!tvWidget) {
+              if (!tvWidget || !accountOrderLine) {
                 return;
               }
-              const ticker = tvWidget?.activeChart()?.symbol()?.split('.')?.[2];
-
-              if (!ticker) {
-                return;
-              }
-
-              const [tickerCurrency, tickerSymbol] = ticker.split('-');
-
-              const account = accounts.find((account) => account.currency === tickerSymbol);
+              const account = accounts.find((account) => account.currency === currency);
 
               if (!account) {
                 accountOrderLine?.setPrice(0);
@@ -266,6 +258,9 @@ export const TVChartInner: React.FC<TVChartProps> = React.memo<TVChartProps>(
                 }
                 accountOrderLine?.remove();
                 tvWidget.activeChart().dataReady(() => {
+                  if (unsubscribe) {
+                    unsubscribe();
+                  }
                   accountOrderLine = tvWidget
                     .activeChart()
                     .createPositionLine()
@@ -305,7 +300,7 @@ export const TVChartInner: React.FC<TVChartProps> = React.memo<TVChartProps>(
       tvWidget.chart().setSymbol(symbol);
     }, [symbol]);
 
-    return <div id={containerId} ref={ref} className={'TVChartContainer h-full'} />;
+    return <div id={containerId} ref={ref} className={'h-full flex-auto'} />;
   },
   isEqual
 );

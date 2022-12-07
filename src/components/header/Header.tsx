@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { AiFillSetting } from 'react-icons/ai';
 import Link from 'next/link';
 import { useUpbitAuthStore } from 'src/store/upbitAuth';
@@ -15,7 +15,6 @@ import { IoMdRefresh } from 'react-icons/io';
 import useSWR from 'swr';
 import { apiUrls } from 'src/lib/apiUrls';
 import { IUpbitForex } from 'src/types/upbit';
-import axios from 'axios';
 import type { ICoincodexGetMetadataPick } from 'src/types/coincodex';
 import numeral from 'numeral';
 import formatInTimeZone from 'date-fns-tz/formatInTimeZone';
@@ -24,10 +23,30 @@ import classNames from 'classnames';
 
 const Header: React.FC = () => {
   const upbitAuth = useUpbitAuthStore();
-  const { showMyAccounts, setShowMyAccounts, hydrated } = useSiteSettingStore(
-    ({ setShowMyAccounts, showMyAccounts, hydrated }) => ({
-      setShowMyAccounts,
+  const {
+    hideMyAccounts,
+    hideTradingPanel,
+    showMyAccounts,
+    showTradingPanel,
+    visibleMyAccounts,
+    visibleTradingPanel,
+    hydrated
+  } = useSiteSettingStore(
+    ({
+      hideMyAccounts,
+      hideTradingPanel,
       showMyAccounts,
+      showTradingPanel,
+      visibleMyAccounts,
+      visibleTradingPanel,
+      hydrated
+    }) => ({
+      hideMyAccounts,
+      hideTradingPanel,
+      showMyAccounts,
+      showTradingPanel,
+      visibleMyAccounts,
+      visibleTradingPanel,
       hydrated
     }),
     shallow
@@ -73,15 +92,35 @@ const Header: React.FC = () => {
   // }, [showMyAccounts]);
 
   const handleClickMenuItem =
-    (prop: 'logout' | 'showMyAccounts' | 'highlight' | 'upbitApiConnect' | 'stickyChart') =>
+    (
+      prop:
+        | 'logout'
+        | 'visibleMyAccounts'
+        | 'highlight'
+        | 'upbitApiConnect'
+        | 'stickyChart'
+        | 'visibleTradingPanel'
+    ) =>
     (event: React.MouseEvent<HTMLLIElement>) => {
       switch (prop) {
         case 'logout': {
           upbitAuth.deleteKeys();
           break;
         }
-        case 'showMyAccounts': {
-          setShowMyAccounts(!showMyAccounts);
+        case 'visibleMyAccounts': {
+          if (visibleMyAccounts) {
+            hideMyAccounts();
+          } else {
+            showMyAccounts();
+          }
+          break;
+        }
+        case 'visibleTradingPanel': {
+          if (visibleTradingPanel) {
+            hideTradingPanel();
+          } else {
+            showTradingPanel();
+          }
           break;
         }
         case 'highlight': {
@@ -155,29 +194,29 @@ const Header: React.FC = () => {
                 />
               </button>
             </li>
-            {/* <li onClickCapture={handleClickMenuItem('stickyChart')}>
+            <li onClickCapture={handleClickMenuItem('visibleTradingPanel')}>
               <button className='justify-between font-normal btn btn-ghost'>
-                <span className='label-text'>차트 상단 고정</span>
+                <span className='label-text'>트레이딩 패널 표시</span>
                 <input
                   type='checkbox'
-                  checked={stickyChart}
+                  checked={visibleTradingPanel}
                   readOnly
                   className='checkbox checkbox-sm'
                 />
               </button>
-            </li> */}
+            </li>
             {hydrated && upbitAuth.secretKey
               ? [
                   <div key={'header-menu-divider'} className='m-0 divider' />,
                   <li
-                    key={'header-menu-showMyAccounts'}
-                    onClick={handleClickMenuItem('showMyAccounts')}
+                    key={'header-menu-visibleMyAccounts'}
+                    onClick={handleClickMenuItem('visibleMyAccounts')}
                   >
                     <button className='justify-between font-normal btn btn-ghost'>
                       <span className='label-text'>잔고 표시</span>
                       <input
                         type='checkbox'
-                        checked={showMyAccounts}
+                        checked={visibleMyAccounts}
                         readOnly
                         className='checkbox checkbox-sm'
                       />
@@ -240,7 +279,7 @@ const Header: React.FC = () => {
           </ul>
         </div>
       </div>
-      {hydrated && showMyAccounts && upbitAuth.accounts.length ? (
+      {hydrated && visibleMyAccounts && upbitAuth.accounts.length ? (
         <div className='xl:mx-auto'>
           <MyAccounts upbitAccounts={upbitAuth.accounts} />
         </div>

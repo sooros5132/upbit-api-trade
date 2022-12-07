@@ -3,7 +3,6 @@ import { isEqual } from 'lodash';
 import Image from 'next/image';
 import React from 'react';
 import { memo, useEffect, useRef } from 'react';
-import { AiOutlineAreaChart } from 'react-icons/ai';
 import { TiPin } from 'react-icons/ti';
 import { useExchangeStore } from 'src/store/exchangeSockets';
 import { useMarketTableSettingStore } from 'src/store/marketTableSetting';
@@ -43,18 +42,18 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
     setSelectedMarketSymbol(symbol);
     setSelectedExchange(exchange);
 
-    switch (exchange) {
-      case 'UPBIT': {
-        useExchangeStore.getState().connectUpbitSocket();
-        break;
-      }
-      case 'BINANCE': {
-        useExchangeStore.getState().connectBinanceSocket();
-        break;
-      }
-    }
+    //   switch (exchange) {
+    //     case 'UPBIT': {
+    //       useExchangeStore.getState().connectUpbitSocket();
+    //       break;
+    //     }
+    //     case 'BINANCE': {
+    //       useExchangeStore.getState().connectBinanceSocket();
+    //       break;
+    //     }
+    //   }
 
-    window.scrollTo(0, 0);
+    //   window.scrollTo(0, 0);
   };
 
   const handleClickStarIcon = (symbol: string) => () => {
@@ -228,9 +227,9 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
               alt='upbit favicon'
             />
           </a>
-          <div className='market-chart-icon' onClick={handleClickMarketIcon(marketSymbol, 'UPBIT')}>
+          {/* <div className='market-chart-icon' onClick={handleClickMarketIcon(marketSymbol, 'UPBIT')}>
             <AiOutlineAreaChart />
-          </div>
+          </div> */}
           &nbsp;
           {upbitMarket.binance_price && (
             <>
@@ -248,12 +247,12 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
                   alt='binance favicon'
                 />
               </a>
-              <div
+              {/* <div
                 className='market-chart-icon'
                 onClick={handleClickMarketIcon(marketSymbol, 'BINANCE')}
               >
                 <AiOutlineAreaChart />
-              </div>
+              </div> */}
             </>
           )}
         </div>

@@ -7,45 +7,43 @@ import useSWR from 'swr';
 import { IBinanceSocketTicker, IBinanceTickerPrice } from 'src/types/binance';
 import { useExchangeStore } from 'src/store/exchangeSockets';
 import { krwRegex } from 'src/utils/regex';
-import { keyBy } from 'lodash';
+import { keyBy, sortBy } from 'lodash';
 import { useMarketTableSettingStore } from 'src/store/marketTableSetting';
-import TradingViewTickers from 'src/components/tradingview/Tickers';
 import shallow from 'zustand/shallow';
 import { useSiteSettingStore } from 'src/store/siteSetting';
 import axios from 'axios';
 import { BackgroundRedBox } from 'src/components/modules/Box';
 import Link from 'next/link';
-import { TVChart } from 'src/components/TVChart';
-import { useTradingViewSettingStore } from 'src/store/tradingViewSetting';
-import { ResolutionString } from 'public/charting_library/charting_library';
+import UpbitTrading from 'src/components/Trading/Upbit';
+import { Chart } from 'src/components/Chart/Chart';
+import classNames from 'classnames';
 
 const Home: NextPage = () => {
   const hydrated = useSiteSettingStore((state) => state.hydrated, shallow);
+  const visibleTradingPanel = useSiteSettingStore((state) => state.visibleTradingPanel, shallow);
 
   return (
-    <main className='relative w-full px-3 mx-auto max-w-7xl lg:max-w-none lg:grid lg:grid-rows-[auto_1fr] lg:grid-cols-[auto_450px] lg:overflow-hidden lg:gap-2 lg:flex-auto lg:p-0 xl:grid-cols-[auto_500px]'>
+    <main className='relative w-full px-3 mx-auto max-w-7xl lg:max-w-none lg:grid lg:grid-rows-[auto_1fr] lg:grid-cols-[1fr_250px_350px] lg:overflow-hidden lg:gap-2 lg:flex-auto lg:p-0 xl:grid-cols-[1fr_300px_400px]'>
       {/* <div className='overflow-x-auto overflow-y-hidden lg:col-span-3 lg:row-span-1'>
         <div className='mx-auto'>
           <TradingViewTickers pointerEvents='none' />
         </div>
       </div> */}
       <div
-        className='lg:col-start-1 lg:row-start-2'
-        // className={hydrated && stickyChart && headerHeight ? `sticky left-0 z-[1]` : undefined}
-        // style={
-        //   hydrated && stickyChart && headerHeight
-        //     ? {
-        //         top: headerHeight
-        //       }
-        //     : undefined
-        // }
+        className={classNames(
+          'lg:row-start-2',
+          process.env.NODE_ENV === 'development' && hydrated && visibleTradingPanel
+            ? 'lg:col-start-1'
+            : 'lg:col-span-2'
+        )}
       >
-        <div className='h-[300px] min-h-[300px] sm:h-[40vh] lg:min-h-[500px] lg:h-full [&_.tradingview-widget-copyright]:!leading-4'>
-          {hydrated && <Chart />}
-          {/* <TradingViewChart />; */}
-        </div>
+        {hydrated && <Chart />}
       </div>
-
+      {process.env.NODE_ENV === 'development' && hydrated && visibleTradingPanel && (
+        <div className='lg:col-start-2 lg:row-start-2 lg:block overflow-hidden'>
+          {<UpbitTrading />}
+        </div>
+      )}
       <noscript>
         <div className='mt-4'>
           <BackgroundRedBox>
@@ -75,60 +73,11 @@ const Home: NextPage = () => {
           </BackgroundRedBox>
         </div>
       </noscript>
-      <div className='lg:m-0 lg:overflow-hidden lg:flex lg:flex-col lg:col-start-2 lg:row-start-2 text-xs sm:text-sm lg:text-xs xl:text-sm'>
+      <div className='lg:m-0 lg:overflow-hidden lg:flex lg:flex-col lg:col-start-3 lg:row-start-2 text-xs sm:text-sm lg:text-xs xl:text-sm'>
         {hydrated && <ExchangeMarket />}
       </div>
     </main>
   );
-};
-
-const Chart = () => {
-  const { selectedExchange, selectedMarketSymbol } = useTradingViewSettingStore(
-    ({ selectedExchange, selectedMarketSymbol }) => ({ selectedExchange, selectedMarketSymbol }),
-    shallow
-  );
-
-  // useEffect(() => {
-  //   switch (selectedExchange) {
-  //     case 'UPBIT': {
-  //       useExchangeStore.getState().connectUpbitSocket();
-  //       break;
-  //     }
-  //     case 'BINANCE': {
-  //       useExchangeStore.getState().connectBinanceSocket();
-  //       break;
-  //     }
-  //   }
-  // }, [selectedExchange, selectedMarketSymbol]);
-
-  switch (selectedExchange) {
-    case 'BINANCE': {
-      return (
-        <TVChart
-          key={'binance-chart'}
-          interval={'15' as ResolutionString}
-          symbol={selectedMarketSymbol + 'USDT'}
-          currency={selectedMarketSymbol}
-          exchange={'BINANCE'}
-        />
-      );
-      // return <TradingViewChart />;
-    }
-    case 'UPBIT': {
-      return (
-        <TVChart
-          key={'upbit-chart'}
-          interval={'15' as ResolutionString}
-          symbol={selectedMarketSymbol + 'KRW'}
-          currency={selectedMarketSymbol}
-          exchange={'UPBIT'}
-        />
-      );
-    }
-    default: {
-      return null;
-    }
-  }
 };
 
 const ExchangeMarket: React.FC = () => {
@@ -150,17 +99,22 @@ const ExchangeMarket: React.FC = () => {
             apiUrls.upbit.origin + apiUrls.upbit.market.all + '?isDetails=false'
           )
           .then((res) => {
-            return res.data?.filter((m) => {
-              if (Boolean(m.market.match(krwRegex))) {
-                upbitMarketAllRecord[m.market] = m;
-                return true;
-              }
-              // BTC 마켓은 아래 코드 사용
-              // if (!Boolean(m.market.match(usdtRegex))) {
-              //   upbitMarketRecord[m.market] = m;
-              //   return true;
-              // }
-            });
+            const list = sortBy(
+              res.data?.filter((m) => {
+                if (Boolean(m.market.match(krwRegex))) {
+                  upbitMarketAllRecord[m.market] = m;
+                  return true;
+                }
+                // BTC 마켓은 아래 코드 사용
+                // if (!Boolean(m.market.match(usdtRegex))) {
+                //   upbitMarketRecord[m.market] = m;
+                //   return true;
+                // }
+              }),
+              'korean_name'
+            );
+
+            return list;
           });
         const symbolList = upbitMarketAll?.map((m: IUpbitMarket) => m.market);
         const upbitSymbols = symbolList.join(',');
@@ -181,6 +135,7 @@ const ExchangeMarket: React.FC = () => {
         const binanceMarketSnapshotKeyBy = keyBy(binanceMarketSnapshot, 'symbol');
         const upbitMarketSnapshotRecord: Record<string, IMarketTableItem> = {};
         const binanceMarketSnapshotRecord: Record<string, IBinanceSocketTicker> = {};
+        const binanceMarketAll: Array<IUpbitMarket> = [];
 
         for (const m of binanceMarketSnapshot) {
           binanceMarketSnapshotRecord[m.symbol] = {
@@ -250,6 +205,12 @@ const ExchangeMarket: React.FC = () => {
           if (binanceSymbol && binanceMarketSnapshotKeyBy[binanceSymbol]) {
             const binanceMarket = binanceMarketSnapshotKeyBy[binanceSymbol];
             const binanceKrwPrice = Number(binanceMarket.price) * forexRecent.basePrice;
+            binanceMarketAll.push({
+              market: binanceMarketSnapshotKeyBy[binanceSymbol].symbol,
+              english_name: upbitMarketAllRecord[t.market].english_name,
+              korean_name: upbitMarketAllRecord[t.market].korean_name
+            });
+
             const premium = (1 - binanceKrwPrice / t.trade_price) * 100;
             upbitMarketSnapshotRecord[t.market].binance_price =
               binanceMarketSnapshotKeyBy[binanceSymbol]?.price;
@@ -268,7 +229,8 @@ const ExchangeMarket: React.FC = () => {
         useExchangeStore.setState({
           upbitMarkets: upbitMarketAll,
           searchedSymbols: upbitKrwSymbolList,
-          sortedUpbitMarketSymbolList: upbitKrwSymbolList
+          sortedUpbitMarketSymbolList: upbitKrwSymbolList,
+          binanceMarkets: sortBy(binanceMarketAll, 'korean_name')
         });
         useMarketTableSettingStore.getState().setSortColumn('tp');
         useMarketTableSettingStore.getState().setSortType('DESC');

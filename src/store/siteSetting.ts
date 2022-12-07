@@ -9,25 +9,55 @@ interface ISiteSettingState {
   hydrated: boolean;
   theme: 'dark' | 'light' | 'black';
   fontSize: number;
-  showMyAccounts: boolean;
-  headerHeight?: number;
-  visibleBalances: boolean;
+  visibleMyAccounts: boolean;
+  visibleCurrencyBalances: boolean;
+  visibleTradingPanel: boolean;
+  subscribeChartCodes: Array<{
+    exchange: 'BINANCE' | 'UPBIT';
+    code: string;
+  }>;
 }
 
 interface ISiteSettingStore extends ISiteSettingState {
   setHydrated: () => void;
-  setShowMyAccounts: (show: boolean) => void;
+  showMyAccounts: () => void;
+  hideMyAccounts: () => void;
   changeTheme: (mode: ISiteSettingState['theme']) => void;
   changeFontSize: (fontSize: number) => void;
-  setVisibleBalances: (visible: boolean) => void;
+  showCurrencyBalances: () => void;
+  hideCurrencyBalances: () => void;
+  showTradingPanel: () => void;
+  hideTradingPanel: () => void;
+  setSubscribeChartCodes: (chart: ISiteSettingState['subscribeChartCodes']) => void;
 }
+
+export const defaultSubscribeChartCodes = [
+  {
+    exchange: 'UPBIT',
+    code: 'BTC'
+  },
+  {
+    exchange: 'BINANCE',
+    code: 'BTC'
+  },
+  {
+    exchange: 'UPBIT',
+    code: 'ETH'
+  },
+  {
+    exchange: 'BINANCE',
+    code: 'ETH'
+  }
+] as const;
 
 const defaultState: ISiteSettingState = {
   hydrated: false,
   theme: 'black',
   fontSize: 14,
-  showMyAccounts: true,
-  visibleBalances: true
+  visibleMyAccounts: true,
+  visibleCurrencyBalances: true,
+  visibleTradingPanel: true,
+  subscribeChartCodes: [...defaultSubscribeChartCodes].slice(2)
 };
 
 export const useSiteSettingStore = create(
@@ -39,18 +69,23 @@ export const useSiteSettingStore = create(
           hydrated: true
         });
       },
-      setShowMyAccounts(show: boolean) {
-        set(() => ({
-          showMyAccounts: show
-        }));
+      showMyAccounts() {
+        set({
+          visibleMyAccounts: true
+        });
+      },
+      hideMyAccounts() {
+        set({
+          visibleMyAccounts: false
+        });
       },
       changeTheme(theme: ISiteSettingState['theme']) {
-        set(() => ({
+        set({
           theme
-        }));
+        });
       },
       changeFontSize(fontSize: number) {
-        set(() => ({
+        set({
           fontSize: isNaN(fontSize)
             ? DEFAULT_FONT_SIZE
             : fontSize < MIN_FONT_SIZE
@@ -58,10 +93,22 @@ export const useSiteSettingStore = create(
             : fontSize > MAX_FONT_SIZE
             ? MAX_FONT_SIZE
             : fontSize
-        }));
+        });
       },
-      setVisibleBalances(visible) {
-        set({ visibleBalances: visible });
+      showCurrencyBalances() {
+        set({ visibleCurrencyBalances: true });
+      },
+      hideCurrencyBalances() {
+        set({ visibleCurrencyBalances: false });
+      },
+      showTradingPanel() {
+        set({ visibleTradingPanel: true });
+      },
+      hideTradingPanel() {
+        set({ visibleTradingPanel: false });
+      },
+      setSubscribeChartCodes(subscribeChartCodes) {
+        set({ subscribeChartCodes });
       }
     }),
     {
@@ -70,7 +117,8 @@ export const useSiteSettingStore = create(
         Object.fromEntries(
           Object.entries(state).filter(([key]) => !['hydrated', 'theme'].includes(key))
         ) as ISiteSettingStore,
-      getStorage: () => localStorage // (optional) by default, 'localStorage' is used
+      getStorage: () => localStorage, // (optional) by default, 'localStorage' is used
+      version: 0.1
       // partialize: (state) =>
       //   Object.fromEntries(
       //     Object.entries(state).filter(

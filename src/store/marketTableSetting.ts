@@ -73,7 +73,8 @@ export const useMarketTableSettingStore = create(
       partialize: (state) =>
         Object.fromEntries(
           Object.entries(state).filter(([key]) => !['hydrated'].includes(key))
-        ) as IMarketTableSettingStore
+        ) as IMarketTableSettingStore,
+      version: 0.1
     }
   )
 );

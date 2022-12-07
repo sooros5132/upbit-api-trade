@@ -115,10 +115,15 @@ interface IMyAccountsProps {
 
 const MyAccounts = memo(({ upbitAccounts: upbitAccountsTemp }: IMyAccountsProps) => {
   const upbitMarketDatas = useExchangeStore(({ upbitMarketDatas }) => upbitMarketDatas, shallow);
-  const { visibleBalances, setVisibleBalances } = useSiteSettingStore(
-    ({ visibleBalances, setVisibleBalances }) => ({ visibleBalances, setVisibleBalances }),
-    shallow
-  );
+  const { visibleCurrencyBalances, hideCurrencyBalances, showCurrencyBalances } =
+    useSiteSettingStore(
+      ({ visibleCurrencyBalances, hideCurrencyBalances, showCurrencyBalances }) => ({
+        visibleCurrencyBalances,
+        hideCurrencyBalances,
+        showCurrencyBalances
+      }),
+      shallow
+    );
 
   const upbitAccounts = useMemo(
     () =>
@@ -130,7 +135,7 @@ const MyAccounts = memo(({ upbitAccounts: upbitAccountsTemp }: IMyAccountsProps)
               totalBalance: Number(account.balance) + Number(account.locked),
               currentPrice:
                 account.currency === 'KRW'
-                  ? visibleBalances
+                  ? visibleCurrencyBalances
                     ? 1
                     : undefined
                   : upbitMarketDatas['KRW-' + account.currency]?.tp
@@ -145,8 +150,16 @@ const MyAccounts = memo(({ upbitAccounts: upbitAccountsTemp }: IMyAccountsProps)
           }
           return b.currentPrice * b.totalBalance - a.currentPrice * a.totalBalance;
         }),
-    [upbitAccountsTemp, upbitMarketDatas, visibleBalances]
+    [upbitAccountsTemp, upbitMarketDatas, visibleCurrencyBalances]
   );
+
+  const handleClickVisibleCurrencyBalanceBtn = () => {
+    if (visibleCurrencyBalances) {
+      hideCurrencyBalances();
+    } else {
+      showCurrencyBalances();
+    }
+  };
 
   return (
     <div className='flex pb-2'>
@@ -161,7 +174,7 @@ const MyAccounts = memo(({ upbitAccounts: upbitAccountsTemp }: IMyAccountsProps)
           <AccountItem
             key={`header-my-account-${account.currency}`}
             account={account}
-            visibleBalance={visibleBalances}
+            visibleBalance={visibleCurrencyBalances}
           />
         ))}
       </div>
@@ -169,9 +182,11 @@ const MyAccounts = memo(({ upbitAccounts: upbitAccountsTemp }: IMyAccountsProps)
         <button
           className='btn btn-circle btn-ghost btn-sm flex-center tooltip tooltip-left w-[1.5em] h-[1.5em] min-h-0'
           data-tip='평가금액 표시/숨기기'
-          onClick={() => setVisibleBalances(!visibleBalances)}
+          onClick={handleClickVisibleCurrencyBalanceBtn}
         >
-          <label className={classNames('swap swap-rotate', visibleBalances ? 'swap-active' : '')}>
+          <label
+            className={classNames('swap swap-rotate', visibleCurrencyBalances ? 'swap-active' : '')}
+          >
             <span className='swap-on fill-current'>
               <AiFillEye />
             </span>
