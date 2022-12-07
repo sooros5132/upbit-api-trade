@@ -213,7 +213,9 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
       </td>
       <td className='text-left'>
         <div className='flex items-center'>
-          <span className='text-gray-300 whitespace-pre-wrap'>{upbitMarket.korean_name}</span>
+          <span className='text-gray-300 whitespace-pre-wrap font-sans'>
+            {upbitMarket.korean_name}
+          </span>
         </div>
         <div className='flex'>
           <a href={apiUrls.upbit.marketHref + upbitMarket.cd} target='_blank' rel='noreferrer'>
