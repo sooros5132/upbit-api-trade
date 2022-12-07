@@ -48,10 +48,10 @@ function MyApp({ Component, pageProps }: AppProps) {
       <Head>
         <meta name='viewport' content='initial-scale=1, width=device-width' />
       </Head>
-      <Script
+      {/* <Script
         src='https://s3.tradingview.com/tv.js'
         onLoad={() => useTradingViewSettingStore.setState({ scriptLoaded: true })}
-      />
+      /> */}
       <Script src='https://www.googletagmanager.com/gtag/js?id=G-VYNSSXH1VE' />
       <Script id='google-analytics' strategy='afterInteractive'>
         {`window.dataLayer = window.dataLayer || [];
