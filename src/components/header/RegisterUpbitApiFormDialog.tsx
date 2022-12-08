@@ -4,7 +4,7 @@ import { useUpbitAuthStore } from 'src/store/upbitAuth';
 import { toast } from 'react-toastify';
 import classNames from 'classnames';
 import axios from 'axios';
-import { PROXY_PATH } from 'src/lib/apiUrls';
+import { PROXY_ORIGIN, PROXY_PATH } from 'src/lib/apiUrls';
 import useSWR from 'swr';
 
 interface RegisterUpbitApiFormDialogProps {
@@ -21,7 +21,6 @@ const RegisterUpbitApiFormDialog: React.FC<RegisterUpbitApiFormDialogProps> = ({
     accessKey: '',
     secretKey: ''
   });
-  const [apiServer, setApiServer] = useState(apiServerDefaultValue);
 
   const handleChangeValue =
     (prop: keyof typeof values) => (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -118,42 +117,21 @@ const RegisterUpbitApiFormDialog: React.FC<RegisterUpbitApiFormDialogProps> = ({
   );
 };
 
-type apiServerDefaultValueType = {
-  loading: boolean;
-  status: number;
-  ip: null | string;
-  lastCheck: null | Date;
-};
-
-const apiServerDefaultValue: apiServerDefaultValueType = {
-  loading: false,
-  status: 400,
-  ip: null,
-  lastCheck: new Date()
-};
-
 const ApiServerIp: React.FC = () => {
+  const url = '/api/v1/ip/' + (PROXY_ORIGIN ? new URL(PROXY_ORIGIN).hostname : location.hostname);
   const {
     data: ip,
     error,
     isValidating
   } = useSWR<string>(
-    PROXY_PATH + '/api/ip',
+    url,
     async (url) => {
       const res = await axios
         .get<string>(url)
-        .then((res) => res.data)
-        .catch(async () => {
-          return await axios
-            .get<string>(url + '.php')
-            .then((res) => res.data)
-            .catch(async () => {
-              return await axios
-                .get<string>('/api/ip')
-                .then((res) => res.data)
-                .catch(async () => 'error');
-            });
-        });
+        .then((res) => {
+          return res.data;
+        })
+        .catch(() => 'error');
 
       return res || 'error';
     },
