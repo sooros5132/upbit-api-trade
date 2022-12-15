@@ -137,7 +137,11 @@ const useExchangeStore = create<IExchangeStore>(
           : Array.isArray(upbitTickerCodes) && upbitTickerCodes.length > 0
           ? upbitTickerCodes
           : upbitMarkets.map((c) => c.market);
-      const tradeCodes = upbitTradeCodes;
+      const tradeCodes = [...upbitTradeCodes];
+      const tradePanelCode = useSiteSettingStore.getState().upbitTradeMarket;
+      if (tradePanelCode && !tradeCodes.includes(tradePanelCode)) {
+        tradeCodes.push(tradePanelCode);
+      }
 
       //? 업빗 소켓 설정
 
@@ -159,14 +163,14 @@ const useExchangeStore = create<IExchangeStore>(
       message.push({ ticket: uuidv4() }, { type: 'ticker', codes: tickerCodes, isOnlyRealtime });
       if (tradeCodes && Array.isArray(tradeCodes) && tradeCodes.length > 0) {
         message.push({ type: 'trade', codes: tradeCodes, isOnlyRealtime });
-        message.push({ type: 'orderbook', codes: tradeCodes, isOnlyRealtime });
+        message.push({ type: 'orderbook', codes: [tradePanelCode], isOnlyRealtime });
       }
       message.push({ format });
 
       const { upbitSocket, reconnectUpbitSocket } = get();
 
       set({
-        upbitTradeCodes: tradeCodes,
+        upbitTradeCodes: upbitTradeCodes,
         upbitTickerCodes: tickerCodes
       });
       if (upbitSocket && upbitSocket.readyState === upbitSocket.OPEN) {
@@ -194,9 +198,14 @@ const useExchangeStore = create<IExchangeStore>(
         { ticket: uuidv4() },
         { type: 'ticker', codes: upbitTickerCodes, isOnlyRealtime }
       );
-      if (upbitTradeCodes && Array.isArray(upbitTradeCodes) && upbitTradeCodes.length > 0) {
-        message.push({ type: 'trade', codes: upbitTradeCodes, isOnlyRealtime });
-        message.push({ type: 'orderbook', codes: upbitTradeCodes, isOnlyRealtime });
+      const tradeCodes = [...upbitTradeCodes];
+      const tradePanelCode = useSiteSettingStore.getState().upbitTradeMarket;
+      if (tradePanelCode && !tradeCodes.includes(tradePanelCode)) {
+        tradeCodes.push(tradePanelCode);
+      }
+      if (tradeCodes && Array.isArray(tradeCodes) && tradeCodes.length > 0) {
+        message.push({ type: 'trade', codes: tradeCodes, isOnlyRealtime });
+        message.push({ type: 'orderbook', codes: tradeCodes, isOnlyRealtime });
       }
       message.push({ format });
 

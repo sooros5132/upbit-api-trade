@@ -11,6 +11,7 @@ export class Error {
     res: NextApiResponse<IErrorResponse>,
     next?: NextHandler
   ) {
+    console.error(err)
     if (typeof err === 'string') {
       res.status(500).json({
         status: 500,

@@ -114,7 +114,7 @@ export const Chart = memo(() => {
       </div>
       <div
         className={classNames(
-          'flex-auto [&>div]:flex-auto [&>div]:h-[40vh] sm:[&>div]:h-[45vh] lg:[&>div]:h-[initial] lg:[&>div]:min-h-[24rem] overflow-y-auto',
+          'flex-auto [&>div]:flex-auto [&>div]:h-[35vh] sm:[&>div]:h-[45vh] lg:[&>div]:h-[initial] lg:[&>div]:min-h-[18rem] overflow-y-auto',
           subscribeChartCodes.length > 3 ? 'grid grid-cols-2 grid-rows-2' : 'flex flex-col'
         )}
       >
@@ -128,66 +128,71 @@ export const Chart = memo(() => {
 
 Chart.displayName = 'Chart';
 
-export const ChartInner: React.FC<Pick<ChartProps, 'chart'>> = memo(({ chart }) => {
-  useEffect(() => {
-    if (!chart) {
-      return;
-    }
-
-    switch (chart.exchange) {
-      case 'UPBIT': {
-        const upbitSymbol = 'KRW-' + chart.code;
-        const { addUpbitTradeCode } = useExchangeStore.getState();
-        addUpbitTradeCode(upbitSymbol);
-
-        return () => {
-          const { deleteUpbitTradeCode } = useExchangeStore.getState();
-          deleteUpbitTradeCode(upbitSymbol);
-        };
-      }
-      case 'BINANCE': {
-        const binanceSymbol = chart.code.toLowerCase() + 'usdt@aggTrade';
-        const { addBinanceTradeCode } = useExchangeStore.getState();
-        addBinanceTradeCode(binanceSymbol);
-
-        return () => {
-          const { deleteBinanceTradeCode } = useExchangeStore.getState();
-          deleteBinanceTradeCode(binanceSymbol);
-        };
-      }
-      default: {
+export const ChartInner: React.FC<Pick<ChartProps, 'chart'>> = memo(
+  ({ chart }) => {
+    useEffect(() => {
+      if (!chart) {
         return;
       }
-    }
-  }, [chart]);
 
-  return (
-    <div className='flex flex-col'>
-      <div className='flex-auto flex-grow-0 flex-shrink-0'>
-        <SelectChart chart={chart} />
+      switch (chart.exchange) {
+        case 'UPBIT': {
+          const upbitSymbol = 'KRW-' + chart.code;
+          const { addUpbitTradeCode } = useExchangeStore.getState();
+          addUpbitTradeCode(upbitSymbol);
+
+          return () => {
+            const { deleteUpbitTradeCode } = useExchangeStore.getState();
+            deleteUpbitTradeCode(upbitSymbol);
+          };
+        }
+        case 'BINANCE': {
+          const binanceSymbol = chart.code.toLowerCase() + 'usdt@aggTrade';
+          const { addBinanceTradeCode } = useExchangeStore.getState();
+          addBinanceTradeCode(binanceSymbol);
+
+          return () => {
+            const { deleteBinanceTradeCode } = useExchangeStore.getState();
+            deleteBinanceTradeCode(binanceSymbol);
+          };
+        }
+        default: {
+          return;
+        }
+      }
+    }, [chart]);
+
+    return (
+      <div className='flex flex-col'>
+        <div className='flex-auto flex-grow-0 flex-shrink-0'>
+          <SelectChart chart={chart} />
+        </div>
+        {chart?.exchange === 'BINANCE' ? (
+          <TVChart
+            key={'binance-chart'}
+            interval={'15' as ResolutionString}
+            symbol={chart?.code + 'USDT'}
+            currency={chart?.code}
+            exchange={'BINANCE'}
+          />
+        ) : chart?.exchange === 'UPBIT' ? (
+          <TVChart
+            key={'upbit-chart'}
+            interval={'15' as ResolutionString}
+            symbol={chart?.code + 'KRW'}
+            currency={chart?.code}
+            exchange={'UPBIT'}
+          />
+        ) : (
+          <div className='flex-center h-full bg-base-300'>상단에서 차트를 선택해주세요</div>
+        )}
       </div>
-      {chart?.exchange === 'BINANCE' ? (
-        <TVChart
-          key={'binance-chart'}
-          interval={'15' as ResolutionString}
-          symbol={chart?.code + 'USDT'}
-          currency={chart?.code}
-          exchange={'BINANCE'}
-        />
-      ) : chart?.exchange === 'UPBIT' ? (
-        <TVChart
-          key={'upbit-chart'}
-          interval={'15' as ResolutionString}
-          symbol={chart?.code + 'KRW'}
-          currency={chart?.code}
-          exchange={'UPBIT'}
-        />
-      ) : (
-        <div className='flex-center h-full bg-base-300'>상단에서 차트를 선택해주세요</div>
-      )}
-    </div>
-  );
-}, isEqual);
+    );
+  },
+  (prev, next) => {
+    return prev.chart.code === next.chart.code && prev.chart.exchange === next.chart.exchange;
+  }
+);
 
 ChartInner.displayName = 'ChartInner';
 

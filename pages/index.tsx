@@ -23,7 +23,7 @@ const Home: NextPage = () => {
   const visibleTradingPanel = useSiteSettingStore((state) => state.visibleTradingPanel, shallow);
 
   return (
-    <main className='relative w-full px-3 mx-auto max-w-7xl lg:max-w-none lg:grid lg:grid-rows-[auto_1fr] lg:grid-cols-[1fr_250px_350px] lg:overflow-hidden lg:gap-2 lg:flex-auto lg:p-0 xl:grid-cols-[1fr_300px_400px]'>
+    <main className='relative w-full px-3 mx-auto max-w-7xl lg:max-w-none lg:grid lg:grid-rows-[auto_1fr] lg:grid-cols-[1fr_350px_350px] lg:overflow-hidden lg:gap-2 lg:flex-auto lg:p-0 xl:grid-cols-[1fr_400px_400px]'>
       {/* <div className='overflow-x-auto overflow-y-hidden lg:col-span-3 lg:row-span-1'>
         <div className='mx-auto'>
           <TradingViewTickers pointerEvents='none' />
@@ -31,7 +31,7 @@ const Home: NextPage = () => {
       </div> */}
       <div
         className={classNames(
-          'lg:row-start-2',
+          'lg:row-start-2 overflow-y-auto',
           process.env.NODE_ENV === 'development' && hydrated && visibleTradingPanel
             ? 'lg:col-start-1'
             : 'lg:col-span-2'
@@ -41,7 +41,7 @@ const Home: NextPage = () => {
       </div>
       {process.env.NODE_ENV === 'development' && hydrated && visibleTradingPanel && (
         <div className='lg:col-start-2 lg:row-start-2 lg:block overflow-hidden'>
-          {<UpbitTrading />}
+          <UpbitTrading />
         </div>
       )}
       <noscript>
@@ -73,7 +73,7 @@ const Home: NextPage = () => {
           </BackgroundRedBox>
         </div>
       </noscript>
-      <div className='lg:m-0 lg:overflow-hidden lg:flex lg:flex-col lg:col-start-3 lg:row-start-2 text-xs sm:text-sm lg:text-xs xl:text-sm'>
+      <div className='lg:m-0 lg:overflow-hidden lg:flex lg:flex-col lg:col-start-3 lg:row-start-2 text-xs sm:text-sm lg:text-xs 2xl:text-sm'>
         {hydrated && <ExchangeMarket />}
       </div>
     </main>

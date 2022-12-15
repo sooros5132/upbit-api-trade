@@ -16,19 +16,7 @@ interface ISiteSettingState {
     exchange: 'BINANCE' | 'UPBIT';
     code: string;
   }>;
-}
-
-interface ISiteSettingStore extends ISiteSettingState {
-  setHydrated: () => void;
-  showMyAccounts: () => void;
-  hideMyAccounts: () => void;
-  changeTheme: (mode: ISiteSettingState['theme']) => void;
-  changeFontSize: (fontSize: number) => void;
-  showCurrencyBalances: () => void;
-  hideCurrencyBalances: () => void;
-  showTradingPanel: () => void;
-  hideTradingPanel: () => void;
-  setSubscribeChartCodes: (chart: ISiteSettingState['subscribeChartCodes']) => void;
+  upbitTradeMarket: string;
 }
 
 export const defaultSubscribeChartCodes = [
@@ -57,8 +45,23 @@ const defaultState: ISiteSettingState = {
   visibleMyAccounts: true,
   visibleCurrencyBalances: true,
   visibleTradingPanel: true,
-  subscribeChartCodes: [...defaultSubscribeChartCodes].slice(2)
+  subscribeChartCodes: [...defaultSubscribeChartCodes].slice(2),
+  upbitTradeMarket: 'KRW-BTC'
 };
+
+interface ISiteSettingStore extends ISiteSettingState {
+  setHydrated: () => void;
+  showMyAccounts: () => void;
+  hideMyAccounts: () => void;
+  changeTheme: (mode: ISiteSettingState['theme']) => void;
+  changeFontSize: (fontSize: number) => void;
+  showCurrencyBalances: () => void;
+  hideCurrencyBalances: () => void;
+  showTradingPanel: () => void;
+  hideTradingPanel: () => void;
+  setSubscribeChartCodes: (chart: ISiteSettingState['subscribeChartCodes']) => void;
+  setUpbitTradeMarket: (code: string) => void;
+}
 
 export const useSiteSettingStore = create(
   persist<ISiteSettingStore>(
@@ -107,6 +110,11 @@ export const useSiteSettingStore = create(
       hideTradingPanel() {
         set({ visibleTradingPanel: false });
       },
+      setUpbitTradeMarket(code) {
+        set({
+          upbitTradeMarket: code
+        });
+      },
       setSubscribeChartCodes(subscribeChartCodes) {
         set({ subscribeChartCodes });
       }
@@ -115,7 +123,9 @@ export const useSiteSettingStore = create(
       name: 'siteSetting', // unique name
       partialize: (state) =>
         Object.fromEntries(
-          Object.entries(state).filter(([key]) => !['hydrated', 'theme'].includes(key))
+          Object.entries(state).filter(
+            ([key]) => !['hydrated', 'theme', 'upbitTradeMarket'].includes(key)
+          )
         ) as ISiteSettingStore,
       getStorage: () => localStorage, // (optional) by default, 'localStorage' is used
       version: 0.1

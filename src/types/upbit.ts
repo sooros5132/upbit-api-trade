@@ -4,6 +4,14 @@ export interface IUpbitErrorMessage {
     message: string;
   };
 }
+export interface IUpbitAccount {
+  avg_buy_price: string;
+  avg_buy_price_modified: boolean;
+  balance: string;
+  currency: string;
+  locked: string;
+  unit_currency: string;
+}
 
 export interface IUpbitForex {
   code: string; // "FRX.KRWUSD"
@@ -42,6 +50,86 @@ export interface IUpbitForex {
   signedChangeRate: number; // 0
   changeRate: number; // 0
 }
+
+export interface IUpbitOrderMarket {
+  id: string; //										마켓의 유일 키
+  name: string; //									마켓 이름
+  order_types?: Array<string>; //		지원 주문 방식 (만료)
+  order_sides: Array<string>; //		지원 주문 종류
+  //																매수 시 제약사항
+  bid: {
+    currency: string;
+    price_unit: string;
+    min_total: number;
+  };
+  //																매도 시 제약사항
+  ask: {
+    currency: string; //						화폐를 의미하는 영문 대문자 코드
+    price_unit: string; //					주문금액 단위
+    min_total: number; //						최소 매도/매수 금액
+  };
+  max_total: string; //							최대 매도/매수 금액
+  state: string; //									마켓 운영 상태
+}
+
+export interface IUpbitOrdersChance {
+  bid_fee: string; //							매수 수수료 비율
+  ask_fee: string; //							매도 수수료 비율
+  ask_types: Array<string>; //		매도 주문 지원 방식
+  bid_types: Array<string>; //		매수 주문 지원 방식
+  market: IUpbitOrderMarket; //		마켓에 대한 정보
+  bid_account: IUpbitAccount; //	매수 시 사용하는 화폐의 계좌 상태
+  ask_account: IUpbitAccount; //	매수 시 사용하는 화폐의 계좌 상태
+}
+
+export type IUpbitOrderType = 'limit' | 'price' | 'market';
+
+interface IUpbitOrderResponse {
+  uuid: string; //							주문의 고유 아이디
+  side: string; //							주문 종류
+  ord_type: string; //					주문 방식
+  price: string; //							주문 당시 화폐 가격
+  state: string; //							주문 상태
+  market: string; //						마켓의 유일키
+  created_at: string; //				주문 생성 시간
+  volume: string; //						사용자가 입력한 주문 양
+  remaining_volume: string; //	체결 후 남은 주문 양
+  reserved_fee: string; //			수수료로 예약된 비용
+  remaining_fee: string; //			남은 수수료
+  paid_fee: string; //					사용된 수수료
+  locked: string; //						거래에 사용중인 비용
+  executed_volume: string; //		체결된 양
+  trades_count: number; //			해당 주문에 걸린 체결 수
+}
+
+export interface IUpbitGetOrderRquestParameters {
+  market: string; //	마켓 아이디	String
+  uuids?: Array<string>; //	주문 UUID의 목록	Array
+  identifiers?: Array<string>; //	주문 identifier의 목록	Array
+  state?: string; //	주문 상태
+  states?: Array<'wait' | 'watch' | 'done' | 'cancel'>; //	주문 상태의 목록
+  page?: number; //	페이지 수, default: 1	Number
+  limit?: number; //	요청 개수, default: 100	Number
+  order_by?: 'asc' | 'desc'; //	정렬 방식
+}
+
+export interface IUpbitCreateOrderRquestParameters {
+  market: string; //  					마켓 ID (필수)	String
+  side: string; //  						주문 종류 (필수)
+  volume?: string; //  					주문량 (지정가, 시장가 매도 시 필수)	NumberString
+  price?: string; //  					주문 가격. (지정가, 시장가 매수 시 필수)
+  ord_type: IUpbitOrderType; //	주문 타입 (필수)
+  identifier?: string; //				조회용 사용자 지정값 (선택)	String (Uniq 값 사용)
+}
+
+export interface IUpbitDeleteOrderRquestParameters {
+  uuid: string;
+  identifier?: string;
+}
+
+export interface IUpbitGetOrderResponse extends IUpbitOrderResponse {}
+export interface IUpbitCreateOrderResponse extends IUpbitOrderResponse {}
+export interface IUpbitDeleteOrderResponse extends IUpbitOrderResponse {}
 
 export interface IUpbitMarket {
   market: string;

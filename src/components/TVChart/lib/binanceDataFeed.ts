@@ -69,7 +69,7 @@ const getBarsRequest = async ({
       // 10	string	// "749823.36320890"	// Taker buy quote asset volume
       // 11	string	// "0"								// Unused field. Ignore.
     })
-    .catch((err) => console.log(err));
+    .catch(() => {});
 };
 
 const binanceResolutionRecord = {
