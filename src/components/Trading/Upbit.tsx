@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import React, { FC, useEffect, useState } from 'react';
+import React, { FC, useCallback, useEffect, useState } from 'react';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { RiArrowDownSLine, RiArrowUpSLine } from 'react-icons/ri';
 import { apiUrls } from 'src/lib/apiUrls';
@@ -15,7 +15,7 @@ import {
 import { krwRegex } from 'src/utils/regex';
 import { percentageCalculator, percentRatio, priceCorrection } from 'src/utils/utils';
 import { GrPowerReset } from 'react-icons/gr';
-import useSWR, { useSWRConfig } from 'swr';
+import useSWR from 'swr';
 import shallow from 'zustand/shallow';
 import format from 'date-fns-tz/format';
 import { toast } from 'react-toastify';
@@ -191,18 +191,6 @@ const TradeInner: FC<TradeInnerProps> = ({ orderChance, changeMarket }) => {
     resetValuesAndRanges(newMarket);
   };
 
-  const resetValuesAndRanges = (newMarket?: string) => {
-    const selectedMarket = newMarket ? newMarket : marketId;
-    setValues({
-      ...values,
-      price: useExchangeStore.getState()?.upbitMarketDatas?.[selectedMarket.toUpperCase()]?.tp || 1,
-      volume: 0,
-      krwVolume: 0
-    });
-    setBalanceRange(0);
-    setPriceRange(0);
-  };
-
   const handleChangeNumberValue =
     (key: keyof UpbitTradeValues) => (event: React.ChangeEvent<HTMLInputElement>) => {
       let { volume, krwVolume, price } = values;
@@ -322,6 +310,35 @@ const TradeInner: FC<TradeInnerProps> = ({ orderChance, changeMarket }) => {
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const resetValuesAndRanges = useCallback(
+    (newMarket?: string) => {
+      const selectedMarket = newMarket ? newMarket : marketId;
+      setValues({
+        ...values,
+        price:
+          useExchangeStore.getState()?.upbitMarketDatas?.[selectedMarket.toUpperCase()]?.tp || 1,
+        volume: 0,
+        krwVolume: 0
+      });
+      setBalanceRange(0);
+      setPriceRange(0);
+    },
+    [marketId, values]
+  );
+
+  useEffect(() => {
+    setValues((prev) => ({
+      ...prev,
+      price:
+        useExchangeStore.getState()?.upbitMarketDatas?.[orderChance.market.id.toUpperCase()]?.tp ||
+        1,
+      volume: 0,
+      krwVolume: 0
+    }));
+    setBalanceRange(0);
+    setPriceRange(0);
+  }, [orderChance.market.id]);
 
   return (
     <div className='h-full bg-base-300 p-1 font-mono'>

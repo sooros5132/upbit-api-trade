@@ -1,6 +1,6 @@
 import { memo, useMemo } from 'react';
 import isEqual from 'react-fast-compare';
-import { IUpbitAccounts } from 'src-server/types/upbit';
+import { IUpbitAccount } from 'src/types/upbit';
 import { BsDot } from 'react-icons/bs';
 import { apiUrls } from 'src/lib/apiUrls';
 import { useExchangeStore } from 'src/store/exchangeSockets';
@@ -10,7 +10,7 @@ import { useSiteSettingStore } from 'src/store/siteSetting';
 import classNames from 'classnames';
 
 interface IAccountItemProps {
-  account: IUpbitAccounts & { currentPrice?: number; totalBalance: number };
+  account: IUpbitAccount & { currentPrice?: number; totalBalance: number };
   visibleBalance?: boolean;
 }
 
@@ -110,7 +110,7 @@ const AccountItem = memo(({ account, visibleBalance }: IAccountItemProps) => {
 AccountItem.displayName = 'AccountItem';
 
 interface IMyAccountsProps {
-  upbitAccounts: Array<IUpbitAccounts>;
+  upbitAccounts: Array<IUpbitAccount>;
 }
 
 const MyAccounts = memo(({ upbitAccounts: upbitAccountsTemp }: IMyAccountsProps) => {

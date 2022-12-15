@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useEffect, useRef } from 'react';
 import isEqual from 'react-fast-compare';
-import { IUpbitAccounts } from 'src-server/types/upbit';
+import { IUpbitAccount } from 'src/types/upbit';
 import binanceDataFeed from './lib/binanceDataFeed';
 import upbitDataFeed from './lib/upbitDataFeed';
 import { useUpbitAuthStore } from 'src/store/upbitAuth';
@@ -227,7 +227,7 @@ export const TVChartInner: React.FC<TVChartProps> = React.memo<TVChartProps>(
               .setBodyTextColor('#ffffff')
               .setQuantity('');
 
-            function subscribePositionLine(accounts: Array<IUpbitAccounts>) {
+            function subscribePositionLine(accounts: Array<IUpbitAccount>) {
               if (!tvWidget || !accountOrderLine) {
                 return;
               }

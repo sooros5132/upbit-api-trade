@@ -13,6 +13,8 @@ import { marketRegex } from 'src/utils/regex';
 import { koPriceLabelFormat } from 'src/utils/utils';
 import shallow from 'zustand/shallow';
 import numeral from 'numeral';
+import { useUpbitAuthStore } from 'src/store/upbitAuth';
+import { useSiteSettingStore } from 'src/store/siteSetting';
 
 export interface TableItemProps {
   krwSymbol: string;
@@ -24,6 +26,7 @@ export interface TableItemProps {
 const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }) => {
   const krwPriceRef = useRef<HTMLSpanElement>(null);
   const usdPriceRef = useRef<HTMLSpanElement>(null);
+  const isLogin = useUpbitAuthStore((state) => Boolean(state.accessKey), shallow);
   const { highlight, currency } = useMarketTableSettingStore(
     ({ highlight, currency }) => ({ highlight, currency }),
     shallow
@@ -56,7 +59,8 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
     //   window.scrollTo(0, 0);
   };
 
-  const handleClickStarIcon = (symbol: string) => () => {
+  const handleClickStarIcon = (symbol: string) => (event: React.MouseEvent<HTMLDivElement>) => {
+    event.stopPropagation();
     if (!favorite) {
       useMarketTableSettingStore.getState().addFavoriteSymbol(symbol);
     } else {
@@ -64,6 +68,13 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
     }
     const { sortColumn, sortType } = useMarketTableSettingStore.getState();
     useExchangeStore.getState().sortSymbolList(sortColumn, sortType);
+  };
+
+  const handleClickMarket = (market: string) => (event: React.MouseEvent<HTMLTableRowElement>) => {
+    if (event.currentTarget.tagName === 'TR') {
+      useSiteSettingStore.getState().setUpbitTradeMarket(market);
+      return;
+    }
   };
 
   useEffect(() => {
@@ -183,7 +194,7 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
       : 'ask';
 
   return (
-    <tr>
+    <tr className={classNames('cursor-pointer')} onClick={handleClickMarket(upbitMarket.cd)}>
       <td>
         <div className='text-center'>
           <Image
@@ -217,44 +228,46 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
           </span>
         </div>
         <div className='flex'>
-          <a href={apiUrls.upbit.marketHref + upbitMarket.cd} target='_blank' rel='noreferrer'>
-            <Image
-              className='market-exchange-image'
-              src='/icons/upbit.png'
-              width={14}
-              height={14}
-              loading='lazy'
-              alt='upbit favicon'
-            />
-          </a>
-          {/* <div className='market-chart-icon' onClick={handleClickMarketIcon(marketSymbol, 'UPBIT')}>
+          <div className='flex-center' onClick={(evt) => evt.stopPropagation()}>
+            <a href={apiUrls.upbit.marketHref + upbitMarket.cd} target='_blank' rel='noreferrer'>
+              <Image
+                className='market-exchange-image'
+                src='/icons/upbit.png'
+                width={14}
+                height={14}
+                loading='lazy'
+                alt='upbit favicon'
+              />
+            </a>
+            {/* <div className='market-chart-icon' onClick={handleClickMarketIcon(marketSymbol, 'UPBIT')}>
             <AiOutlineAreaChart />
           </div> */}
-          &nbsp;
-          {upbitMarket.binance_price && (
-            <>
-              <a
-                href={`${apiUrls.binance.marketHref}/${marketSymbol}_USDT`}
-                target='_blank'
-                rel='noreferrer'
-              >
-                <Image
-                  className='market-exchange-image'
-                  src='/icons/binance.ico'
-                  width={14}
-                  height={14}
-                  loading='lazy'
-                  alt='binance favicon'
-                />
-              </a>
-              {/* <div
+            &nbsp;
+            {upbitMarket.binance_price && (
+              <>
+                <a
+                  href={`${apiUrls.binance.marketHref}/${marketSymbol}_USDT`}
+                  target='_blank'
+                  rel='noreferrer'
+                >
+                  <Image
+                    className='market-exchange-image'
+                    src='/icons/binance.ico'
+                    width={14}
+                    height={14}
+                    loading='lazy'
+                    alt='binance favicon'
+                  />
+                </a>
+                {/* <div
                 className='market-chart-icon'
                 onClick={handleClickMarketIcon(marketSymbol, 'BINANCE')}
               >
                 <AiOutlineAreaChart />
               </div> */}
-            </>
-          )}
+              </>
+            )}
+          </div>
         </div>
       </td>
       <td className={colorPrice}>

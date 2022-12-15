@@ -2,7 +2,6 @@ import axios from 'axios';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import nc from 'next-connect';
 import { Error } from 'src-server/middleware/Error';
-import { IUpbitAccounts } from 'src-server/types/upbit';
 
 type IGetSuccess = any;
 
