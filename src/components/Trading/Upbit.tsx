@@ -57,12 +57,14 @@ const UpbitTrading: React.FC<UpbitTradingProps> = ({}) => {
           >
             주문취소
           </a>
-          <a
-            className={classNames('tab', tabActive === 'history' ? 'tab-active' : null)}
-            onClick={handleClickTabItem('history')}
-          >
-            거래내역
-          </a>
+          {process.env.NODE_ENV === 'development' && (
+            <a
+              className={classNames('tab', tabActive === 'history' ? 'tab-active' : null)}
+              onClick={handleClickTabItem('history')}
+            >
+              거래내역
+            </a>
+          )}
         </div>
         <div className='pr-1'>
           <span

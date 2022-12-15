@@ -32,14 +32,12 @@ const Home: NextPage = () => {
       <div
         className={classNames(
           'lg:row-start-2 overflow-y-auto',
-          process.env.NODE_ENV === 'development' && hydrated && visibleTradingPanel
-            ? 'lg:col-start-1'
-            : 'lg:col-span-2'
+          hydrated && visibleTradingPanel ? 'lg:col-start-1' : 'lg:col-span-2'
         )}
       >
         {hydrated && <Chart />}
       </div>
-      {process.env.NODE_ENV === 'development' && hydrated && visibleTradingPanel && (
+      {hydrated && visibleTradingPanel && (
         <div className='lg:col-start-2 lg:row-start-2 lg:block overflow-hidden'>
           <UpbitTrading />
         </div>
