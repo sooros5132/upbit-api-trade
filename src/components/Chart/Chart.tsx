@@ -43,7 +43,7 @@ export const Chart = memo(() => {
 
   if (!isReady) {
     return (
-      <div className='animate-pulse flex-center flex-col gap-2 h-full bg-base-300'>
+      <div className='animate-pulse flex-center flex-col gap-2 h-full bg-base-300 p-5'>
         <div className='animate-spin text-3xl'>
           <AiOutlineLoading3Quarters />
         </div>
@@ -178,8 +178,8 @@ export const ChartInner: React.FC<Pick<ChartProps, 'chart'>> = memo(({ chart }) 
         <TVChart
           key={'upbit-chart'}
           interval={'15' as ResolutionString}
-          symbol={chart.code + 'KRW'}
-          currency={chart.code}
+          symbol={chart?.code + 'KRW'}
+          currency={chart?.code}
           exchange={'UPBIT'}
         />
       ) : (
