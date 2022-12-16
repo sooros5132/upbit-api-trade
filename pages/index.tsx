@@ -16,9 +16,10 @@ import { BackgroundRedBox } from 'src/components/modules/Box';
 import Link from 'next/link';
 import { Chart } from 'src/components/Chart/Chart';
 import classNames from 'classnames';
-import UpbitOrders from 'src/components/Upbit/Orders';
+import { UpbitOrderform } from 'src/components/Upbit/Orderform';
 import { UpbitRecentTrades } from 'src/components/Upbit/Trades';
-import { UpbitOrderBook } from 'src/components/Upbit/OrderBook';
+import { UpbitOrderBook } from 'src/components/Upbit/Orderbook';
+import { UpbitOrders } from 'src/components/Upbit/Orders';
 
 const Home: NextPage = () => {
   const hydrated = useSiteSettingStore((state) => state.hydrated, shallow);
@@ -48,11 +49,14 @@ const Home: NextPage = () => {
           data-grid-name='orderform'
           className='lg:col-start-2 lg:row-start-2 lg:block overflow-hidden'
         >
-          <UpbitOrders />
+          <UpbitOrderform />
         </div>
       )}
       <div data-grid-name='trades'>
         <UpbitRecentTrades />
+      </div>
+      <div data-grid-name='orders'>
+        <UpbitOrders />
       </div>
       <div
         data-grid-name='market'

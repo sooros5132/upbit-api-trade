@@ -46,6 +46,7 @@ const UpbitOrderBookInner = () => {
   const bids = orderbook.obu.map((o) => ({ bp: o.bp, bs: o.bs }));
   const maxAsk = Math.max(...orderbook.obu.map((o) => o.as));
   const maxBid = Math.max(...orderbook.obu.map((o) => o.bs));
+  const maxVolume = Math.max(maxAsk, maxBid);
 
   // ty: 'orderbook';
   // cd: string; // 마켓 코드 (ex. KRW-BTC)	String
@@ -61,17 +62,17 @@ const UpbitOrderBookInner = () => {
   // tms: number; // 타임스탬프 (millisecond)	Long
 
   return (
-    <div className='flex flex-col text-right text-sm overflow-y-auto font-mono bg-base-300'>
+    <div className='flex flex-col text-right text-xs overflow-y-auto font-mono bg-base-300 lg:text-sm'>
       <div className='mt-1 flex [&>div]:basis-1/2 text-zinc-500'>
         <div>호가</div>
         <div>잔량(KRW)</div>
       </div>
-      <div className='overflow-y-auto h-full [&>div]:flex [&>div>div]:basis-1/2'>
+      <div className='overflow-y-auto h-full [&>div]:flex [&>div>div]:basis-1/2 [&>div]:gap-1'>
         {asks.map((trade) => {
           const [priceInt, priceFloat] = trade.ap.toString().split('.');
           // const [quantityInt, quantityFloat] = trade.as.toString().split('.');
           const quantity = Math.round(trade.as * market.tp);
-          const volumeWidth = Math.round(100 - (trade.as / maxAsk) * 100);
+          const volumeWidth = Math.round(100 - (trade.as / maxVolume) * 100);
           return (
             <div key={trade.ap} className='ask'>
               <div>{`${priceInt ? Number(priceInt).toLocaleString() : 0}${
@@ -91,7 +92,7 @@ const UpbitOrderBookInner = () => {
           const [priceInt, priceFloat] = trade.bp.toString().split('.');
           // const [quantityInt, quantityFloat] = (trade.bs * market.tp).toString().split('.');
           const quantity = Math.round(trade.bs * market.tp);
-          const volumeWidth = Math.round(100 - (trade.bs / maxBid) * 100);
+          const volumeWidth = Math.round(100 - (trade.bs / maxVolume) * 100);
 
           return (
             <div key={trade.bp} className='bid'>
