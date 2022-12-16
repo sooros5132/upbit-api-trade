@@ -4,7 +4,7 @@ import isEqual from 'react-fast-compare';
 import { IUpbitAccount } from 'src/types/upbit';
 import binanceDataFeed from './lib/binanceDataFeed';
 import upbitDataFeed from './lib/upbitDataFeed';
-import { useUpbitAuthStore } from 'src/store/upbitAuth';
+import { useUpbitApiStore } from 'src/store/upbitApi';
 // import './index.css';
 import type {
   IChartingLibraryWidget,
@@ -204,7 +204,7 @@ export const TVChartInner: React.FC<TVChartProps> = React.memo<TVChartProps>(
         //   .onSymbolChanged()
         //   .subscribe(null, () => {
         //     console.log('symbol changed ', tvWidget.activeChart().symbol());
-        //     // useUpbitAuthStore.subscribe(state => {
+        //     // useUpbitApiStore.subscribe(state => {
         //     //   state.accounts.map(account => account.)
         //     // })
         //   });
@@ -242,8 +242,8 @@ export const TVChartInner: React.FC<TVChartProps> = React.memo<TVChartProps>(
             }
 
             // 최초 1회 라인 긋고 구독
-            subscribePositionLine(useUpbitAuthStore.getState().accounts);
-            let unsubscribe = useUpbitAuthStore.subscribe(({ accounts }) => {
+            subscribePositionLine(useUpbitApiStore.getState().accounts);
+            let unsubscribe = useUpbitApiStore.subscribe(({ accounts }) => {
               subscribePositionLine(accounts);
             });
             // 최초 1회 라인 긋고 구독
@@ -271,8 +271,8 @@ export const TVChartInner: React.FC<TVChartProps> = React.memo<TVChartProps>(
                     .setLineColor('#0ea5e9')
                     .setBodyTextColor('#ffffff')
                     .setQuantity('');
-                  subscribePositionLine(useUpbitAuthStore.getState().accounts);
-                  unsubscribe = useUpbitAuthStore.subscribe(({ accounts }) => {
+                  subscribePositionLine(useUpbitApiStore.getState().accounts);
+                  unsubscribe = useUpbitApiStore.subscribe(({ accounts }) => {
                     subscribePositionLine(accounts);
                   });
                 });

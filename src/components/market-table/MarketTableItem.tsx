@@ -13,8 +13,7 @@ import { marketRegex } from 'src/utils/regex';
 import { koPriceLabelFormat } from 'src/utils/utils';
 import shallow from 'zustand/shallow';
 import numeral from 'numeral';
-import { useUpbitAuthStore } from 'src/store/upbitAuth';
-import { useSiteSettingStore } from 'src/store/siteSetting';
+import { useUpbitApiStore } from 'src/store/upbitApi';
 
 export interface TableItemProps {
   krwSymbol: string;
@@ -26,7 +25,7 @@ export interface TableItemProps {
 const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }) => {
   const krwPriceRef = useRef<HTMLSpanElement>(null);
   const usdPriceRef = useRef<HTMLSpanElement>(null);
-  const isLogin = useUpbitAuthStore((state) => Boolean(state.accessKey), shallow);
+  const isLogin = useUpbitApiStore((state) => Boolean(state.accessKey), shallow);
   const { highlight, currency } = useMarketTableSettingStore(
     ({ highlight, currency }) => ({ highlight, currency }),
     shallow
@@ -71,8 +70,8 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
   };
 
   const handleClickMarket = (market: string) => (event: React.MouseEvent<HTMLTableRowElement>) => {
-    if (event.currentTarget.tagName === 'TR') {
-      useSiteSettingStore.getState().setUpbitTradeMarket(market);
+    if (isLogin && event.currentTarget.tagName === 'TR') {
+      useUpbitApiStore.getState().setUpbitTradeMarket(market);
       return;
     }
   };
@@ -194,7 +193,10 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
       : 'ask';
 
   return (
-    <tr className={classNames('cursor-pointer')} onClick={handleClickMarket(upbitMarket.cd)}>
+    <tr
+      className={classNames(isLogin ? 'cursor-pointer' : null)}
+      onClick={handleClickMarket(upbitMarket.cd)}
+    >
       <td>
         <div className='text-center'>
           <Image

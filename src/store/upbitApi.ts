@@ -18,27 +18,30 @@ import queryString from 'query-string';
 import crypto from 'crypto';
 import axios from 'axios';
 
-interface IAuthState {
+export interface IUpbitApiState {
   isUpbitLogined: boolean;
   accessKey: string;
   secretKey: string;
   accounts: Array<IUpbitAccount>;
+  upbitTradeMarket: string;
 }
 
-const defaultState: IAuthState = {
+const defaultState: IUpbitApiState = {
   isUpbitLogined: false,
   accessKey: '',
   secretKey: '',
-  accounts: []
+  accounts: [],
+  upbitTradeMarket: 'KRW-BTC'
 };
 
-interface AuthStore extends IAuthState {
+interface IUpbitApiStore extends IUpbitApiState {
   registerKey: (
     accessKey: string,
     secretKey: string
   ) => Promise<Array<IUpbitAccount> | IUpbitErrorMessage>;
-  revalidate: () => Promise<void>;
-  deleteKeys: () => void;
+  revalidateKeys: () => Promise<void>;
+  resetAll: () => void;
+  setUpbitTradeMarket: (code: string) => void;
   createJwtAuthorizationToken: (
     querys: Record<string, any>,
     serializedQueryString?: string
@@ -49,8 +52,8 @@ interface AuthStore extends IAuthState {
   deleteOrder: (querys: IUpbitDeleteOrderRquestParameters) => Promise<IUpbitDeleteOrderResponse>;
 }
 
-export const useUpbitAuthStore = create(
-  persist<AuthStore>(
+export const useUpbitApiStore = create(
+  persist<IUpbitApiStore>(
     (set, get) => ({
       ...defaultState,
       async registerKey(accessKey: string, secretKey: string) {
@@ -81,6 +84,26 @@ export const useUpbitAuthStore = create(
           });
         }
         return accounts;
+      },
+      async revalidateKeys() {
+        const { accessKey, secretKey } = get();
+
+        if (!accessKey || !secretKey) {
+          set({ ...defaultState });
+          return;
+        }
+
+        await this.registerKey(accessKey, secretKey);
+      },
+      resetAll() {
+        set(() => ({
+          ...defaultState
+        }));
+      },
+      setUpbitTradeMarket(code) {
+        set({
+          upbitTradeMarket: code
+        });
       },
       async getOrdersChange(market: string) {
         const { createJwtAuthorizationToken } = get();
@@ -152,16 +175,6 @@ export const useUpbitAuthStore = create(
 
         return result;
       },
-      async revalidate() {
-        const { accessKey, secretKey } = get();
-
-        if (!accessKey || !secretKey) {
-          set({ ...defaultState });
-          return;
-        }
-
-        await this.registerKey(accessKey, secretKey);
-      },
       createJwtAuthorizationToken(querys, serializedQueryString) {
         const { accessKey, secretKey } = get();
         const query = serializedQueryString ? serializedQueryString : queryString.stringify(querys);
@@ -179,17 +192,18 @@ export const useUpbitAuthStore = create(
         const token = sign(payload, secretKey);
 
         return token;
-      },
-      deleteKeys() {
-        set(() => ({
-          ...defaultState
-        }));
       }
     }),
     {
-      name: 'upbitAuth', // unique name,
+      name: 'upbitApi', // unique name,
       serialize: (state) => window.btoa(JSON.stringify(state)),
       deserialize: (str) => JSON.parse(window.atob(str)),
+      partialize: (state) =>
+        Object.fromEntries(
+          Object.entries(state).filter(
+            ([key]) => !['hydrated', 'theme', 'upbitTradeMarket'].includes(key)
+          )
+        ) as IUpbitApiStore,
       getStorage: () => localStorage, // (optional) by default, 'localStorage' is used
       version: 0.1
     }

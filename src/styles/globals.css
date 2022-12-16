@@ -68,6 +68,67 @@
     font-family: emoji;
   }
 
+  .main-grid {
+    @apply sm:grid sm:place-items-stretch;
+  }
+
+  @screen sm {
+    .main-grid {
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto minmax(300px, 500px) 300px minmax(350px, 600px);
+      grid-template-areas:
+        'orderform orderform'
+        'chart orderbook'
+        'trades orders'
+        'market market';
+    }
+  }
+
+  @screen lg {
+    .main-grid {
+      grid-template-areas:
+        'orderbook chart market'
+        'orderbook chart market'
+        'orderbook chart trades'
+        'orderbook orderform trades'
+        'orders orders orders';
+      grid-template-rows: auto 1fr 1fr 1fr 350px auto;
+      grid-template-columns: minmax(253px, 320px) minmax(510px, 880px) minmax(253px, 320px) 1fr;
+    }
+  }
+
+  .main-grid > div[data-grid-name='header'] {
+    grid-area: header;
+  }
+
+  .main-grid > div[data-grid-name='subHeader'] {
+    grid-area: subHeader;
+  }
+
+  .main-grid > div[data-grid-name='orderbook'] {
+    grid-area: orderbook;
+  }
+
+  .main-grid > div[data-grid-name='chart'] {
+    grid-area: chart;
+  }
+
+  .main-grid > div[data-grid-name='market'] {
+    grid-area: market;
+  }
+
+  .main-grid > div[data-grid-name='trades'] {
+    grid-area: trades;
+  }
+
+  .main-grid > div[data-grid-name='orderform'] {
+    grid-area: orderform;
+  }
+
+  .main-grid > div[data-grid-name='orders'] {
+    grid-area: orders;
+  }
+
   .market-td-padding {
     @apply px-0.5 py-1.5 sm:px-1 sm:py-2;
   }

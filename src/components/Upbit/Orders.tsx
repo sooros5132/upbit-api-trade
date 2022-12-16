@@ -6,7 +6,7 @@ import { apiUrls } from 'src/lib/apiUrls';
 import { subscribeOnUpbitStream, useExchangeStore } from 'src/store/exchangeSockets';
 import { useSiteSettingStore } from 'src/store/siteSetting';
 import { useTradingViewSettingStore } from 'src/store/tradingViewSetting';
-import { useUpbitAuthStore } from 'src/store/upbitAuth';
+import { useUpbitApiStore } from 'src/store/upbitApi';
 import {
   IUpbitSocketMessageTradeSimple,
   IUpbitOrdersChance,
@@ -15,19 +15,19 @@ import {
 import { krwRegex } from 'src/utils/regex';
 import { percentageCalculator, percentRatio, priceCorrection } from 'src/utils/utils';
 import { GrPowerReset } from 'react-icons/gr';
-import useSWR from 'swr';
+import useSWR, { mutate } from 'swr';
 import shallow from 'zustand/shallow';
 import format from 'date-fns-tz/format';
 import { toast } from 'react-toastify';
 
 type Tabs = 'trade' | 'history' | 'orderCancel';
 
-interface UpbitTradingProps {}
+interface UpbitOrdersProps {}
 
-const UpbitTrading: React.FC<UpbitTradingProps> = ({}) => {
+const UpbitOrders: React.FC<UpbitOrdersProps> = ({}) => {
   const [tabActive, setTabActive] = useState<Tabs>('trade');
   const [hidden, setHidden] = useState(false);
-  const accessKey = useUpbitAuthStore((state) => state.accessKey);
+  const accessKey = useUpbitApiStore((state) => state.accessKey);
 
   const handleClickTabItem = (prop: Tabs) => (event: React.MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
@@ -96,7 +96,6 @@ const UpbitTrading: React.FC<UpbitTradingProps> = ({}) => {
           </>
         )
       ) : null}
-      <RecentTrade />
     </div>
   );
 };
@@ -124,17 +123,21 @@ interface DefaultPanelProp {
 type OrderBtnType = UpbitTradeValues['ord_type'] | 'reset';
 
 const Trade = () => {
-  const { upbitTradeMarket, setUpbitTradeMarket } = useSiteSettingStore(
+  const { upbitTradeMarket, setUpbitTradeMarket } = useUpbitApiStore(
     ({ upbitTradeMarket, setUpbitTradeMarket }) => ({
       upbitTradeMarket,
       setUpbitTradeMarket
     }),
     shallow
   );
-  const { data: chance, error } = useSWR<IUpbitOrdersChance>(
+  const {
+    data: chance,
+    error,
+    mutate: mutateChance
+  } = useSWR<IUpbitOrdersChance>(
     `${apiUrls.upbit.path}${apiUrls.upbit.ordersChance}?market=${upbitTradeMarket}`,
     async () => {
-      return await useUpbitAuthStore.getState().getOrdersChange(upbitTradeMarket);
+      return await useUpbitApiStore.getState().getOrdersChange(upbitTradeMarket);
     },
     {
       refreshInterval: 60 * 1000
@@ -162,15 +165,22 @@ const Trade = () => {
     );
   }
 
-  return <TradeInner orderChance={chance} changeMarket={setUpbitTradeMarket} />;
+  return (
+    <TradeInner
+      orderChance={chance}
+      changeMarket={setUpbitTradeMarket}
+      mutateChance={mutateChance}
+    />
+  );
 };
 
 interface TradeInnerProps {
   orderChance: IUpbitOrdersChance;
   changeMarket: (market: string) => void;
+  mutateChance: () => void;
 }
 
-const TradeInner: FC<TradeInnerProps> = ({ orderChance, changeMarket }) => {
+const TradeInner: FC<TradeInnerProps> = ({ orderChance, changeMarket, mutateChance }) => {
   const marketId = orderChance.market.id;
   const krwBalance = orderChance.bid_account.balance;
   const upbitMarkets = useExchangeStore((state) => state.upbitMarkets, shallow);
@@ -191,6 +201,7 @@ const TradeInner: FC<TradeInnerProps> = ({ orderChance, changeMarket }) => {
     const newMarket = event.target.value;
     changeMarket(newMarket);
     resetValuesAndRanges(newMarket);
+    useExchangeStore.getState().changedOrderbookCode();
   };
 
   const handleChangeNumberValue =
@@ -272,6 +283,7 @@ const TradeInner: FC<TradeInnerProps> = ({ orderChance, changeMarket }) => {
   const handleClickOrderBtn = (orderType: OrderBtnType, side?: 'ask' | 'bid') => async () => {
     switch (orderType) {
       case 'limit': {
+        // 지정가 주문
         const { volume, price } = values;
         if (!side || volume === 0 || price === 0) {
           return;
@@ -283,13 +295,64 @@ const TradeInner: FC<TradeInnerProps> = ({ orderChance, changeMarket }) => {
           price: price.toString(),
           ord_type: 'limit'
         } as const;
-        await useUpbitAuthStore.getState().createOrder(params);
-        break;
-      }
-      case 'market': {
+        await useUpbitApiStore
+          .getState()
+          .createOrder(params)
+          .then((res) => {
+            toast.info(`${res.price}가격에 ${res.volume}만큼 주문을 넣었습니다.`);
+            mutateChance();
+          })
+          .catch((err) => {
+            toast.error(err?.response?.data?.error?.message ?? '주문에 실패했습니다.');
+          });
         break;
       }
       case 'price': {
+        // 시장가 매수
+        const { volume } = values;
+        if (!side || volume === 0) {
+          return;
+        }
+        const params = {
+          market: marketId,
+          side,
+          volume: volume.toString(),
+          ord_type: 'price'
+        } as const;
+        await useUpbitApiStore
+          .getState()
+          .createOrder(params)
+          .then((res) => {
+            toast.info(`${res.price}가격에 ${res.volume}만큼 매수 주문을 넣었습니다.`);
+            mutateChance();
+          })
+          .catch((err) => {
+            toast.error(err?.response?.data?.error?.message ?? '주문에 실패했습니다.');
+          });
+        break;
+      }
+      case 'market': {
+        // 시장가 매도
+        const { price } = values;
+        if (!side || price === 0) {
+          return;
+        }
+        const params = {
+          market: marketId,
+          side,
+          price: price.toString(),
+          ord_type: 'market'
+        } as const;
+        await useUpbitApiStore
+          .getState()
+          .createOrder(params)
+          .then((res) => {
+            toast.info(`${res.price}가격에 ${res.volume}만큼 매도 주문을 넣었습니다.`);
+            mutateChance();
+          })
+          .catch((err) => {
+            toast.error(err?.response?.data?.error?.message ?? '주문에 실패했습니다.');
+          });
         break;
       }
       case 'reset': {
@@ -627,7 +690,7 @@ const MarketOrderBtnPanel: FC<OrderBtnPanel> = ({ onClickOrder }) => {
 };
 
 const OrderCancel = () => {
-  const { upbitTradeMarket, setUpbitTradeMarket } = useSiteSettingStore(
+  const { upbitTradeMarket, setUpbitTradeMarket } = useUpbitApiStore(
     ({ upbitTradeMarket, setUpbitTradeMarket }) => ({
       upbitTradeMarket,
       setUpbitTradeMarket
@@ -641,7 +704,7 @@ const OrderCancel = () => {
   } = useSWR<Array<IUpbitGetOrderResponse>>(
     `${apiUrls.upbit.path}${apiUrls.upbit.orders}/DELETE`,
     async () => {
-      return await useUpbitAuthStore.getState().getOrders({ market: upbitTradeMarket });
+      return await useUpbitApiStore.getState().getOrders({ market: upbitTradeMarket });
     },
     {
       refreshInterval: 60 * 1000
@@ -679,11 +742,11 @@ interface OrderCancelInnerProps {
 
 const OrderCancelInner: FC<OrderCancelInnerProps> = ({ orders, mutate }) => {
   const handleClickCancelBtn = (uuid: string) => async () => {
-    await useUpbitAuthStore
+    await useUpbitApiStore
       .getState()
       .deleteOrder({ uuid })
       .then(() => {
-        toast.success('주문을 취소하였습니다.');
+        toast.success('주문이 취소되었습니다.');
         mutate();
       })
       .catch(() => {
@@ -692,7 +755,7 @@ const OrderCancelInner: FC<OrderCancelInnerProps> = ({ orders, mutate }) => {
   };
 
   return (
-    <div className='grid grid-cols-[1fr_1fr_1fr_2fr_auto] px-1 bg-base-300 text-xs whitespace-nowrap text-right [&>div]:border-b-[1px] [&>div]:border-zinc-800 [&>div]:p-1 max-h-80 overflow-y-auto'>
+    <div className='grid grid-cols-[1fr_1fr_1fr_2fr_auto] px-1 bg-base-300 text-xs whitespace-nowrap text-right [&>div]:border-b-[1px] [&>div]:border-zinc-800 [&>div]:p-1 overflow-y-auto'>
       <div className='flex-center text-zinc-500'>
         <div>주문시간</div>
       </div>
@@ -744,86 +807,4 @@ const OrderCancelInner: FC<OrderCancelInnerProps> = ({ orders, mutate }) => {
   );
 };
 
-const RecentTrade = () => {
-  const [hidden, setHidden] = useState(false);
-
-  return (
-    <div
-      className={classNames(
-        'flex flex-col flex-auto mt-2 p-1 bg-base-200 overflow-hidden',
-        hidden ? 'flex-grow-0' : 'flex-grow'
-      )}
-    >
-      <div className='flex items-center justify-between pl-1 flex-auto flex-shrink-0 flex-grow-0'>
-        <span className='text-sm'>최근 거래내역</span>
-        <span
-          className='btn btn-circle btn-ghost btn-xs cursor-pointer'
-          onClick={() => setHidden((p) => !p)}
-        >
-          {hidden ? <RiArrowDownSLine /> : <RiArrowUpSLine />}
-        </span>
-      </div>
-      {!hidden && <RecentTradeInner />}
-    </div>
-  );
-};
-
-const RecentTradeInner = () => {
-  const [trades, setTrades] = useState<Array<IUpbitSocketMessageTradeSimple>>([]);
-  const { selectedExchange, selectedMarketSymbol } = useTradingViewSettingStore(
-    ({ selectedExchange, selectedMarketSymbol }) => ({ selectedExchange, selectedMarketSymbol }),
-    shallow
-  );
-
-  useEffect(() => {
-    const unsubscribe = subscribeOnUpbitStream((message: IUpbitSocketMessageTradeSimple) => {
-      if (message.ty !== 'trade') {
-        return;
-      }
-
-      setTrades((prev) => {
-        const newTrade = [...prev];
-        newTrade.unshift(message);
-        // newTrade.push(message)
-        // newTrade.slice(-200);
-
-        return newTrade.slice(0, 200);
-      });
-    });
-
-    return () => {
-      unsubscribe();
-    };
-  }, []);
-
-  useEffect(() => {
-    setTrades([]);
-  }, [selectedExchange, selectedMarketSymbol]);
-
-  return (
-    <>
-      <div className='mt-1 flex justify-between text-right [&>span]:flex-1 text-xs bg-base-300'>
-        <span className='grow-0 shrink-0'>마켓</span>
-        <span>체결가격</span>
-        <span>체결액</span>
-      </div>
-      <div className='h-32 font-mono text-xs bg-base-300 overflow-y-auto lg:h-full'>
-        {trades.map((trade) => (
-          <div
-            key={`${trade.cd}-${trade.sid}`}
-            className={classNames(
-              'flex justify-between text-right [&>span]:flex-1',
-              trade.ab.toLowerCase()
-            )}
-          >
-            <span className='grow-0 shrink-0'>{trade.cd}</span>
-            <span>{trade.tp.toLocaleString()}</span>
-            <span>{Math.round(trade.tv * trade.tp).toLocaleString()}</span>
-          </div>
-        ))}
-      </div>
-    </>
-  );
-};
-
-export default UpbitTrading;
+export default UpbitOrders;

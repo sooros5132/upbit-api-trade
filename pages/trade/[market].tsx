@@ -1,6 +1,6 @@
 import type { GetServerSideProps, NextPage } from 'next';
 import React, { useEffect, useState } from 'react';
-import { useUpbitAuthStore } from 'src/store/upbitAuth';
+import { useUpbitApiStore } from 'src/store/upbitApi';
 import { useRouter } from 'next/router';
 import { krwRegex } from 'src/utils/regex';
 import { useSiteSettingStore } from 'src/store/siteSetting';
@@ -13,7 +13,7 @@ interface TradeProps {
 }
 
 const Trade: NextPage<TradeProps> = ({ symbol }) => {
-  const upbitAuthStore = useUpbitAuthStore();
+  const upbitAuthStore = useUpbitApiStore();
   const hydrated = useSiteSettingStore((state) => state.hydrated, shallow);
   const { selectedExchange } = useTradingViewSettingStore(
     ({ selectedExchange }) => ({ selectedExchange }),

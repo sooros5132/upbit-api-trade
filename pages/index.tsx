@@ -14,22 +14,24 @@ import { useSiteSettingStore } from 'src/store/siteSetting';
 import axios from 'axios';
 import { BackgroundRedBox } from 'src/components/modules/Box';
 import Link from 'next/link';
-import UpbitTrading from 'src/components/Trading/Upbit';
 import { Chart } from 'src/components/Chart/Chart';
 import classNames from 'classnames';
+import UpbitOrders from 'src/components/Upbit/Orders';
+import { UpbitRecentTrades } from 'src/components/Upbit/Trades';
 
 const Home: NextPage = () => {
   const hydrated = useSiteSettingStore((state) => state.hydrated, shallow);
   const visibleTradingPanel = useSiteSettingStore((state) => state.visibleTradingPanel, shallow);
 
   return (
-    <main className='relative w-full px-3 mx-auto max-w-7xl lg:max-w-none lg:grid lg:grid-rows-[auto_1fr] lg:grid-cols-[1fr_350px_350px] lg:overflow-hidden lg:gap-2 lg:flex-auto lg:p-0 xl:grid-cols-[1fr_400px_400px]'>
+    <main className='w-full mt-1 px-3 mx-auto max-w-7xl lg:max-w-none lg:min-h-[900px] lg:overflow-hidden lg:gap-1 lg:p-0 main-grid'>
       {/* <div className='overflow-x-auto overflow-y-hidden lg:col-span-3 lg:row-span-1'>
         <div className='mx-auto'>
           <TradingViewTickers pointerEvents='none' />
         </div>
       </div> */}
       <div
+        data-grid-name='chart'
         className={classNames(
           'lg:row-start-2 overflow-y-auto',
           hydrated && visibleTradingPanel ? 'lg:col-start-1' : 'lg:col-span-2'
@@ -37,11 +39,26 @@ const Home: NextPage = () => {
       >
         {hydrated && <Chart />}
       </div>
+      <div data-grid-name='orderbook'>
+        <UpbitOrderBook />
+      </div>
       {hydrated && visibleTradingPanel && (
-        <div className='lg:col-start-2 lg:row-start-2 lg:block overflow-hidden'>
-          <UpbitTrading />
+        <div
+          data-grid-name='orderform'
+          className='lg:col-start-2 lg:row-start-2 lg:block overflow-hidden'
+        >
+          <UpbitOrders />
         </div>
       )}
+      <div data-grid-name='trades'>
+        <UpbitRecentTrades />
+      </div>
+      <div
+        data-grid-name='market'
+        className='w-full flex flex-col text-xs sm:text-sm lg:text-xs 2xl:text-sm'
+      >
+        {hydrated && <ExchangeMarket />}
+      </div>
       <noscript>
         <div className='mt-4'>
           <BackgroundRedBox>
@@ -71,9 +88,6 @@ const Home: NextPage = () => {
           </BackgroundRedBox>
         </div>
       </noscript>
-      <div className='lg:m-0 lg:overflow-hidden lg:flex lg:flex-col lg:col-start-3 lg:row-start-2 text-xs sm:text-sm lg:text-xs 2xl:text-sm'>
-        {hydrated && <ExchangeMarket />}
-      </div>
     </main>
   );
 };

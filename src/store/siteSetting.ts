@@ -16,7 +16,6 @@ interface ISiteSettingState {
     exchange: 'BINANCE' | 'UPBIT';
     code: string;
   }>;
-  upbitTradeMarket: string;
 }
 
 export const defaultSubscribeChartCodes = [
@@ -25,12 +24,12 @@ export const defaultSubscribeChartCodes = [
     code: 'BTC'
   },
   {
-    exchange: 'BINANCE',
-    code: 'BTC'
-  },
-  {
     exchange: 'UPBIT',
     code: 'ETH'
+  },
+  {
+    exchange: 'BINANCE',
+    code: 'BTC'
   },
   {
     exchange: 'BINANCE',
@@ -45,8 +44,7 @@ const defaultState: ISiteSettingState = {
   visibleMyAccounts: true,
   visibleCurrencyBalances: true,
   visibleTradingPanel: true,
-  subscribeChartCodes: [...defaultSubscribeChartCodes].slice(2),
-  upbitTradeMarket: 'KRW-BTC'
+  subscribeChartCodes: [...defaultSubscribeChartCodes].slice(2)
 };
 
 interface ISiteSettingStore extends ISiteSettingState {
@@ -60,7 +58,6 @@ interface ISiteSettingStore extends ISiteSettingState {
   showTradingPanel: () => void;
   hideTradingPanel: () => void;
   setSubscribeChartCodes: (chart: ISiteSettingState['subscribeChartCodes']) => void;
-  setUpbitTradeMarket: (code: string) => void;
 }
 
 export const useSiteSettingStore = create(
@@ -110,11 +107,6 @@ export const useSiteSettingStore = create(
       hideTradingPanel() {
         set({ visibleTradingPanel: false });
       },
-      setUpbitTradeMarket(code) {
-        set({
-          upbitTradeMarket: code
-        });
-      },
       setSubscribeChartCodes(subscribeChartCodes) {
         set({ subscribeChartCodes });
       }
@@ -123,9 +115,7 @@ export const useSiteSettingStore = create(
       name: 'siteSetting', // unique name
       partialize: (state) =>
         Object.fromEntries(
-          Object.entries(state).filter(
-            ([key]) => !['hydrated', 'theme', 'upbitTradeMarket'].includes(key)
-          )
+          Object.entries(state).filter(([key]) => !['hydrated', 'theme'].includes(key))
         ) as ISiteSettingStore,
       getStorage: () => localStorage, // (optional) by default, 'localStorage' is used
       version: 0.1

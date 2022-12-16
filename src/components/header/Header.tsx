@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { AiFillSetting } from 'react-icons/ai';
 import Link from 'next/link';
-import { useUpbitAuthStore } from 'src/store/upbitAuth';
+import { useUpbitApiStore } from 'src/store/upbitApi';
 import MyAccounts from './MyAccounts';
 import RegisterUpbitApiFormDialog from './RegisterUpbitApiFormDialog';
 import { useSiteSettingStore } from 'src/store/siteSetting';
@@ -22,7 +22,7 @@ import { ko as koLocale } from 'date-fns/locale';
 import classNames from 'classnames';
 
 const Header: React.FC = () => {
-  const upbitAuth = useUpbitAuthStore();
+  const upbitApi = useUpbitApiStore();
   const {
     hideMyAccounts,
     hideTradingPanel,
@@ -104,7 +104,7 @@ const Header: React.FC = () => {
     (event: React.MouseEvent<HTMLLIElement>) => {
       switch (prop) {
         case 'logout': {
-          upbitAuth.deleteKeys();
+          upbitApi.resetAll();
           break;
         }
         case 'visibleMyAccounts': {
@@ -205,7 +205,7 @@ const Header: React.FC = () => {
                 />
               </button>
             </li>
-            {hydrated && upbitAuth.secretKey
+            {hydrated && upbitApi.secretKey
               ? [
                   <div key={'header-menu-divider'} className='m-0 divider' />,
                   <li
@@ -279,9 +279,9 @@ const Header: React.FC = () => {
           </ul>
         </div>
       </div>
-      {hydrated && visibleMyAccounts && upbitAuth.accounts.length ? (
+      {hydrated && visibleMyAccounts && upbitApi.accounts.length ? (
         <div className='xl:mx-auto'>
-          <MyAccounts upbitAccounts={upbitAuth.accounts} />
+          <MyAccounts upbitAccounts={upbitApi.accounts} />
         </div>
       ) : null}
       {openRegisterUpbitApiDialog && (

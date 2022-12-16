@@ -14,6 +14,7 @@ import { IBinanceSocketAggTrade, IBinanceSocketTicker } from 'src/types/binance'
 import { krwRegex } from 'src/utils/regex';
 import { useMarketTableSettingStore } from './marketTableSetting';
 import { useSiteSettingStore } from './siteSetting';
+import { useUpbitApiStore } from './upbitApi';
 
 type SocketMessage = string;
 interface IExchangeState {
@@ -71,6 +72,7 @@ interface IExchangeStore extends IExchangeState {
   addUpbitTradeCode: (tradeCode: string) => void;
   deleteUpbitTradeCode: (tradeCode: string) => void;
   resetUpbitTradeCode: () => void;
+  changedOrderbookCode: () => void;
   connectUpbitSocket: (setting?: {
     tickerCodes?: IExchangeState['upbitTickerCodes'];
     tradeCodes?: IExchangeState['upbitTradeCodes'];
@@ -125,6 +127,9 @@ const useExchangeStore = create<IExchangeStore>(
       });
       connectUpbitSocket();
     },
+    changedOrderbookCode() {
+      get().connectUpbitSocket();
+    },
     resetUpbitTradeCode() {
       set({ upbitTradeCodes: [] });
     },
@@ -138,7 +143,7 @@ const useExchangeStore = create<IExchangeStore>(
           ? upbitTickerCodes
           : upbitMarkets.map((c) => c.market);
       const tradeCodes = [...upbitTradeCodes];
-      const tradePanelCode = useSiteSettingStore.getState().upbitTradeMarket;
+      const tradePanelCode = useUpbitApiStore.getState().upbitTradeMarket;
       if (tradePanelCode && !tradeCodes.includes(tradePanelCode)) {
         tradeCodes.push(tradePanelCode);
       }
@@ -199,13 +204,13 @@ const useExchangeStore = create<IExchangeStore>(
         { type: 'ticker', codes: upbitTickerCodes, isOnlyRealtime }
       );
       const tradeCodes = [...upbitTradeCodes];
-      const tradePanelCode = useSiteSettingStore.getState().upbitTradeMarket;
+      const tradePanelCode = useUpbitApiStore.getState().upbitTradeMarket;
       if (tradePanelCode && !tradeCodes.includes(tradePanelCode)) {
         tradeCodes.push(tradePanelCode);
       }
       if (tradeCodes && Array.isArray(tradeCodes) && tradeCodes.length > 0) {
         message.push({ type: 'trade', codes: tradeCodes, isOnlyRealtime });
-        message.push({ type: 'orderbook', codes: tradeCodes, isOnlyRealtime });
+        message.push({ type: 'orderbook', codes: [tradePanelCode], isOnlyRealtime });
       }
       message.push({ format });
 

@@ -31,7 +31,7 @@ const MarketTable: React.FC<MarketTableProps> = ({ isLastUpdatePage }) => {
   }, shallow);
 
   return (
-    <div className='max-w-screen-xl mx-auto mb-4 lg:w-full overflow-hidden lg:m-0 flex flex-col'>
+    <div className='max-w-screen-xl mx-auto mb-4 sm:w-full overflow-hidden sm:m-0 flex flex-col'>
       {isLastUpdatePage ? (
         <div className='my-4'>
           <BackgroundBlueBox>

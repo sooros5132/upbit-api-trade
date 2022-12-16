@@ -1,6 +1,6 @@
 import { memo, useEffect, useState } from 'react';
 import isEqual from 'react-fast-compare';
-import { useUpbitAuthStore } from 'src/store/upbitAuth';
+import { useUpbitApiStore } from 'src/store/upbitApi';
 import { toast } from 'react-toastify';
 import classNames from 'classnames';
 import axios from 'axios';
@@ -16,7 +16,7 @@ const RegisterUpbitApiFormDialog: React.FC<RegisterUpbitApiFormDialogProps> = ({
   open,
   onClose
 }) => {
-  const { registerKey } = useUpbitAuthStore();
+  const { registerKey } = useUpbitApiStore();
   const [values, setValues] = useState({
     accessKey: '',
     secretKey: ''
