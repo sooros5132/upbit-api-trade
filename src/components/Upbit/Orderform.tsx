@@ -35,7 +35,7 @@ export const UpbitOrderform: React.FC = ({}) => {
 
   return (
     <div className='h-full flex flex-col overflow-hidden'>
-      <div className='mt-2 bg-base-200 flex items-center justify-between lg:mt-0'>
+      <div className='bg-base-200 flex items-center justify-between lg:mt-0'>
         {/* <div className='tabs tabs-boxed flex-auto flex-shrink-0 flex-grow-0 p-0'>
           <a
             className={classNames('tab', tabActive === 'trade' ? 'tab-active' : null)}

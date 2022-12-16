@@ -12,7 +12,7 @@ const UpbitOrderBook = () => {
   return (
     <div
       className={classNames(
-        'flex flex-col flex-auto p-1 bg-base-200 overflow-hidden h-full',
+        'flex flex-col flex-auto bg-base-200 overflow-hidden h-full',
         hidden ? 'flex-grow-0' : 'flex-grow'
       )}
     >

@@ -26,7 +26,7 @@ const Home: NextPage = () => {
   const visibleTradingPanel = useSiteSettingStore((state) => state.visibleTradingPanel, shallow);
 
   return (
-    <main className='w-full mt-1 px-3 mx-auto max-w-7xl lg:max-w-none lg:min-h-[900px] lg:overflow-hidden lg:gap-1 lg:p-0 main-grid'>
+    <main className='w-full mt-1 px-3 mx-auto max-w-7xl lg:max-w-none lg:min-h-[900px] lg:overflow-hidden sm:gap-[1px] sm:p-0 main-grid'>
       {/* <div className='overflow-x-auto overflow-y-hidden lg:col-span-3 lg:row-span-1'>
         <div className='mx-auto'>
           <TradingViewTickers pointerEvents='none' />
