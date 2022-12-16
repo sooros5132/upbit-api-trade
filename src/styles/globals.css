@@ -74,13 +74,13 @@
 
   @screen sm {
     .main-grid {
-      grid-template-columns: 1fr 1fr;
-      grid-template-rows: auto minmax(300px, 500px) 300px minmax(350px, 600px);
+      grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+      grid-template-rows: minmax(300px, 500px) auto 300px minmax(350px, 600px);
       grid-template-areas:
-        'orderform orderform'
-        'chart orderbook'
-        'trades orders'
-        'market market';
+        'chart chart chart orderbook orderbook'
+        'orderform orderform orderform orderform orderform'
+        'trades trades orders orders orders'
+        'market market market market market';
     }
   }
 
