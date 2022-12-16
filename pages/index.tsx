@@ -18,6 +18,7 @@ import { Chart } from 'src/components/Chart/Chart';
 import classNames from 'classnames';
 import UpbitOrders from 'src/components/Upbit/Orders';
 import { UpbitRecentTrades } from 'src/components/Upbit/Trades';
+import { UpbitOrderBook } from 'src/components/Upbit/OrderBook';
 
 const Home: NextPage = () => {
   const hydrated = useSiteSettingStore((state) => state.hydrated, shallow);
