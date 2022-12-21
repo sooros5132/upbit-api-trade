@@ -26,21 +26,23 @@ import { HiArrowLongUp, HiArrowLongDown, HiMinus } from 'react-icons/hi2';
 export const UpbitOrderform = memo(() => {
   const isLogin = useUpbitApiStore((state) => state.isLogin);
 
-  const handleClickTradingClose = () => {
-    useSiteSettingStore.getState().hideTradingPanel();
-  };
+  // const handleClickTradingClose = () => {
+  //   useSiteSettingStore.getState().hideTradingPanel();
+  // };
 
   return (
     <div className='h-full flex flex-col overflow-hidden'>
       {!isLogin ? (
         <div className='flex-center p-5 h-full bg-base-200 text-center'>
           <div>
-            <div>오른쪽 상단에서 업비트 API를 먼저 연결해주세요.</div>
             <div>
+              업비트 API 거래 기능을 이용하시려면 오른쪽 상단에서 업비트 API Key를 등록해주세요.
+            </div>
+            {/* <div>
               <button className={'btn btn-sm mt-2'} onClick={handleClickTradingClose}>
                 매수/매도 패널 닫기
               </button>
-            </div>
+            </div> */}
           </div>
         </div>
       ) : (
@@ -93,7 +95,7 @@ const TradeContainer = () => {
     }),
     shallow
   );
-  const { error, mutate: mutateChance } = useSWR(
+  const { error } = useSWR(
     `${apiUrls.upbit.path}${apiUrls.upbit.ordersChance}?market=${upbitTradeMarket}`,
     async () => {
       await useUpbitApiStore.getState().getOrdersChance(upbitTradeMarket);
