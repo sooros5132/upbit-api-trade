@@ -114,7 +114,8 @@ export const Chart = memo(() => {
       </div>
       <div
         className={classNames(
-          'flex-auto [&>div]:flex-auto [&>div]:h-[35vh] sm:[&>div]:h-[45vh] lg:[&>div]:h-[initial] lg:[&>div]:min-h-[18rem] overflow-y-auto',
+          'flex-auto [&>div]:flex-auto sm:[&>div]:h-[45vh] lg:[&>div]:h-[initial] lg:[&>div]:min-h-[18rem] overflow-y-auto',
+          subscribeChartCodes.length === 1 ? '[&>div]:h-[45vh]' : '[&>div]:h-[35vh]',
           subscribeChartCodes.length > 3 ? 'grid grid-cols-2' : 'flex flex-col'
         )}
       >

@@ -119,7 +119,7 @@ const UpbitOrdersInner: FC<UpbitOrdersInnerProps> = ({ upbitTradeMarket, orders,
 
   return (
     <div className='relative flex flex-col h-full text-right whitespace-nowrap text-xs overflow-y-auto font-mono bg-base-300'>
-      <table className='border-separate border-spacing-0 w-full text-zinc-500 hover:[&>tbody>tr]:bg-base-200 [&_td]:border-t-[1px] [&_td]:border-t-neutral'>
+      <table className='border-separate border-spacing-0 w-full text-zinc-500 hover:[&>tbody>tr]:bg-base-200/40 [&_th]:py-1 [&_td]:py-1 [&_td]:border-t-[1px] [&_td]:border-t-neutral'>
         <colgroup>
           <col width='15%'></col>
           <col width='15%'></col>
@@ -152,7 +152,7 @@ const UpbitOrdersInner: FC<UpbitOrdersInnerProps> = ({ upbitTradeMarket, orders,
             const [priceInt, priceFloat] = order.price.split('.');
 
             return (
-              <tr key={order.uuid}>
+              <tr key={order.uuid} className='text-neutral-content'>
                 <td className='text-center'>
                   <div>{format(new Date(order.created_at), 'yyyy-MM-dd')}</div>
                   <div>{format(new Date(order.created_at), 'HH:mm:ss')}</div>

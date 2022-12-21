@@ -223,11 +223,19 @@ const useExchangeStore = create<IExchangeStore>(
       let unapplied = 0;
       setInterval(() => {
         if (unapplied !== 0) {
-          set({
-            upbitMarketDatas: dataBuffer,
-            upbitTradeMessages: tradeMessageBuffer,
-            upbitOrderbook: orderbookBuffer
-          });
+          const tradePanelCode = useUpbitApiStore.getState().upbitTradeMarket;
+          if (tradePanelCode === orderbookBuffer?.cd) {
+            set({
+              upbitMarketDatas: dataBuffer,
+              upbitTradeMessages: tradeMessageBuffer,
+              upbitOrderbook: orderbookBuffer
+            });
+          } else {
+            set({
+              upbitMarketDatas: dataBuffer,
+              upbitTradeMessages: tradeMessageBuffer
+            });
+          }
           unapplied = 0;
           tradeMessageBuffer = [];
         }

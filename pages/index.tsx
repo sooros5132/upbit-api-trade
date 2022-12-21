@@ -49,7 +49,7 @@ const Home: NextPage = () => {
       </div>
       <div
         data-grid-area='market'
-        className='w-full flex flex-col text-xs md:text-sm lg:text-xs xl:text-sm'
+        className='w-full flex flex-col text-xs sm:text-sm lg:text-xs xl:text-sm'
       >
         {hydrated && <ExchangeMarket />}
       </div>

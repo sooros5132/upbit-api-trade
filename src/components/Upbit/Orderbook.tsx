@@ -50,7 +50,7 @@ const UpbitOrderBookContainer: React.FC<{ marketSymbol: string }> = ({ marketSym
   const { data } = useSWR(
     `${PROXY_PATH}${apiUrls.upbit.path}${apiUrls.upbit.orderbook}?markets=${marketSymbol}`,
     async (url: string) => {
-      return (await axios.get<IUpbitOrderbooks>(url).then((res) => {
+      const result = (await axios.get<IUpbitOrderbooks>(url).then((res) => {
         const o = res.data[0];
 
         return {
@@ -68,6 +68,10 @@ const UpbitOrderBookContainer: React.FC<{ marketSymbol: string }> = ({ marketSym
           tms: o.timestamp // 타임스탬프 (millisecond)	Long
         };
       })) as IUpbitSocketMessageOrderbookSimple;
+      useExchangeStore.setState({
+        upbitOrderbook: result
+      });
+      return result;
     },
     {
       revalidateOnFocus: false,
@@ -144,7 +148,7 @@ const OrderBook: React.FC<OrderBookProps> = ({ market, orderbook }) => {
             const volumeWidth = Math.round(100 - (trade.as / maxVolume) * 100);
             const changeRate = (trade.ap / market.pcp) * 100 - 100;
             return (
-              <tr key={`${trade.ap}-${i}`} className='ask bg-rose-900/20'>
+              <tr key={`${trade.ap}-${i}`} className='ask bg-rose-700/10'>
                 <td>
                   <span
                     className={
@@ -173,7 +177,7 @@ const OrderBook: React.FC<OrderBookProps> = ({ market, orderbook }) => {
             const changeRate = (trade.bp / market.pcp) * 100 - 100;
 
             return (
-              <tr key={`${trade.bp}-${i}`} className='bid bg-zinc-700/30'>
+              <tr key={`${trade.bp}-${i}`} className='bid bg-zinc-700/20'>
                 <td>
                   <span
                     className={
