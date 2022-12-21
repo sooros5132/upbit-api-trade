@@ -17,20 +17,25 @@ import {
 import queryString from 'query-string';
 import crypto from 'crypto';
 import axios from 'axios';
+import { useExchangeStore } from './exchangeSockets';
 
 export interface IUpbitApiState {
-  isUpbitLogined: boolean;
+  isLogin: boolean;
   accessKey: string;
   secretKey: string;
   accounts: Array<IUpbitAccount>;
+  orders: Array<IUpbitGetOrderResponse>;
+  ordersChance?: IUpbitOrdersChance;
   upbitTradeMarket: string;
 }
 
 const defaultState: IUpbitApiState = {
-  isUpbitLogined: false,
+  isLogin: false,
   accessKey: '',
   secretKey: '',
   accounts: [],
+  orders: [],
+  ordersChance: undefined,
   upbitTradeMarket: 'KRW-BTC'
 };
 
@@ -46,8 +51,8 @@ interface IUpbitApiStore extends IUpbitApiState {
     querys: Record<string, any>,
     serializedQueryString?: string
   ) => string;
-  getOrdersChange: (market: string) => Promise<IUpbitOrdersChance>;
-  getOrders: (querys: IUpbitGetOrderRquestParameters) => Promise<Array<IUpbitGetOrderResponse>>;
+  getOrdersChance: (market: string) => Promise<void>;
+  getOrders: (querys: IUpbitGetOrderRquestParameters) => Promise<void>;
   createOrder: (querys: IUpbitCreateOrderRquestParameters) => Promise<IUpbitCreateOrderResponse>;
   deleteOrder: (querys: IUpbitDeleteOrderRquestParameters) => Promise<IUpbitDeleteOrderResponse>;
 }
@@ -80,7 +85,7 @@ export const useUpbitApiStore = create(
             accessKey,
             secretKey,
             accounts,
-            isUpbitLogined: true
+            isLogin: true
           });
         }
         return accounts;
@@ -104,8 +109,9 @@ export const useUpbitApiStore = create(
         set({
           upbitTradeMarket: code
         });
+        useExchangeStore.getState().connectUpbitSocket();
       },
-      async getOrdersChange(market: string) {
+      async getOrdersChance(market: string) {
         const { createJwtAuthorizationToken } = get();
         const token = createJwtAuthorizationToken({ market });
 
@@ -119,13 +125,33 @@ export const useUpbitApiStore = create(
             }
           })
           .then((res) => res.data);
+        set({
+          ordersChance: result
+        });
+      },
+      createJwtAuthorizationToken(querys, serializedQueryString) {
+        const { accessKey, secretKey } = get();
+        const query = serializedQueryString ? serializedQueryString : queryString.stringify(querys);
 
-        return result;
+        const hash = crypto.createHash('sha512');
+        const queryHash = hash.update(query, 'utf-8').digest('hex');
+
+        const payload = {
+          access_key: accessKey,
+          nonce: uuidv4(),
+          query_hash: queryHash,
+          query_hash_alg: 'SHA512'
+        };
+
+        const token = sign(payload, secretKey);
+
+        return token;
       },
       async getOrders(querys) {
         const { createJwtAuthorizationToken } = get();
         const serializedQueryString = queryString.stringify(querys);
         const token = createJwtAuthorizationToken(querys, serializedQueryString);
+
         const result = await axios
           .get<Array<IUpbitGetOrderResponse>>(
             PROXY_PATH + apiUrls.upbit.path + apiUrls.upbit.orders + '?' + serializedQueryString,
@@ -137,7 +163,9 @@ export const useUpbitApiStore = create(
           )
           .then((res) => res.data);
 
-        return result;
+        set({
+          orders: result
+        });
       },
       async createOrder(querys) {
         const { createJwtAuthorizationToken } = get();
@@ -174,24 +202,6 @@ export const useUpbitApiStore = create(
           .then((res) => res.data);
 
         return result;
-      },
-      createJwtAuthorizationToken(querys, serializedQueryString) {
-        const { accessKey, secretKey } = get();
-        const query = serializedQueryString ? serializedQueryString : queryString.stringify(querys);
-
-        const hash = crypto.createHash('sha512');
-        const queryHash = hash.update(query, 'utf-8').digest('hex');
-
-        const payload = {
-          access_key: accessKey,
-          nonce: uuidv4(),
-          query_hash: queryHash,
-          query_hash_alg: 'SHA512'
-        };
-
-        const token = sign(payload, secretKey);
-
-        return token;
       }
     }),
     {
@@ -200,9 +210,7 @@ export const useUpbitApiStore = create(
       deserialize: (str) => JSON.parse(window.atob(str)),
       partialize: (state) =>
         Object.fromEntries(
-          Object.entries(state).filter(
-            ([key]) => !['hydrated', 'theme', 'upbitTradeMarket'].includes(key)
-          )
+          Object.entries(state).filter(([key]) => ['accessKey', 'secretKey'].includes(key))
         ) as IUpbitApiStore,
       getStorage: () => localStorage, // (optional) by default, 'localStorage' is used
       version: 0.1
