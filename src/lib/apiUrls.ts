@@ -32,6 +32,10 @@ export const apiUrls = {
     depositsCoinAddress: '/deposits/coin_address',
     depositsKrw: '/deposits/krw',
     statusWallet: '/status/wallet',
+    trades: {
+      ticks: '/trades/ticks'
+    },
+    orderbook: '/orderbook',
     apiKeys: '/api_keys'
   },
   binance: {
