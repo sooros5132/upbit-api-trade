@@ -98,7 +98,7 @@ const MarketTable: React.FC<MarketTableProps> = ({ isLastUpdatePage }) => {
           </div>
         </>
       )}
-      <div className='overflow-y-auto flex-auto font-mono text-right [&_th]:px-0.5 [&_th]:py-1.5 [&_th]:bg-base-200 [&_td]:px-0.5 [&_td]:py-1.5 [&_td]:whitespace-nowrap [&_tbody_tr]:border-b [&_tbody_tr]:border-base-300 [&_tbody_tr]:min-w-[40px] [&_tbody_tr:hover_td]:bg-white/5'>
+      <div className='overflow-y-auto flex-auto font-mono text-right [&_th]:px-0.5 [&_th]:py-1.5 [&_th]:bg-base-200 [&_td]:px-0.5 [&_td]:py-1.5 [&_td]:whitespace-nowrap [&_tbody_tr]:border-b [&_tbody_tr]:border-base-300 [&_tbody_tr]:cursor-pointer [&_tbody_tr]:min-w-[40px] [&_tbody_tr:hover_td]:bg-white/5'>
         <table className='border-separate border-spacing-0 w-full'>
           <MarketTableHead />
           <MarketTableBody />

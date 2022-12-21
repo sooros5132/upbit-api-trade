@@ -226,10 +226,7 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
 
   return (
     <tr
-      className={classNames(
-        'cursor-pointer',
-        upbitTradeMarket === krwSymbol ? 'bg-base-300' : null
-      )}
+      className={upbitTradeMarket === krwSymbol ? 'bg-base-300' : undefined}
       onClick={handleClickMarket(upbitMarket.cd)}
     >
       <td>
@@ -259,13 +256,13 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
         </div>
       </td>
       <td className='text-left min-w-[60px]'>
-        <div className='flex items-center'>
+        <div>
           <span className='text-gray-300 whitespace-pre-wrap font-sans'>
             {upbitMarket.korean_name}
           </span>
         </div>
         <div
-          className='inline-grid grid-cols-[14px_14px_14px_14px] items-center gap-1'
+          className='inline-grid grid-cols-[1em_1em_1em_1em] gap-1'
           onClick={(evt) => evt.stopPropagation()}
         >
           <a
