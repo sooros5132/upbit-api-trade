@@ -15,7 +15,6 @@ import axios from 'axios';
 import { BackgroundRedBox } from 'src/components/modules/Box';
 import Link from 'next/link';
 import { Chart } from 'src/components/Chart/Chart';
-import classNames from 'classnames';
 import { UpbitOrderform } from 'src/components/Upbit/Orderform';
 import { UpbitRecentTrades } from 'src/components/Upbit/Trades';
 import { UpbitOrderBook } from 'src/components/Upbit/Orderbook';
@@ -23,44 +22,34 @@ import { UpbitOrders } from 'src/components/Upbit/Orders';
 
 const Home: NextPage = () => {
   const hydrated = useSiteSettingStore((state) => state.hydrated, shallow);
-  const visibleTradingPanel = useSiteSettingStore((state) => state.visibleTradingPanel, shallow);
 
   return (
-    <main className='w-full mt-1 px-3 mx-auto max-w-7xl lg:max-w-none lg:min-h-[900px] lg:overflow-hidden sm:gap-[1px] sm:p-0 main-grid'>
+    <main className='w-full mt-1 px-3 mx-auto max-w-7xl sm:gap-[1px] sm:p-0 main-grid lg:max-w-none lg:min-h-[900px] lg:grow lg:overflow-y-auto'>
       {/* <div className='overflow-x-auto overflow-y-hidden lg:col-span-3 lg:row-span-1'>
         <div className='mx-auto'>
           <TradingViewTickers pointerEvents='none' />
         </div>
       </div> */}
-      <div
-        data-grid-name='chart'
-        className={classNames(
-          'lg:row-start-2 overflow-y-auto',
-          hydrated && visibleTradingPanel ? 'lg:col-start-1' : 'lg:col-span-2'
-        )}
-      >
+      <div data-grid-area='chart' className='overflow-y-auto'>
         {hydrated && <Chart />}
       </div>
-      <div data-grid-name='orderbook'>
+      <div data-grid-area='orderbook'>
         <UpbitOrderBook />
       </div>
-      {hydrated && visibleTradingPanel && (
-        <div
-          data-grid-name='orderform'
-          className='lg:col-start-2 lg:row-start-2 lg:block overflow-hidden'
-        >
+      {hydrated && (
+        <div data-grid-area='orderform'>
           <UpbitOrderform />
         </div>
       )}
-      <div data-grid-name='trades'>
+      <div data-grid-area='trades'>
         <UpbitRecentTrades />
       </div>
-      <div data-grid-name='orders'>
+      <div data-grid-area='orders'>
         <UpbitOrders />
       </div>
       <div
-        data-grid-name='market'
-        className='w-full flex flex-col text-xs sm:text-sm lg:text-xs 2xl:text-sm'
+        data-grid-area='market'
+        className='w-full flex flex-col text-xs md:text-sm lg:text-xs xl:text-sm'
       >
         {hydrated && <ExchangeMarket />}
       </div>

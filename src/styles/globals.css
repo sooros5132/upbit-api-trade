@@ -7,8 +7,8 @@
     scrollbar-width: thin;
   }
   *::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
   }
   *::-webkit-scrollbar-thumb {
     background-color: #434343;
@@ -30,8 +30,8 @@
   }
 
   body::-webkit-scrollbar {
-    width: 12px;
-    height: 12px;
+    width: 10px;
+    height: 10px;
   }
   body::-webkit-scrollbar-thumb {
     background-color: #9e9e9e;
@@ -69,7 +69,7 @@
   }
 
   .main-grid {
-    @apply sm:grid sm:place-items-stretch;
+    @apply grid gap-2 overflow-y-auto sm:gap-[1px] sm:place-items-stretch;
   }
 
   @screen sm {
@@ -82,51 +82,49 @@
         'trades trades orders orders orders'
         'market market market market market';
     }
+
+    .main-grid > div[data-grid-area='header'] {
+      grid-area: header;
+    }
+
+    .main-grid > div[data-grid-area='subHeader'] {
+      grid-area: subHeader;
+    }
+
+    .main-grid > div[data-grid-area='orderbook'] {
+      grid-area: orderbook;
+    }
+
+    .main-grid > div[data-grid-area='chart'] {
+      grid-area: chart;
+    }
+
+    .main-grid > div[data-grid-area='market'] {
+      grid-area: market;
+    }
+
+    .main-grid > div[data-grid-area='trades'] {
+      grid-area: trades;
+    }
+
+    .main-grid > div[data-grid-area='orderform'] {
+      grid-area: orderform;
+    }
+
+    .main-grid > div[data-grid-area='orders'] {
+      grid-area: orders;
+    }
   }
 
   @screen lg {
     .main-grid {
+      grid-template-columns: minmax(280px, 350px) minmax(400px, 1fr) minmax(320px, 400px);
+      grid-template-rows: minmax(50%, 1fr) minmax(auto, 350px) minmax(auto, 200px);
       grid-template-areas:
         'orderbook chart market'
-        'orderbook chart market'
-        'orderbook chart trades'
-        'orderbook orderform trades'
+        'trades orderform orderform'
         'orders orders orders';
-      grid-template-rows: auto 1fr 1fr 1fr 350px auto;
-      grid-template-columns: minmax(253px, 320px) minmax(510px, 880px) minmax(253px, 320px) 1fr;
     }
-  }
-
-  .main-grid > div[data-grid-name='header'] {
-    grid-area: header;
-  }
-
-  .main-grid > div[data-grid-name='subHeader'] {
-    grid-area: subHeader;
-  }
-
-  .main-grid > div[data-grid-name='orderbook'] {
-    grid-area: orderbook;
-  }
-
-  .main-grid > div[data-grid-name='chart'] {
-    grid-area: chart;
-  }
-
-  .main-grid > div[data-grid-name='market'] {
-    grid-area: market;
-  }
-
-  .main-grid > div[data-grid-name='trades'] {
-    grid-area: trades;
-  }
-
-  .main-grid > div[data-grid-name='orderform'] {
-    grid-area: orderform;
-  }
-
-  .main-grid > div[data-grid-name='orders'] {
-    grid-area: orders;
   }
 
   .market-td-padding {
@@ -134,7 +132,7 @@
   }
 
   .market-chart-icon {
-    @apply cursor-pointer opacity-50 text-white leading-[1em];
+    @apply cursor-pointer text-white leading-[1em];
   }
 
   .market-exchange-image {
@@ -158,7 +156,7 @@
   }
 
   .btn-order-ask {
-    @apply bg-rose-700 text-rose-300 hover:bg-rose-800;
+    @apply bg-rose-700 text-rose-200 hover:bg-rose-800;
   }
 
   .btn-order-bid {
