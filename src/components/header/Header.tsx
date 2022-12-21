@@ -324,7 +324,23 @@ const MarketInfo = () => {
       )}
       {metadata?.btc_dominance && (
         <div className='dropdown dropdown-hover [&>span]:whitespace-nowrap'>
-          <span className='text-zinc-500'>BTC.D</span> <span>{metadata.btc_dominance}% </span>
+          <span className='text-zinc-500'>BTC.D</span>{' '}
+          <span>
+            {metadata.btc_dominance}%
+            <span
+              className={classNames(
+                'hidden md:inline',
+                !metadata.btc_dominance_24h_change_percent ||
+                  metadata.btc_dominance_24h_change_percent === 0
+                  ? 'text-gray-400'
+                  : metadata.btc_dominance_24h_change_percent > 0
+                  ? 'text-teal-500'
+                  : 'text-rose-500'
+              )}
+            >
+              &nbsp;{metadata.btc_dominance_24h_change_percent}%
+            </span>
+          </span>
           <div className='dropdown-content bg-base-300 p-2 whitespace-nowrap'>
             <div>비트코인 시장 점유율</div>
             <div className='grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 bg-base-300 p-2 [&>p:nth-child(even)]:text-right'>
@@ -346,9 +362,24 @@ const MarketInfo = () => {
         </div>
       )}
       {metadata?.total_market_cap && (
-        <div className='dropdown dropdown-hover [&>span]:whitespace-nowrap'>
+        <div className='dropdown dropdown-hover [&>span]:'>
           <span className='text-zinc-500'>Total</span>{' '}
-          <span>{numeral(metadata.total_market_cap).format('0.0a').toUpperCase()}</span>
+          <span>
+            {numeral(metadata.total_market_cap).format('0.0a').toUpperCase()}
+            <span
+              className={classNames(
+                'hidden md:inline',
+                !metadata.total_market_cap_24h_change_percent ||
+                  metadata.total_market_cap_24h_change_percent === 0
+                  ? 'text-gray-400'
+                  : metadata.total_market_cap_24h_change_percent > 0
+                  ? 'text-teal-500'
+                  : 'text-rose-500'
+              )}
+            >
+              &nbsp;{metadata.total_market_cap_24h_change_percent}%
+            </span>
+          </span>
           <div className='dropdown-content bg-base-300 p-2 whitespace-nowrap'>
             <div>코인 시장 토탈(달러)</div>
             <div className='grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 bg-base-300 p-2 [&>p:nth-child(even)]:text-right'>
@@ -425,20 +456,6 @@ const MarketInfo = () => {
     </div>
   );
 };
-
-// const UsdKrwForex = () => {
-//   const { data: forexRecent } = useSWR<IUpbitForex>(
-//     apiUrls.upbit.rewriteUrl + apiUrls.upbit.forex.recent
-//   );
-
-//   return (
-//     <div className='tooltip tooltip-bottom' data-tip='계산에 적용된 달러 환율입니다.'>
-//       <span className='text-base-content'>
-//         USD/KRW {forexRecent?.basePrice?.toLocaleString() || '환율 오류'}
-//       </span>
-//     </div>
-//   );
-// };
 
 Header.displayName = 'Header';
 
