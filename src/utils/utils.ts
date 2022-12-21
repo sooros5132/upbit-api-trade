@@ -1,3 +1,5 @@
+import numeral from 'numeral';
+
 export function koPriceLabelFormat(price: number) {
   if (!price) return '';
 
@@ -117,4 +119,74 @@ export function percentageCalculator(price: number, percent: number) {
  */
 export function percentRatio(price: number, percent: number) {
   return price * (percent / 100);
+}
+
+export function upbitDecimalScale(price: number) {
+  // 최소 호가 (이상)		최대 호가 (미만)	주문 가격 단위 (원)
+  // 2,000,000											1,000
+  // 1,000,000				2,000,000			500
+  // 500,000					1,000,000			100
+  // 100,000					500,000				50
+  // 10,000						100,000				10
+  // 1,000						10,000				5
+  // 100							1,000					1
+  // 10								100						0.1
+  // 1								10						0.01
+  // 0.1							1							0.001
+  // 0								0.1						0.0001
+  switch (true) {
+    case 10 <= price && price < 100: {
+      return 1;
+    }
+    case 1 <= price && price < 10: {
+      return 2;
+    }
+    case 0.1 <= price && price < 1: {
+      return 3;
+    }
+    case price <= 0.1: {
+      return 4;
+    }
+    default: {
+      return 0;
+    }
+  }
+}
+
+export function upbitDecimalScaleToInputStep(decimalScale: number) {
+  // 최소 호가 (이상)		최대 호가 (미만)	주문 가격 단위 (원)
+  // 2,000,000											1,000
+  // 1,000,000				2,000,000			500
+  // 500,000					1,000,000			100
+  // 100,000					500,000				50
+  // 10,000						100,000				10
+  // 1,000						10,000				5
+  // 100							1,000					1
+  // 10								100						0.1
+  // 1								10						0.01
+  // 0.1							1							0.001
+  // 0								0.1
+  switch (true) {
+    case decimalScale === 1: {
+      return '0.1';
+    }
+    case decimalScale === 2: {
+      return '0.01';
+    }
+    case decimalScale === 3: {
+      return '0.001';
+    }
+    case decimalScale === 4: {
+      return '0.0001';
+    }
+    default: {
+      return '1';
+    }
+  }
+}
+
+export function upbitPadEnd(number: number) {
+  const decimalScale = upbitDecimalScale(number);
+  const decimalPad = ''.padStart(decimalScale, '0');
+  return numeral(number).format(`0,0${decimalScale > 0 ? '.' : ''}${decimalPad}`);
 }
