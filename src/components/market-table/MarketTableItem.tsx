@@ -8,7 +8,7 @@ import { useExchangeStore } from 'src/store/exchangeSockets';
 import { useMarketTableSettingStore } from 'src/store/marketTableSetting';
 import { IUpbitForex } from 'src/types/upbit';
 import { apiUrls } from 'src/lib/apiUrls';
-import { marketRegex } from 'src/utils/regex';
+import { krwRegex, marketRegex } from 'src/utils/regex';
 import { koPriceLabelFormat } from 'src/utils/utils';
 import shallow from 'zustand/shallow';
 import numeral from 'numeral';
@@ -45,26 +45,18 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
   // const upbitBtcPrice = useExchangeStore.getState().upbitMarketDatas['KRW-BTC'];
 
   const handleClickMarketIcon =
-    (exchange: 'BINANCE' | 'UPBIT') => (event: React.MouseEvent<HTMLDivElement>) => {
+    (exchange: 'BINANCE' | 'UPBIT', symbol: string) =>
+    (event: React.MouseEvent<HTMLDivElement>) => {
       event.stopPropagation();
 
-      switch (exchange) {
-        case 'UPBIT': {
-          useExchangeStore.getState().connectUpbitSocket();
-          setOpenUpbitChartDropDown(true);
-          if (openBinanceChartDropDown) {
-            setOpenBinanceChartDropDown(false);
+      if (chartLength === 1) {
+        useSiteSettingStore.getState().setSubscribeChartCodes([
+          {
+            code: symbol,
+            exchange
           }
-          break;
-        }
-        case 'BINANCE': {
-          useExchangeStore.getState().connectBinanceSocket();
-          setOpenBinanceChartDropDown(true);
-          if (openUpbitChartDropDown) {
-            setOpenUpbitChartDropDown(false);
-          }
-          break;
-        }
+        ]);
+        return;
       }
 
       //   window.scrollTo(0, 0);
@@ -74,6 +66,7 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
     (exchange: 'BINANCE' | 'UPBIT', symbol: string, chartIndex: number) =>
     (event: React.MouseEvent<HTMLLIElement>) => {
       event.stopPropagation();
+
       const { subscribeChartCodes, setSubscribeChartCodes } = useSiteSettingStore.getState();
 
       const newSubscribeChartCodes = [...subscribeChartCodes];
@@ -104,6 +97,16 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
   const handleClickMarket = (market: string) => (event: React.MouseEvent<HTMLTableRowElement>) => {
     if (event.currentTarget.tagName === 'TR') {
       useUpbitApiStore.getState().setUpbitTradeMarket(market);
+
+      if (chartLength === 1) {
+        useSiteSettingStore.getState().setSubscribeChartCodes([
+          {
+            code: market.replace(krwRegex, ''),
+            exchange: 'UPBIT'
+          }
+        ]);
+        return;
+      }
       return;
     }
   };
@@ -281,15 +284,21 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
             />
           </a>
           <div
-            className='dropdown dropdown-bottom market-chart-icon'
-            onClick={handleClickMarketIcon('UPBIT')}
+            className={classNames(
+              'market-chart-icon',
+              chartLength !== 1 ? 'dropdown dropdown-bottom' : null
+            )}
+            onClick={handleClickMarketIcon('UPBIT', marketSymbol)}
           >
-            <label tabIndex={0} className='text-zinc-500 text-sm'>
+            <label tabIndex={0} className='text-zinc-500 text-sm cursor-pointer'>
               <AiOutlineAreaChart />
             </label>
             <ul
               tabIndex={0}
-              className='dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52'
+              className={classNames(
+                'dropdown-content menu p-2 shadow bg-base-100 rounded-box w-32',
+                chartLength === 1 ? 'hidden pointer-events-none' : null
+              )}
             >
               {[...new Array(chartLength)].map((_, i) => (
                 <li key={i} onClick={handleClickChangeSubscribeChart('UPBIT', marketSymbol, i)}>
@@ -316,15 +325,21 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
                 />
               </a>
               <div
-                className='dropdown dropdown-bottom market-chart-icon'
-                onClick={handleClickMarketIcon('BINANCE')}
+                className={classNames(
+                  'market-chart-icon',
+                  chartLength !== 1 ? 'dropdown dropdown-bottom' : null
+                )}
+                onClick={handleClickMarketIcon('BINANCE', marketSymbol)}
               >
-                <label tabIndex={0} className='text-zinc-500 text-sm'>
+                <label tabIndex={0} className='text-zinc-500 text-sm cursor-pointer'>
                   <AiOutlineAreaChart />
                 </label>
                 <ul
                   tabIndex={0}
-                  className='dropdown-content menu p-2 shadow bg-base-100 rounded-box w-32'
+                  className={classNames(
+                    'dropdown-content menu p-2 shadow bg-base-100 rounded-box w-32',
+                    chartLength === 1 ? 'hidden pointer-events-none' : null
+                  )}
                 >
                   {[...new Array(chartLength)].map((_, i) => (
                     <li
