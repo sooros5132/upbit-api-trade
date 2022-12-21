@@ -271,6 +271,33 @@ export interface IUpbitSocketMessageTradeSimple {
   st: 'SNAPSHOT' | 'REALTIME'; //	스트림 타입 - SNAPSHOT : 스냅샷, REALTIME 실시간
 }
 
+export interface IUpbitTradesTicks {
+  market: string; //							마켓 구분 코드	String
+  trade_date_utc: string; //			체결 일자(UTC 기준) 포맷: yyyy-MM-dd	String
+  trade_time_utc: string; //			체결 시각(UTC 기준) 포맷: HH:mm:ss	String
+  timestamp: number; //						체결 타임스탬프	Long
+  trade_price: number; //					체결 가격	Double
+  trade_volume: number; //				체결량	Double
+  prev_closing_price: number; //	전일 종가(UTC 0시 기준)	Double
+  change_price: number; //				변화량	Double
+  ask_bid: string; //							매도/매수	String
+  sequential_id: number; //				체결 번호(Unique)	Long
+}
+
+export interface IUpbitOrderbook {
+  market: string; //	마켓 코드	String
+  timestamp: number; //	호가 생성 시각	Long
+  total_ask_size: number; //	호가 매도 총 잔량	Double
+  total_bid_size: number; //	호가 매수 총 잔량	Double
+  orderbook_units: Array<{
+    ask_price: number;
+    bid_price: number;
+    ask_size: number;
+    bid_size: number;
+  }>; //	호가	List of Objects
+}
+export type IUpbitOrderbooks = Array<IUpbitOrderbook>;
+
 export interface IUpbitCandle {
   market: string; //									마켓명
   candle_date_time_utc: string; //		캔들 기준 시각(UTC 기준)포맷: yyyy-MM-dd'T'HH:mm:ss
