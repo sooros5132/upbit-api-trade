@@ -69,7 +69,7 @@ export const Chart = memo(() => {
 
   return (
     <div className='flex flex-col h-full'>
-      <div className='w-full grow-0 shrink-0 px-2 bg-base-100 flex items-center gap-2'>
+      <div className='w-full flex items-center grow-0 shrink-0 px-2 gap-2 bg-base-100 text-xs'>
         <div className='tooltip tooltip-right' data-tip='차트가 많을수록 부하가 심합니다.'>
           차트 개수{' '}
         </div>
@@ -77,7 +77,7 @@ export const Chart = memo(() => {
           <button
             onClick={handleClickChartUnitChange(1)}
             className={classNames(
-              'btn btn-sm',
+              'btn btn-xs',
               subscribeChartCodes.length === 1 ? 'btn-active' : null
             )}
           >
@@ -86,7 +86,7 @@ export const Chart = memo(() => {
           <button
             onClick={handleClickChartUnitChange(2)}
             className={classNames(
-              'btn btn-sm',
+              'btn btn-xs',
               subscribeChartCodes.length === 2 ? 'btn-active' : null
             )}
           >
@@ -95,7 +95,7 @@ export const Chart = memo(() => {
           <button
             onClick={handleClickChartUnitChange(3)}
             className={classNames(
-              'btn btn-sm',
+              'btn btn-xs',
               subscribeChartCodes.length === 3 ? 'btn-active' : null
             )}
           >
@@ -104,7 +104,7 @@ export const Chart = memo(() => {
           <button
             onClick={handleClickChartUnitChange(4)}
             className={classNames(
-              'btn btn-sm',
+              'btn btn-xs',
               subscribeChartCodes.length === 4 ? 'btn-active' : null
             )}
           >
@@ -115,7 +115,7 @@ export const Chart = memo(() => {
       <div
         className={classNames(
           'flex-auto [&>div]:flex-auto [&>div]:h-[35vh] sm:[&>div]:h-[45vh] lg:[&>div]:h-[initial] lg:[&>div]:min-h-[18rem] overflow-y-auto',
-          subscribeChartCodes.length > 3 ? 'grid grid-cols-2 grid-rows-2' : 'flex flex-col'
+          subscribeChartCodes.length > 3 ? 'grid grid-cols-2' : 'flex flex-col'
         )}
       >
         {subscribeChartCodes.map((chart, i) => (

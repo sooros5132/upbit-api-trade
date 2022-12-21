@@ -4,16 +4,18 @@ import isEqual from 'react-fast-compare';
 import { IUpbitAccount } from 'src/types/upbit';
 import binanceDataFeed from './lib/binanceDataFeed';
 import upbitDataFeed from './lib/upbitDataFeed';
-import { useUpbitApiStore } from 'src/store/upbitApi';
+import { IUpbitApiState, useUpbitApiStore } from 'src/store/upbitApi';
 // import './index.css';
 import type {
   IChartingLibraryWidget,
   IPositionLineAdapter,
   ThemeName,
   Timezone,
-  ResolutionString
+  ResolutionString,
+  IOrderLineAdapter
 } from '../../charting_library';
 import { widget, ChartingLibraryWidgetOptions, LanguageCode } from '../../charting_library';
+import { cloneDeep } from 'lodash';
 
 function getLanguageFromURL(): LanguageCode | null {
   const regex = new RegExp('[\\?&]lang=([^&#]*)');
@@ -216,7 +218,7 @@ export const TVChartInner: React.FC<TVChartProps> = React.memo<TVChartProps>(
         //   });
         switch (exchange) {
           case 'UPBIT': {
-            let accountOrderLine: IPositionLineAdapter | null = tvWidget
+            let accountPositionLine: IPositionLineAdapter | null = tvWidget
               .activeChart()
               .createPositionLine()
               .setText('매수평균')
@@ -226,25 +228,77 @@ export const TVChartInner: React.FC<TVChartProps> = React.memo<TVChartProps>(
               .setLineColor('#0ea5e9')
               .setBodyTextColor('#ffffff')
               .setQuantity('');
+            let orderLines: Array<IOrderLineAdapter> = [];
 
             function subscribePositionLine(accounts: Array<IUpbitAccount>) {
-              if (!tvWidget || !accountOrderLine) {
-                return;
-              }
-              const account = accounts.find((account) => account.currency === currency);
+              try {
+                if (!tvWidget || !accountPositionLine) {
+                  return;
+                }
+                const account = accounts.find((account) => account.currency === currency);
 
-              if (!account) {
-                accountOrderLine?.setPrice(0);
-                return;
-              }
-              const { avg_buy_price } = account;
-              accountOrderLine?.setPrice(Number(avg_buy_price) || 0);
+                if (!account) {
+                  accountPositionLine?.setPrice(0);
+                  return;
+                }
+                const { avg_buy_price } = account;
+                accountPositionLine?.setPrice(Number(avg_buy_price) || 0);
+              } catch (e) {}
+            }
+
+            function subscribeOrderLine(orders: IUpbitApiState['orders']) {
+              try {
+                if (!tvWidget) {
+                  return;
+                }
+
+                if (Array.isArray(orderLines) && orderLines.length > 0) {
+                  for (const orderLine of orderLines) {
+                    orderLine?.remove();
+                  }
+                }
+                //! 초기화를 꼭 시켜야 다음에 에러가 안남. 위에서 remove 하더라도 쓰레기값을 들고 있다.
+                orderLines = [];
+                for (const order of orders) {
+                  const color = order.side === 'bid' ? '#14b8a6' : '#f43f52';
+                  const text = order.side === 'bid' ? '매수' : '매도';
+                  const orderLine = tvWidget
+                    .activeChart()
+                    .createOrderLine()
+                    .setText(currency ?? text)
+                    .setLineLength(2)
+                    .setLineStyle(1)
+                    .setBodyBackgroundColor(color)
+                    .setBodyBorderColor(color)
+                    .setQuantityBorderColor(color)
+                    .setQuantityBackgroundColor(color)
+                    .setLineColor(color)
+                    .setBodyTextColor('#ffffff')
+                    .setQuantity(order.volume)
+                    .setPrice(Number(order.price));
+                  orderLines.push(orderLine);
+                }
+              } catch (e) {}
             }
 
             // 최초 1회 라인 긋고 구독
-            subscribePositionLine(useUpbitApiStore.getState().accounts);
-            let unsubscribe = useUpbitApiStore.subscribe(({ accounts }) => {
+            subscribePositionLine(cloneDeep(useUpbitApiStore.getState().accounts));
+            subscribeOrderLine(cloneDeep(useUpbitApiStore.getState().orders));
+            let unsubscribeAccounts = useUpbitApiStore.subscribe((state, prevState) => {
+              if (state.accounts === prevState.accounts) {
+                return;
+              }
+              //! tradingview가 데이터를 변경함. cloneDeep 사용할 것.
+              const accounts = cloneDeep(state.accounts);
               subscribePositionLine(accounts);
+            });
+            let unsubscribeOrders = useUpbitApiStore.subscribe((state, prevState) => {
+              if (state.orders === prevState.orders) {
+                return;
+              }
+              //! tradingview가 데이터를 변경함. cloneDeep 사용할 것.
+              const orders = cloneDeep(state.orders);
+              subscribeOrderLine(orders);
             });
             // 최초 1회 라인 긋고 구독
 
@@ -253,15 +307,20 @@ export const TVChartInner: React.FC<TVChartProps> = React.memo<TVChartProps>(
               .activeChart()
               .onSymbolChanged()
               .subscribe(null, () => {
-                if (unsubscribe) {
-                  unsubscribe();
+                if (unsubscribeAccounts) {
+                  unsubscribeAccounts();
                 }
-                accountOrderLine?.remove();
+                if (unsubscribeOrders) {
+                  unsubscribeOrders();
+                }
+
+                accountPositionLine?.remove();
+                accountPositionLine = null;
                 tvWidget.activeChart().dataReady(() => {
-                  if (unsubscribe) {
-                    unsubscribe();
+                  if (unsubscribeAccounts) {
+                    unsubscribeAccounts();
                   }
-                  accountOrderLine = tvWidget
+                  accountPositionLine = tvWidget
                     .activeChart()
                     .createPositionLine()
                     .setText('매수평균')
@@ -272,7 +331,12 @@ export const TVChartInner: React.FC<TVChartProps> = React.memo<TVChartProps>(
                     .setBodyTextColor('#ffffff')
                     .setQuantity('');
                   subscribePositionLine(useUpbitApiStore.getState().accounts);
-                  unsubscribe = useUpbitApiStore.subscribe(({ accounts }) => {
+                  unsubscribeAccounts = useUpbitApiStore.subscribe((state, prevState) => {
+                    if (state.accounts === prevState.accounts) {
+                      return;
+                    }
+                    //! tradingview가 데이터를 변경함. cloneDeep 사용할 것.
+                    const accounts = cloneDeep(state.accounts);
                     subscribePositionLine(accounts);
                   });
                 });
