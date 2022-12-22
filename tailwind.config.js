@@ -21,5 +21,6 @@ module.exports = {
   daisyui: {
     themes: ['light', 'dark', 'black']
   },
+  safelist: ['btn-order', 'btn-order-ask', 'btn-order-bid'],
   plugins: [require('daisyui')]
 };
