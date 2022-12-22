@@ -99,8 +99,8 @@ const RegisterUpbitApiFormDialog: React.FC<RegisterUpbitApiFormDialogProps> = ({
           </div>
           <div className='mt-4 text-sm text-red-500'>
             <p>
-              자산조회 기능만 사용이 가능합니다.&nbsp;API 사용 부주의로 인한 금전적 손실은 책임 지지
-              않습니다.&nbsp;API 권한을 다시 한번 확인하고 연동해주세요.
+              디지털 자산 투자에 대한 금전적 손실은 본인 책임이며 투자에 유의하시기
+              바랍니다.&nbsp;API 권한을 다시 한번 확인하고 연동해 주세요.
             </p>
           </div>
           <div className='mt-4 flex-center'>
