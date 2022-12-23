@@ -52,7 +52,7 @@ export const UpbitOrderform = memo(() => {
       ) : (
         <div
           className={classNames(
-            'flex flex-col scrollbar-hidden flex-grow-0 flex-shrink-0',
+            'h-full flex flex-col scrollbar-hidden flex-grow-0 flex-shrink-0',
             !hidden ? 'overflow-y-auto' : null
           )}
         >
@@ -250,13 +250,12 @@ const Trade: FC<TradeProps> = ({ orderChance, ordType }) => {
 
   return (
     <div className='h-full flex flex-col py-1 px-2 bg-base-300 font-mono'>
-      <div className='flex justify-end items-center lg:px-5 gap-x-1'>
-        <span className='text-sm whitespace-nowrap'>코인 선택</span>
+      <div className='flex-center'>
         <div className='form-control bg-base-200'>
           <label className='input-group overflow-hidden'>
             <select
               placeholder='코인 선택'
-              className='select select-ghost select-xs flex-grow min-w-0 w-full'
+              className='select select-ghost select-xs flex-grow min-w-[200px] w-full'
               value={upbitTradeMarket}
               onChange={handleChangeMarket}
             >

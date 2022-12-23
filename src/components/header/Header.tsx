@@ -194,7 +194,7 @@ const Header: React.FC = () => {
                 />
               </button>
             </li>
-            <li onClickCapture={handleClickMenuItem('visibleTradingPanel')}>
+            {/* <li onClickCapture={handleClickMenuItem('visibleTradingPanel')}>
               <button className='justify-between font-normal btn btn-ghost'>
                 <span className='label-text'>트레이딩 패널 표시</span>
                 <input
@@ -204,7 +204,7 @@ const Header: React.FC = () => {
                   className='checkbox checkbox-sm'
                 />
               </button>
-            </li>
+            </li> */}
             {hydrated && upbitApi.secretKey
               ? [
                   <div key={'header-menu-divider'} className='m-0 divider' />,
