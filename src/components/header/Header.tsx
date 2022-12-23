@@ -23,30 +23,11 @@ import classNames from 'classnames';
 
 const Header: React.FC = () => {
   const upbitApi = useUpbitApiStore();
-  const {
-    hideMyAccounts,
-    hideTradingPanel,
-    showMyAccounts,
-    showTradingPanel,
-    visibleMyAccounts,
-    visibleTradingPanel,
-    hydrated
-  } = useSiteSettingStore(
-    ({
+  const { hideMyAccounts, showMyAccounts, visibleMyAccounts, hydrated } = useSiteSettingStore(
+    ({ hideMyAccounts, showMyAccounts, visibleMyAccounts, hydrated }) => ({
       hideMyAccounts,
-      hideTradingPanel,
       showMyAccounts,
-      showTradingPanel,
       visibleMyAccounts,
-      visibleTradingPanel,
-      hydrated
-    }) => ({
-      hideMyAccounts,
-      hideTradingPanel,
-      showMyAccounts,
-      showTradingPanel,
-      visibleMyAccounts,
-      visibleTradingPanel,
       hydrated
     }),
     shallow
@@ -92,15 +73,7 @@ const Header: React.FC = () => {
   // }, [showMyAccounts]);
 
   const handleClickMenuItem =
-    (
-      prop:
-        | 'logout'
-        | 'visibleMyAccounts'
-        | 'highlight'
-        | 'upbitApiConnect'
-        | 'stickyChart'
-        | 'visibleTradingPanel'
-    ) =>
+    (prop: 'logout' | 'visibleMyAccounts' | 'highlight' | 'upbitApiConnect' | 'stickyChart') =>
     (event: React.MouseEvent<HTMLLIElement>) => {
       switch (prop) {
         case 'logout': {
@@ -112,14 +85,6 @@ const Header: React.FC = () => {
             hideMyAccounts();
           } else {
             showMyAccounts();
-          }
-          break;
-        }
-        case 'visibleTradingPanel': {
-          if (visibleTradingPanel) {
-            hideTradingPanel();
-          } else {
-            showTradingPanel();
           }
           break;
         }
@@ -194,17 +159,6 @@ const Header: React.FC = () => {
                 />
               </button>
             </li>
-            {/* <li onClickCapture={handleClickMenuItem('visibleTradingPanel')}>
-              <button className='justify-between font-normal btn btn-ghost'>
-                <span className='label-text'>트레이딩 패널 표시</span>
-                <input
-                  type='checkbox'
-                  checked={visibleTradingPanel}
-                  readOnly
-                  className='checkbox checkbox-sm'
-                />
-              </button>
-            </li> */}
             {hydrated && upbitApi.secretKey
               ? [
                   <div key={'header-menu-divider'} className='m-0 divider' />,

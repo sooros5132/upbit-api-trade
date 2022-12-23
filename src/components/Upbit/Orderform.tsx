@@ -30,90 +30,82 @@ export const UpbitOrderform = memo(() => {
   const handleClickOrdTypeBtn = (type: UpbitTradeValues['ord_type']) => () => {
     setOrdType(type);
   };
-  // const handleClickTradingClose = () => {
-  //   useSiteSettingStore.getState().hideTradingPanel();
-  // };
 
   return (
     <div className='h-full overflow-hidden bg-base-200'>
-      {!isLogin ? (
-        <div className='flex-center p-5 h-full text-center'>
-          <div>
-            <div>
-              업비트 API 거래 기능을 이용하시려면 오른쪽 상단에서 업비트 API Key를 등록해주세요.
-            </div>
-            {/* <div>
-              <button className={'btn btn-sm mt-2'} onClick={handleClickTradingClose}>
-                매수/매도 패널 닫기
-              </button>
-            </div> */}
-          </div>
-        </div>
-      ) : (
-        <div
-          className={classNames(
-            'h-full flex flex-col scrollbar-hidden flex-grow-0 flex-shrink-0',
-            !hidden ? 'overflow-y-auto' : null
-          )}
-        >
-          <div className='btn-group w-full [&>.btn]:grow gap-0.5'>
-            <button
-              onClick={handleClickOrdTypeBtn('limit')}
-              className={classNames(
-                'btn btn-xs btn-ghost gap-x-1',
-                ordType === 'limit' ? 'btn-active' : null
-              )}
-            >
-              <span>지정가</span>
-              <div className='dropdown dropdown-hover dropdown-start'>
-                <AiOutlineInfoCircle className='text-zinc-600' />
-                <div className='dropdown-content bg-accent text-sm p-2 w-40'>
-                  <div>호가에 수량을 설정해서 주문을 넣습니다.</div>
-                </div>
+      <div
+        className={classNames(
+          'h-full flex flex-col scrollbar-hidden flex-grow-0 flex-shrink-0',
+          !hidden ? 'overflow-y-auto' : null
+        )}
+      >
+        <div className='btn-group w-full [&>.btn]:grow gap-0.5'>
+          <button
+            onClick={handleClickOrdTypeBtn('limit')}
+            className={classNames(
+              'btn btn-xs btn-ghost gap-x-1',
+              ordType === 'limit' ? 'btn-active' : null
+            )}
+          >
+            <span>지정가</span>
+            <div className='dropdown dropdown-hover dropdown-start'>
+              <AiOutlineInfoCircle className='text-zinc-600' />
+              <div className='dropdown-content bg-accent text-sm p-2 w-40'>
+                <div>호가에 수량을 설정해서 주문을 넣습니다.</div>
               </div>
-            </button>
+            </div>
+          </button>
+          <button
+            onClick={handleClickOrdTypeBtn('market')}
+            className={classNames(
+              'btn btn-xs btn-ghost gap-x-1',
+              ordType === 'price' || ordType === 'market' ? 'btn-active ' : null
+            )}
+          >
+            <span>시장가</span>
+            <div className='dropdown dropdown-hover dropdown-end'>
+              <AiOutlineInfoCircle className='text-zinc-600' />
+              <div className='dropdown-content bg-accent text-sm p-2 w-40'>
+                <div>현재 호가에 설정한 수량만큼 주문을 넣습니다.</div>
+              </div>
+            </div>
+          </button>
+          {process.env.NODE_ENV !== 'production' && (
             <button
-              onClick={handleClickOrdTypeBtn('market')}
+              onClick={handleClickOrdTypeBtn('spider')}
               className={classNames(
                 'btn btn-xs btn-ghost gap-x-1',
-                ordType === 'price' || ordType === 'market' ? 'btn-active ' : null
+                ordType === 'spider' ? 'btn-active' : null
               )}
             >
-              <span>시장가</span>
+              <span>거미줄</span>
               <div className='dropdown dropdown-hover dropdown-end'>
                 <AiOutlineInfoCircle className='text-zinc-600' />
                 <div className='dropdown-content bg-accent text-sm p-2 w-40'>
-                  <div>현재 호가에 설정한 수량만큼 주문을 넣습니다.</div>
+                  <div>설정한 호가부터 반복해서 주문을 넣습니다.</div>
                 </div>
               </div>
             </button>
-            {process.env.NODE_ENV !== 'production' && (
-              <button
-                onClick={handleClickOrdTypeBtn('spider')}
-                className={classNames(
-                  'btn btn-xs btn-ghost gap-x-1',
-                  ordType === 'spider' ? 'btn-active' : null
-                )}
-              >
-                <span>거미줄</span>
-                <div className='dropdown dropdown-hover dropdown-end'>
-                  <AiOutlineInfoCircle className='text-zinc-600' />
-                  <div className='dropdown-content bg-accent text-sm p-2 w-40'>
-                    <div>설정한 호가부터 반복해서 주문을 넣습니다.</div>
-                  </div>
-                </div>
-              </button>
-            )}
-            <button
-              onClick={() => setHidden((p) => !p)}
-              className={classNames('btn btn-xs btn-ghost !grow-0 shrink-0 gap-x-1')}
-            >
-              <span>{hidden ? <RiArrowDownSLine /> : <RiArrowUpSLine />}</span>
-            </button>
-          </div>
-          {!hidden && <TradeContainer ordType={ordType} />}
+          )}
+          <button
+            onClick={() => setHidden((p) => !p)}
+            className={classNames('btn btn-xs btn-ghost !grow-0 shrink-0 gap-x-1')}
+          >
+            <span>{hidden ? <RiArrowDownSLine /> : <RiArrowUpSLine />}</span>
+          </button>
         </div>
-      )}
+        {!isLogin ? (
+          <div className='flex-center p-5 h-full text-center'>
+            <div>
+              <div>
+                업비트 API 거래 기능을 이용하시려면 오른쪽 상단에서 업비트 API Key를 등록해주세요.
+              </div>
+            </div>
+          </div>
+        ) : (
+          !hidden && <TradeContainer ordType={ordType} />
+        )}
+      </div>
     </div>
   );
 }, isEqual);

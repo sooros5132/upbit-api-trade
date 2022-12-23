@@ -11,7 +11,6 @@ interface ISiteSettingState {
   fontSize: number;
   visibleMyAccounts: boolean;
   visibleCurrencyBalances: boolean;
-  visibleTradingPanel: boolean;
   subscribeChartCodes: Array<{
     exchange: 'BINANCE' | 'UPBIT';
     code: string;
@@ -43,7 +42,6 @@ const defaultState: ISiteSettingState = {
   fontSize: 14,
   visibleMyAccounts: true,
   visibleCurrencyBalances: true,
-  visibleTradingPanel: true,
   subscribeChartCodes: [...defaultSubscribeChartCodes].slice(2)
 };
 
@@ -55,8 +53,6 @@ interface ISiteSettingStore extends ISiteSettingState {
   changeFontSize: (fontSize: number) => void;
   showCurrencyBalances: () => void;
   hideCurrencyBalances: () => void;
-  showTradingPanel: () => void;
-  hideTradingPanel: () => void;
   setSubscribeChartCodes: (chart: ISiteSettingState['subscribeChartCodes']) => void;
 }
 
@@ -100,12 +96,6 @@ export const useSiteSettingStore = create(
       },
       hideCurrencyBalances() {
         set({ visibleCurrencyBalances: false });
-      },
-      showTradingPanel() {
-        set({ visibleTradingPanel: true });
-      },
-      hideTradingPanel() {
-        set({ visibleTradingPanel: false });
       },
       setSubscribeChartCodes(subscribeChartCodes) {
         set({ subscribeChartCodes });
