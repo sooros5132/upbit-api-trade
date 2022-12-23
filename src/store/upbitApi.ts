@@ -2,7 +2,6 @@ import create from 'zustand';
 import { persist } from 'zustand/middleware';
 import { apiUrls, PROXY_PATH } from 'src/lib/apiUrls';
 import { v4 as uuidv4 } from 'uuid';
-import { sign } from 'jsonwebtoken';
 import {
   IUpbitAccount,
   IUpbitCreateOrderResponse,
@@ -18,6 +17,7 @@ import queryString from 'query-string';
 import crypto from 'crypto';
 import axios from 'axios';
 import { useExchangeStore } from './exchangeSockets';
+import { signJWT } from 'src/utils/utils';
 
 export interface IUpbitApiState {
   isLogin: boolean;
@@ -39,6 +39,36 @@ const defaultState: IUpbitApiState = {
   upbitTradeMarket: 'KRW-BTC'
 };
 
+type createJwtAuthorizationTokenParam = {
+  querys: Record<string, any>;
+  serializedQueryString?: string;
+  accessKey: string;
+  secretKey: string;
+};
+
+function createJwtAuthorizationToken({
+  accessKey,
+  secretKey,
+  querys,
+  serializedQueryString
+}: createJwtAuthorizationTokenParam) {
+  const query = serializedQueryString ? serializedQueryString : queryString.stringify(querys);
+
+  const hash = crypto.createHash('sha512');
+  const queryHash = hash.update(query, 'utf-8').digest('hex');
+
+  const payload = {
+    access_key: accessKey,
+    nonce: uuidv4(),
+    query_hash: queryHash,
+    query_hash_alg: 'SHA512'
+  };
+
+  const token = signJWT(payload, secretKey);
+
+  return token;
+}
+
 interface IUpbitApiStore extends IUpbitApiState {
   registerKey: (
     accessKey: string,
@@ -47,10 +77,6 @@ interface IUpbitApiStore extends IUpbitApiState {
   revalidateKeys: () => Promise<void>;
   resetAll: () => void;
   setUpbitTradeMarket: (code: string) => void;
-  createJwtAuthorizationToken: (
-    querys: Record<string, any>,
-    serializedQueryString?: string
-  ) => string;
   getOrdersChance: (market: string) => Promise<void>;
   getOrders: (querys: IUpbitGetOrderRquestParameters) => Promise<void>;
   createOrder: (querys: IUpbitCreateOrderRquestParameters) => Promise<IUpbitCreateOrderResponse>;
@@ -66,12 +92,13 @@ export const useUpbitApiStore = create(
           access_key: accessKey,
           nonce: uuidv4()
         };
+
         const accounts = await axios
           .get<Array<IUpbitAccount> | IUpbitErrorMessage>(
             PROXY_PATH + apiUrls.upbit.path + apiUrls.upbit.accounts,
             {
               headers: {
-                Authorization: `Bearer ${sign(payload, secretKey)}`
+                Authorization: `Bearer ${signJWT(payload, secretKey)}`
               }
             }
           )
@@ -112,8 +139,12 @@ export const useUpbitApiStore = create(
         useExchangeStore.getState().connectUpbitSocket();
       },
       async getOrdersChance(market: string) {
-        const { createJwtAuthorizationToken } = get();
-        const token = createJwtAuthorizationToken({ market });
+        const { accessKey, secretKey } = get();
+        const token = createJwtAuthorizationToken({
+          accessKey,
+          secretKey,
+          querys: { market }
+        });
 
         const result = await axios
           .get<IUpbitOrdersChance>(PROXY_PATH + apiUrls.upbit.path + apiUrls.upbit.ordersChance, {
@@ -129,28 +160,15 @@ export const useUpbitApiStore = create(
           ordersChance: result
         });
       },
-      createJwtAuthorizationToken(querys, serializedQueryString) {
-        const { accessKey, secretKey } = get();
-        const query = serializedQueryString ? serializedQueryString : queryString.stringify(querys);
-
-        const hash = crypto.createHash('sha512');
-        const queryHash = hash.update(query, 'utf-8').digest('hex');
-
-        const payload = {
-          access_key: accessKey,
-          nonce: uuidv4(),
-          query_hash: queryHash,
-          query_hash_alg: 'SHA512'
-        };
-
-        const token = sign(payload, secretKey);
-
-        return token;
-      },
       async getOrders(querys) {
-        const { createJwtAuthorizationToken } = get();
+        const { accessKey, secretKey } = get();
         const serializedQueryString = queryString.stringify(querys);
-        const token = createJwtAuthorizationToken(querys, serializedQueryString);
+        const token = createJwtAuthorizationToken({
+          accessKey,
+          secretKey,
+          querys,
+          serializedQueryString
+        });
 
         const result = await axios
           .get<Array<IUpbitGetOrderResponse>>(
@@ -168,9 +186,15 @@ export const useUpbitApiStore = create(
         });
       },
       async createOrder(querys) {
-        const { createJwtAuthorizationToken } = get();
+        const { accessKey, secretKey } = get();
         const serializedQueryString = queryString.stringify({ ...querys, identifier: uuidv4() });
-        const token = createJwtAuthorizationToken(querys, serializedQueryString);
+
+        const token = createJwtAuthorizationToken({
+          accessKey,
+          secretKey,
+          querys,
+          serializedQueryString
+        });
         const result = await axios
           .post<IUpbitCreateOrderResponse>(
             PROXY_PATH + apiUrls.upbit.path + apiUrls.upbit.orders + '?' + serializedQueryString,
@@ -186,10 +210,14 @@ export const useUpbitApiStore = create(
         return result;
       },
       async deleteOrder(querys) {
-        const { createJwtAuthorizationToken } = get();
+        const { accessKey, secretKey } = get();
         const serializedQueryString = queryString.stringify(querys);
-        const token = createJwtAuthorizationToken(querys);
-
+        const token = createJwtAuthorizationToken({
+          accessKey,
+          secretKey,
+          querys,
+          serializedQueryString
+        });
         const result = await axios
           .delete<IUpbitDeleteOrderResponse>(
             PROXY_PATH + apiUrls.upbit.path + apiUrls.upbit.order + '?' + serializedQueryString,

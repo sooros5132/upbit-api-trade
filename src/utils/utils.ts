@@ -1,4 +1,5 @@
 import numeral from 'numeral';
+import { createHmac } from 'crypto';
 
 export function koPriceLabelFormat(price: number) {
   if (!price) return '';
@@ -189,4 +190,28 @@ export function upbitPadEnd(number: number) {
   const decimalScale = upbitDecimalScale(number);
   const decimalPad = ''.padStart(decimalScale, '0');
   return numeral(number).format(`0,0${decimalScale > 0 ? '.' : ''}${decimalPad}`);
+}
+
+export function base64UrlFromBase64(str: string) {
+  return str.replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+}
+
+export function signJWT(payload: any, secretKey: string) {
+  const header = {
+    alg: 'HS256',
+    typ: 'JWT'
+  };
+  const encodedHeader = base64UrlFromBase64(Buffer.from(JSON.stringify(header)).toString('base64'));
+
+  const encodedPayload = base64UrlFromBase64(
+    Buffer.from(JSON.stringify(payload)).toString('base64')
+  );
+
+  const signature = base64UrlFromBase64(
+    createHmac('sha256', secretKey)
+      .update(encodedHeader + '.' + encodedPayload)
+      .digest('base64')
+  );
+
+  return `${encodedHeader}.${encodedPayload}.${signature}`;
 }
