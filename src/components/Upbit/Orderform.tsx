@@ -1,9 +1,8 @@
 import classNames from 'classnames';
 import React, { FC, memo, useEffect, useState } from 'react';
-import { AiFillLock, AiOutlineLoading3Quarters } from 'react-icons/ai';
+import { AiFillLock, AiOutlineInfoCircle, AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { apiUrls } from 'src/lib/apiUrls';
 import { useExchangeStore } from 'src/store/exchangeSockets';
-import { useSiteSettingStore } from 'src/store/siteSetting';
 import { useUpbitApiStore } from 'src/store/upbitApi';
 import { IUpbitOrdersChance } from 'src/types/upbit';
 import { krwRegex } from 'src/utils/regex';
@@ -20,20 +19,25 @@ import { toast } from 'react-toastify';
 import isEqual from 'react-fast-compare';
 import { NumericFormat } from 'react-number-format';
 import numeral from 'numeral';
-import { IMarketTableItem } from '../market-table/MarketTable';
-import { HiArrowLongUp, HiArrowLongDown, HiMinus } from 'react-icons/hi2';
+import { RiArrowDownSLine, RiArrowUpSLine } from 'react-icons/ri';
 
 export const UpbitOrderform = memo(() => {
   const isLogin = useUpbitApiStore((state) => state.isLogin);
 
+  const [ordType, setOrdType] = useState<UpbitTradeValues['ord_type']>('limit');
+  const [hidden, setHidden] = useState(false);
+
+  const handleClickOrdTypeBtn = (type: UpbitTradeValues['ord_type']) => () => {
+    setOrdType(type);
+  };
   // const handleClickTradingClose = () => {
   //   useSiteSettingStore.getState().hideTradingPanel();
   // };
 
   return (
-    <div className='h-full flex flex-col overflow-hidden'>
+    <div className='h-full overflow-hidden bg-base-200'>
       {!isLogin ? (
-        <div className='flex-center p-5 h-full bg-base-200 text-center'>
+        <div className='flex-center p-5 h-full text-center'>
           <div>
             <div>
               업비트 API 거래 기능을 이용하시려면 오른쪽 상단에서 업비트 API Key를 등록해주세요.
@@ -46,11 +50,67 @@ export const UpbitOrderform = memo(() => {
           </div>
         </div>
       ) : (
-        <>
-          <div className='h-full overflow-y-auto scrollbar-hidden flex-grow-0 flex-shrink-0'>
-            <TradeContainer />
+        <div className='h-full flex flex-col overflow-y-auto scrollbar-hidden flex-grow-0 flex-shrink-0'>
+          <div className='btn-group w-full [&>.btn]:grow gap-0.5'>
+            <button
+              onClick={handleClickOrdTypeBtn('limit')}
+              className={classNames(
+                'btn btn-xs btn-ghost gap-x-1 lg:btn-xs',
+                ordType === 'limit' ? 'btn-active' : null
+              )}
+            >
+              <span>지정가</span>
+              <div className='dropdown dropdown-hover dropdown-start'>
+                <AiOutlineInfoCircle className='text-zinc-600' />
+                <div className='dropdown-content bg-accent text-sm p-2 w-40'>
+                  <div>호가에 수량을 설정해서 주문을 넣습니다.</div>
+                </div>
+              </div>
+            </button>
+            <button
+              onClick={handleClickOrdTypeBtn('market')}
+              className={classNames(
+                'btn btn-xs btn-ghost gap-x-1 lg:btn-xs',
+                ordType === 'price' || ordType === 'market' ? 'btn-active ' : null
+              )}
+            >
+              <span>시장가</span>
+              <div className='dropdown dropdown-hover dropdown-end'>
+                <AiOutlineInfoCircle className='text-zinc-600' />
+                <div className='dropdown-content bg-accent text-sm p-2 w-40'>
+                  <div>현재 호가에 설정한 수량만큼 주문을 넣습니다.</div>
+                </div>
+              </div>
+            </button>
+            {process.env.NODE_ENV !== 'production' && (
+              <button
+                onClick={handleClickOrdTypeBtn('spider')}
+                className={classNames(
+                  'btn btn-xs btn-ghost gap-x-1 lg:btn-xs',
+                  ordType === 'spider' ? 'btn-active' : null
+                )}
+              >
+                <span>거미줄</span>
+                <div className='dropdown dropdown-hover dropdown-end'>
+                  <AiOutlineInfoCircle className='text-zinc-600' />
+                  <div className='dropdown-content bg-accent text-sm p-2 w-40'>
+                    <div>설정한 호가부터 반복해서 주문을 넣습니다.</div>
+                  </div>
+                </div>
+              </button>
+            )}
+            <button
+              onClick={() => setHidden((p) => !p)}
+              className={classNames(
+                'btn btn-xs btn-ghost !grow-0 shrink-0 gap-x-1 lg:btn-xs',
+                ordType === 'price' || ordType === 'market' ? 'btn-active ' : null
+              )}
+            >
+              <span>{hidden ? <RiArrowDownSLine /> : <RiArrowUpSLine />}</span>
+            </button>
           </div>
-        </>
+          {!hidden && <TradeContainer ordType={ordType} />}
+        </div>
       )}
     </div>
   );
@@ -87,7 +147,11 @@ interface DefaultPanelProp {
   ) => (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const TradeContainer = () => {
+interface TradeContainerProps {
+  ordType: UpbitTradeValues['ord_type'];
+}
+
+const TradeContainer: FC<TradeContainerProps> = ({ ordType }) => {
   const { upbitTradeMarket, ordersChance } = useUpbitApiStore(
     ({ upbitTradeMarket, ordersChance }) => ({
       upbitTradeMarket,
@@ -115,7 +179,7 @@ const TradeContainer = () => {
 
   if (!ordersChance) {
     return (
-      <div className='flex-center flex-col px-5 py-10 gap-2 text-center bg-base-200 animate-pulse'>
+      <div className='flex-center h-full flex-col px-5 py-10 gap-2 text-center bg-base-200 animate-pulse'>
         <div className='animate-spin text-3xl'>
           <AiOutlineLoading3Quarters />
         </div>
@@ -126,10 +190,15 @@ const TradeContainer = () => {
     );
   }
 
-  return <Trade orderChance={ordersChance} />;
+  return <Trade orderChance={ordersChance} ordType={ordType} />;
 };
 
-const Trade: FC<{ orderChance: IUpbitOrdersChance }> = ({ orderChance }) => {
+interface TradeProps {
+  ordType: UpbitTradeValues['ord_type'];
+  orderChance: IUpbitOrdersChance;
+}
+
+const Trade: FC<TradeProps> = ({ orderChance, ordType }) => {
   const { upbitTradeMarket, setUpbitTradeMarket } = useUpbitApiStore(
     ({ upbitTradeMarket, setUpbitTradeMarket }) => ({
       upbitTradeMarket,
@@ -139,7 +208,6 @@ const Trade: FC<{ orderChance: IUpbitOrdersChance }> = ({ orderChance }) => {
   );
   const upbitMarkets = useExchangeStore((state) => state.upbitMarkets, shallow);
 
-  const [ordType, setOrdType] = useState<UpbitTradeValues['ord_type']>('limit');
   const { error, mutate: mutateChance } = useSWR(
     `${apiUrls.upbit.path}${apiUrls.upbit.ordersChance}?market=${upbitTradeMarket}`,
     async () => {
@@ -161,7 +229,7 @@ const Trade: FC<{ orderChance: IUpbitOrdersChance }> = ({ orderChance }) => {
 
   if (!orderChance) {
     return (
-      <div className='flex-center flex-col px-5 py-10 gap-2 text-center bg-base-200 animate-pulse'>
+      <div className='flex-center flex-col px-5 py-10 gap-2 text-center animate-pulse'>
         <div className='animate-spin text-3xl'>
           <AiOutlineLoading3Quarters />
         </div>
@@ -178,50 +246,15 @@ const Trade: FC<{ orderChance: IUpbitOrdersChance }> = ({ orderChance }) => {
     useExchangeStore.getState().changedOrderbookCode();
   };
 
-  const handleClickOrdTypeBtn = (type: UpbitTradeValues['ord_type']) => () => {
-    setOrdType(type);
-  };
-
   return (
     <div className='h-full flex flex-col py-1 px-2 bg-base-300 font-mono'>
-      {process.env.NODE_ENV !== 'production' && (
-        <div className='btn-group w-full mb-2 [&>.btn]:grow gap-0.5'>
-          <button
-            onClick={handleClickOrdTypeBtn('limit')}
-            className={classNames(
-              'btn btn-sm btn-ghost lg:btn-xs',
-              ordType === 'limit' ? 'btn-active' : null
-            )}
-          >
-            지정가
-          </button>
-          <button
-            onClick={handleClickOrdTypeBtn('market')}
-            className={classNames(
-              'btn btn-sm btn-ghost lg:btn-xs',
-              ordType === 'price' || ordType === 'market' ? 'btn-active ' : null
-            )}
-          >
-            시장가
-          </button>
-          <button
-            onClick={handleClickOrdTypeBtn('spider')}
-            className={classNames(
-              'btn btn-sm btn-ghost lg:btn-xs',
-              ordType === 'spider' ? 'btn-active' : null
-            )}
-          >
-            거미줄
-          </button>
-        </div>
-      )}
-      <div className='flex justify-between items-center lg:px-5 gap-x-1'>
+      <div className='flex justify-end items-center lg:px-5 gap-x-1'>
         <span className='text-sm whitespace-nowrap'>코인 선택</span>
         <div className='form-control bg-base-200'>
           <label className='input-group overflow-hidden'>
             <select
               placeholder='코인 선택'
-              className='select select-ghost select-sm flex-grow min-w-0 w-full'
+              className='select select-ghost select-xs flex-grow min-w-0 w-full'
               value={upbitTradeMarket}
               onChange={handleChangeMarket}
             >
@@ -271,7 +304,7 @@ const TradeInner: FC<TradeInnerProps> = ({ ord_type, side, orderChance, mutateCh
   return (
     <div className='flex flex-col py-1'>
       <div className='flex justify-between items-center'>
-        <span className='text-sm'>보유 잔고</span>
+        <span className='text-sm'>사용 가능</span>
         <span className='text-right'>
           {side === 'bid'
             ? Math.floor(krwBalance || 0).toLocaleString()
@@ -284,7 +317,7 @@ const TradeInner: FC<TradeInnerProps> = ({ ord_type, side, orderChance, mutateCh
       </div>
       {(ord_type === 'price' || ord_type === 'market') && (
         <div className='flex justify-between items-center'>
-          <div className='text-sm'>현재 호가</div>
+          <div className='text-sm'>{sideText[side === 'ask' ? 'bid' : 'ask']} 호가</div>
           <div>
             <div className='inline-flex items-center'>
               <CurrentTradePricePanel side={side} />
@@ -562,52 +595,71 @@ const OrderPanel: FC<OrderPanelProps> = ({ side, ord_type, orderChance, mutateCh
             });
           break;
         }
-        case 'price': {
-          // 시장가 매수
-          const { volume } = values;
-          if (!side || volume === 0) {
-            return;
-          }
-          const params = {
-            market: marketCode,
-            side,
-            volume: volume.toString(),
-            ord_type: 'price'
-          } as const;
-          await useUpbitApiStore
-            .getState()
-            .createOrder(params)
-            .then((res) => {
-              toast.info(`${res.price}가격에 ${res.volume}만큼 매수 주문을 넣었습니다.`);
-              mutateChance();
-            })
-            .catch((err) => {
-              toast.error(err?.response?.data?.error?.message ?? '주문에 실패했습니다.');
-            });
-          break;
-        }
+        case 'price':
         case 'market': {
-          // 시장가 매도
-          const { price } = values;
-          if (!side || price === 0) {
-            return;
+          // 시장가 주문
+          switch (side) {
+            case 'bid': {
+              // 시장가 매수
+              const { krwVolume } = values;
+              if (!side || krwVolume === 0) {
+                return;
+              }
+              const params = {
+                market: marketCode,
+                side,
+                price: krwVolume.toString(),
+                ord_type: 'price'
+              } as const;
+              await useUpbitApiStore
+                .getState()
+                .createOrder(params)
+                .then((res) => {
+                  toast.info(
+                    `${numeral(Number(res.price)).format(`0,0[.][0000]`)}가격에 ${numeral(
+                      Number(res.volume)
+                    ).format(`0,0[.][00000000]`)}만큼 시장가매수 주문을 넣었습니다.`
+                  );
+                  mutateChance();
+                })
+                .catch((err) => {
+                  toast.error(
+                    err?.response?.data?.error?.message ?? '시장가 매도주문을 실패했습니다.'
+                  );
+                });
+              break;
+            }
+            case 'ask': {
+              // 시장가 매도
+              const { volume } = values;
+              if (!side || volume === 0) {
+                return;
+              }
+              const params = {
+                market: marketCode,
+                side,
+                volume: volume.toString(),
+                ord_type: 'market'
+              } as const;
+              await useUpbitApiStore
+                .getState()
+                .createOrder(params)
+                .then((res) => {
+                  toast.info(
+                    `${numeral(Number(res.price)).format(`0,0[.][0000]`)}가격에 ${numeral(
+                      Number(res.volume)
+                    ).format(`0,0[.][00000000]`)}만큼 시장가매도 주문을 넣었습니다.`
+                  );
+                  mutateChance();
+                })
+                .catch((err) => {
+                  toast.error(
+                    err?.response?.data?.error?.message ?? '시장가 매수주문을 실패했습니다.'
+                  );
+                });
+              break;
+            }
           }
-          const params = {
-            market: marketCode,
-            side,
-            price: price.toString(),
-            ord_type: 'market'
-          } as const;
-          await useUpbitApiStore
-            .getState()
-            .createOrder(params)
-            .then((res) => {
-              toast.info(`${res.price}가격에 ${res.volume}만큼 매도 주문을 넣었습니다.`);
-              mutateChance();
-            })
-            .catch((err) => {
-              toast.error(err?.response?.data?.error?.message ?? '주문에 실패했습니다.');
-            });
           break;
         }
         case 'reset': {
@@ -660,25 +712,39 @@ const OrderPanel: FC<OrderPanelProps> = ({ side, ord_type, orderChance, mutateCh
   return (
     <div className='h-full flex flex-col gap-y-2'>
       {ord_type === 'limit' && (
-        <OrderPricePanel
+        <>
+          <LimitOrderPanel
+            side={side}
+            price={values.price}
+            priceRange={priceRange}
+            onChangeRange={handleChangeRange}
+            onClickResetButton={handleClickResetButton}
+            onChangeNumericValue={handleChangeNumericValue}
+          />
+          <OrderVolumePanel
+            orderChance={orderChance}
+            side={side}
+            ord_type={ord_type}
+            values={values}
+            balanceRange={balanceRange}
+            onChangeRange={handleChangeRange}
+            onClickResetButton={handleClickResetButton}
+            onChangeNumericValue={handleChangeNumericValue}
+          />
+        </>
+      )}
+      {(ord_type === 'market' || ord_type === 'price') && (
+        <MarketOrderPanel
+          orderChance={orderChance}
           side={side}
-          price={values.price}
-          priceRange={priceRange}
+          ord_type={ord_type}
+          values={values}
+          balanceRange={balanceRange}
           onChangeRange={handleChangeRange}
           onClickResetButton={handleClickResetButton}
           onChangeNumericValue={handleChangeNumericValue}
         />
       )}
-      <OrderVolumePanel
-        orderChance={orderChance}
-        side={side}
-        ord_type={ord_type}
-        values={values}
-        balanceRange={balanceRange}
-        onChangeRange={handleChangeRange}
-        onClickResetButton={handleClickResetButton}
-        onChangeNumericValue={handleChangeNumericValue}
-      />
       <div className='mt-auto'>
         <OrderBtnPanel
           orderChance={orderChance}
@@ -691,13 +757,13 @@ const OrderPanel: FC<OrderPanelProps> = ({ side, ord_type, orderChance, mutateCh
   );
 };
 
-interface OrderPricePanelProps extends DefaultPanelProp {
+interface LimitOrderPanelProps extends DefaultPanelProp {
   side: UpbitTradeValues['side'];
   price: number;
   priceRange: number;
 }
 
-const OrderPricePanel: FC<OrderPricePanelProps> = ({
+const LimitOrderPanel: FC<LimitOrderPanelProps> = ({
   side,
   price,
   priceRange,
@@ -706,7 +772,7 @@ const OrderPricePanel: FC<OrderPricePanelProps> = ({
   onClickResetButton
 }) => {
   return (
-    <div>
+    <div className='select-none'>
       <div className='mb-1 flex-center gap-x-2 text-sm'>
         <span
           className='whitespace-nowrap cursor-pointer'
@@ -723,7 +789,7 @@ const OrderPricePanel: FC<OrderPricePanelProps> = ({
             min='-50'
             max='50'
             step={1}
-            className='range range-xs tooltip'
+            className='range range-sm'
             value={priceRange}
             onChange={onChangeRange('price', side)}
           />
@@ -797,7 +863,7 @@ const OrderVolumePanel: FC<OrderVolumePanelProps> = ({
                 min='0'
                 max='100'
                 className={classNames(
-                  'range range-xs tooltip',
+                  'range range-sm',
                   side === 'bid' && values.krwVolume > Number(krwBalance) ? 'range-error' : null
                 )}
                 value={balanceRange}
@@ -838,7 +904,6 @@ const OrderVolumePanel: FC<OrderVolumePanelProps> = ({
               />
               <span>KRW</span>
             </label>
-
             <div
               className={classNames(
                 'text-left text-xs',
@@ -858,10 +923,207 @@ const OrderVolumePanel: FC<OrderVolumePanelProps> = ({
                   <span>
                     업비트 매매수수료{' '}
                     <b>
-                      {numeral(values.krwVolume * Number(orderChance.bid_fee)).format('0[.][00]')}
+                      {numeral(values.krwVolume * Number(orderChance.bid_fee)).format('0,0[.][00]')}
                     </b>
                     원이 포함되어 있습니다.
                   </span>
+                )
+              ) : null}
+            </div>
+          </div>
+        </div>
+      );
+    }
+    default: {
+      return null;
+    }
+  }
+};
+
+const MarketOrderPanel: FC<OrderVolumePanelProps> = ({
+  orderChance,
+  ord_type,
+  side,
+  balanceRange,
+  values,
+  onChangeNumericValue,
+  onChangeRange,
+  onClickResetButton
+}) => {
+  const orderbook = useExchangeStore(({ upbitOrderbook }) => {
+    return {
+      askPrice: upbitOrderbook?.obu?.[0]?.ap ?? null,
+      bidPrice: upbitOrderbook?.obu?.[0]?.bp ?? null
+    };
+  }, shallow);
+
+  if (!orderbook.askPrice || !orderbook.bidPrice) {
+    return <>시장가 데이터를 불러오는 중 입니다.</>;
+  }
+  const market = orderChance.market.id;
+  const krwBalance = orderChance.bid_account.balance;
+
+  switch (side) {
+    case 'bid': {
+      const krwVolumeIsHigherThanMaximum = values.krwVolume > Number(orderChance.market.max_total);
+      const krwVolumeIsLowerThanMinimum =
+        values.krwVolume < Number(orderChance.market[side].min_total);
+      return (
+        <div>
+          <div className='mb-1 flex-center gap-x-2 text-sm '>
+            <span
+              className='whitespace-nowrap cursor-pointer'
+              onClick={onClickResetButton('balance', 0, side)}
+            >
+              주문 총액
+            </span>
+            <div
+              className='flex-center w-full tooltip'
+              data-tip={`잔고 대비 주문 비율 ${balanceRange.toLocaleString()}%`}
+            >
+              <input
+                type='range'
+                min='0'
+                max='100'
+                className={classNames(
+                  'range range-sm',
+                  side === 'bid' && values.krwVolume > Number(krwBalance) ? 'range-error' : null
+                )}
+                value={balanceRange}
+                onChange={onChangeRange('balance', side)}
+              />
+            </div>
+          </div>
+          <div className='form-control'>
+            <label className='input-group input-group-sm'>
+              <NumericFormat
+                type='text'
+                inputMode='numeric'
+                className='input input-bordered input-sm min-w-0 w-full'
+                value={values.krwVolume}
+                onChange={onChangeNumericValue('krwVolume', side)}
+                placeholder='주문 총액(KRW)'
+                decimalScale={0}
+                thousandSeparator=','
+                allowLeadingZeros
+                maxLength={Number.MAX_SAFE_INTEGER.toLocaleString().length}
+              />
+              <span>KRW</span>
+            </label>
+            <div className='text-left text-xs'>
+              {values.krwVolume > 0 ? (
+                krwVolumeIsHigherThanMaximum ? (
+                  <span className='text-error-content'>{`최대 주문은 ${Number(
+                    orderChance.market.max_total
+                  ).toLocaleString()}원입니다.`}</span>
+                ) : krwVolumeIsLowerThanMinimum ? (
+                  <span className='text-error-content'>
+                    {`최소 주문은 ${Number(orderChance.market[side].min_total).toLocaleString()}
+                  원입니다.`}
+                  </span>
+                ) : (
+                  <div>
+                    <div>
+                      <span>
+                        {`≈ ${numeral(values.krwVolume / orderbook.askPrice).format(
+                          '0,0[.][00000000]'
+                        )} ${orderChance.ask_account.currency}`}
+                      </span>
+                    </div>
+                    <div className='text-info-content'>
+                      업비트 매매수수료&nbsp;
+                      <b>
+                        {numeral(values.krwVolume * Number(orderChance.bid_fee)).format(
+                          '0,0[.][00]'
+                        )}
+                      </b>
+                      원이 포함되어 있습니다.
+                    </div>
+                  </div>
+                )
+              ) : null}
+            </div>
+          </div>
+        </div>
+      );
+    }
+    case 'ask': {
+      const volumeIsHigherThanMaximum =
+        values.volume * orderbook.askPrice > Number(orderChance.market.max_total);
+      const volumeIsLowerThanMinimum =
+        values.volume * orderbook.askPrice < Number(orderChance.market[side].min_total);
+      return (
+        <div>
+          <div className='mb-1 flex-center gap-x-2 text-sm '>
+            <span
+              className='whitespace-nowrap cursor-pointer'
+              onClick={onClickResetButton('balance', 0, side)}
+            >
+              주문 총액
+            </span>
+            <div
+              className='flex-center w-full tooltip'
+              data-tip={`잔고 대비 주문 비율 ${balanceRange.toLocaleString()}%`}
+            >
+              <input
+                type='range'
+                min='0'
+                max='100'
+                className={classNames(
+                  'range range-sm',
+                  values.krwVolume > Number(krwBalance) ? 'range-error' : null
+                )}
+                value={balanceRange}
+                onChange={onChangeRange('balance', side)}
+              />
+            </div>
+          </div>
+          <div className='form-control'>
+            <label className='input-group input-group-sm'>
+              <NumericFormat
+                type='text'
+                inputMode='decimal'
+                className='input input-bordered input-sm min-w-0 w-full'
+                value={values.volume}
+                onChange={onChangeNumericValue('volume', side)}
+                placeholder={`주문 수량(${market.toUpperCase()?.replace(krwRegex, '')})`}
+                decimalScale={8}
+                thousandSeparator=','
+                allowLeadingZeros
+                maxLength={Number.MAX_SAFE_INTEGER.toLocaleString().length}
+              />
+              <span>{market.toUpperCase()?.replace(krwRegex, '')}</span>
+            </label>
+            <div className='text-left text-xs'>
+              {values.krwVolume > 0 ? (
+                volumeIsHigherThanMaximum ? (
+                  <span className='text-error-content'>{`최대 주문은 ${Number(
+                    orderChance.market.max_total
+                  ).toLocaleString()}원입니다.`}</span>
+                ) : volumeIsLowerThanMinimum ? (
+                  <span className='text-error-content'>
+                    {`최소 주문은 ${Number(orderChance.market[side].min_total).toLocaleString()}
+                  원입니다.`}
+                  </span>
+                ) : (
+                  <div>
+                    <div>
+                      <span>
+                        {`≈ ${numeral(values.volume * orderbook.bidPrice).format('0,0[.][00]')} ${
+                          orderChance.bid_account.currency
+                        }`}
+                      </span>
+                    </div>
+                    <div className='text-info-content'>
+                      업비트 매매수수료&nbsp;
+                      <b>
+                        {numeral(
+                          values.volume * orderbook.bidPrice * Number(orderChance.ask_fee)
+                        ).format('0,0[.][00]')}
+                      </b>
+                      원이 포함되어 있습니다.
+                    </div>
+                  </div>
                 )
               ) : null}
             </div>
@@ -893,6 +1155,7 @@ const OrderBtnPanel: FC<OrderBtnPanelProps> = ({
   const isShortBalance =
     (side === 'bid' && krwBalance < 5000 * (1 + Number(orderChance.bid_fee))) ||
     (side === 'ask' && coinBalance === 0);
+
   return (
     <button
       key={`ORDER_MARKET_${side}`}
