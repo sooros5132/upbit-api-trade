@@ -46,7 +46,10 @@ function MyApp({ Component, pageProps }: AppProps) {
         description='실시간 업비트 - 바이낸스 프리미엄 시세를 볼 수 있습니다.'
       />
       <Head>
-        <meta name='viewport' content='initial-scale=1, width=device-width' />
+        <meta
+          name='viewport'
+          content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0'
+        />
       </Head>
       {/* <Script
         src='https://s3.tradingview.com/tv.js'
