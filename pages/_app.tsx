@@ -153,13 +153,10 @@ const SWRFetchers = () => {
 };
 
 const SiteTitleSeo = () => {
-  const { selectedMarketSymbol, selectedExchange } = useTradingViewSettingStore();
-  const marketSymbol = 'KRW-' + selectedMarketSymbol;
-  // selectedExchange === 'UPBIT'
-  //   ? 'KRW-' + selectedMarketSymbol
-  //   : selectedExchange === 'BINANCE'
-  //   ? selectedMarketSymbol + 'USDT'
-  //   : '';
+  let title = 'SOOROS';
+
+  const firstChart = useSiteSettingStore((state) => state.subscribeChartCodes[0], shallow);
+  const marketSymbol = 'KRW-' + firstChart?.code;
   const upbitMarket = useExchangeStore((state) => state.upbitMarketDatas[marketSymbol], shallow);
 
   const usdPriceNum = Number(upbitMarket?.binance_price);
@@ -168,16 +165,14 @@ const SiteTitleSeo = () => {
   const krwPrice = krwPriceNum > 1 ? krwPriceNum.toLocaleString() : upbitMarket?.tp;
   const usdPrice = usdPriceNum > 1 ? usdPriceNum.toLocaleString() : upbitMarket?.binance_price;
 
-  let title = 'SOOROS';
   if (upbitMarket) {
-    // const titleSymbol = `KRW-${selectedMarketSymbol || 'BTC'}`;
-    switch (selectedExchange) {
+    switch (firstChart.exchange) {
       case 'BINANCE': {
-        title = upbitMarket.binance_price ? `${usdPrice} ${selectedMarketSymbol}/USDT` : '';
+        title = upbitMarket.binance_price ? `${usdPrice} ${firstChart.code}/USDT` : '';
         break;
       }
       case 'UPBIT': {
-        title = `${krwPrice} ${selectedMarketSymbol}/KRW`;
+        title = `${krwPrice} ${firstChart.code}/KRW`;
         break;
       }
     }
