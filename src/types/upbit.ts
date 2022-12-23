@@ -54,29 +54,29 @@ export interface IUpbitForex {
 export interface IUpbitOrderMarket {
   id: string; //										마켓의 유일 키
   name: string; //									마켓 이름
-  order_types?: Array<string>; //		지원 주문 방식 (만료)
-  order_sides: Array<string>; //		지원 주문 종류
-  //																매수 시 제약사항
-  bid: {
-    currency: string;
-    price_unit: string;
-    min_total: number;
-  };
-  //																매도 시 제약사항
   ask: {
+    //															매도 시 제약사항
     currency: string; //						화폐를 의미하는 영문 대문자 코드
     price_unit: string; //					주문금액 단위
     min_total: number; //						최소 매도/매수 금액
   };
+  ask_types: Array<string>; //			매도 주문 지원 방식
+  bid: {
+    //															매수 시 제약사항
+    currency: string; //						화폐를 의미하는 영문 대문자 코드
+    price_unit: string; //					주문금액 단위
+    min_total: number; //						최소 매도/매수 금액
+  };
+  bid_types: Array<string>; //			매수 주문 지원 방식
   max_total: string; //							최대 매도/매수 금액
+  order_sides: Array<string>; //		지원 주문 종류
+  order_types?: Array<string>; //		지원 주문 방식 (만료)
   state: string; //									마켓 운영 상태
 }
 
 export interface IUpbitOrdersChance {
   bid_fee: string; //							매수 수수료 비율
   ask_fee: string; //							매도 수수료 비율
-  ask_types: Array<string>; //		매도 주문 지원 방식
-  bid_types: Array<string>; //		매수 주문 지원 방식
   market: IUpbitOrderMarket; //		마켓에 대한 정보
   bid_account: IUpbitAccount; //	매수 시 사용하는 화폐의 계좌 상태
   ask_account: IUpbitAccount; //	매수 시 사용하는 화폐의 계좌 상태
