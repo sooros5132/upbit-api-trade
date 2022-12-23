@@ -94,17 +94,19 @@ export const UpbitOrderform = memo(() => {
             <span>{hidden ? <RiArrowDownSLine /> : <RiArrowUpSLine />}</span>
           </button>
         </div>
-        {!isLogin ? (
-          <div className='flex-center p-5 h-full text-center'>
-            <div>
+        {!hidden ? (
+          !isLogin ? (
+            <div className='flex-center p-5 h-full text-center'>
               <div>
-                업비트 API 거래 기능을 이용하시려면 오른쪽 상단에서 업비트 API Key를 등록해주세요.
+                <div>
+                  업비트 API 거래 기능을 이용하시려면 오른쪽 상단에서 업비트 API Key를 등록해주세요.
+                </div>
               </div>
             </div>
-          </div>
-        ) : (
-          !hidden && <TradeContainer ordType={ordType} />
-        )}
+          ) : (
+            <TradeContainer ordType={ordType} />
+          )
+        ) : null}
       </div>
     </div>
   );
