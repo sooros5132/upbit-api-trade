@@ -33,7 +33,7 @@ const Home: NextPage = () => {
       <div data-grid-area='chart' className='overflow-y-auto'>
         {hydrated && <Chart />}
       </div>
-      <div data-grid-area='orderbook'>
+      <div data-grid-area='orderbook' className='max-h-40 sm:max-h-[initial]'>
         <UpbitOrderBook />
       </div>
       {hydrated && (
@@ -41,7 +41,7 @@ const Home: NextPage = () => {
           <UpbitOrderform />
         </div>
       )}
-      <div data-grid-area='trades'>
+      <div data-grid-area='trades' className='max-h-28 sm:max-h-[initial]'>
         <UpbitRecentTrades />
       </div>
       <div data-grid-area='orders'>

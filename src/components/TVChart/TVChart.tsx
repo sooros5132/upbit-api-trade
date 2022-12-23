@@ -261,17 +261,18 @@ export const TVChartInner: React.FC<TVChartProps> = React.memo<TVChartProps>(
                 orderLines = [];
                 for (const order of orders) {
                   const color = order.side === 'bid' ? '#14b8a6' : '#f43f52';
-                  const text = order.side === 'bid' ? '매수' : '매도';
+                  const text = order.side === 'bid' ? 'BUY' : 'SELL';
                   const orderLine = tvWidget
                     .activeChart()
                     .createOrderLine()
-                    .setText(currency ?? text)
+                    .setText(text)
                     .setLineLength(2)
                     .setLineStyle(1)
                     .setBodyBackgroundColor(color)
                     .setBodyBorderColor(color)
                     .setQuantityBorderColor(color)
-                    .setQuantityBackgroundColor(color)
+                    .setQuantityBackgroundColor('#ffffff')
+                    .setQuantityTextColor(color)
                     .setLineColor(color)
                     .setBodyTextColor('#ffffff')
                     .setQuantity(order.volume)

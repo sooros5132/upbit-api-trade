@@ -229,7 +229,7 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
 
   return (
     <tr
-      className={upbitTradeMarket === krwSymbol ? 'bg-base-300' : undefined}
+      className={upbitTradeMarket === krwSymbol ? 'bg-green-800/20' : undefined}
       onClick={handleClickMarket(upbitMarket.cd)}
     >
       <td>

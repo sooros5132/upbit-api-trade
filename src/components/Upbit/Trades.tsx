@@ -19,7 +19,7 @@ const UpbitRecentTrades = memo(() => {
     <div
       className={classNames(
         'flex flex-col flex-auto bg-base-200 overflow-hidden',
-        hidden ? 'flex-grow-0' : 'h-80 sm:h-full flex-grow'
+        hidden ? 'flex-grow-0' : 'h-full flex-grow'
       )}
     >
       <div className='flex items-center justify-between pl-1 flex-auto flex-shrink-0 flex-grow-0'>

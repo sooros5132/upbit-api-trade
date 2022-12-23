@@ -24,7 +24,7 @@ const UpbitOrderBook = memo(() => {
       )}
     >
       <div className='flex items-center justify-between pl-1 flex-auto flex-shrink-0 flex-grow-0'>
-        <span className='text-sm'>오더북({upbitTradeMarket})</span>
+        <span className='text-sm'>호가</span>
         <span
           className='btn btn-circle btn-ghost btn-xs cursor-pointer'
           onClick={() => setHidden((p) => !p)}
