@@ -44,7 +44,7 @@ const Home: NextPage = () => {
       <div data-grid-area='trades' className='max-h-28 sm:max-h-[initial]'>
         <UpbitRecentTrades />
       </div>
-      <div data-grid-area='orders' className='h-40 sm:h-[initial]'>
+      <div data-grid-area='orders' className='max-h-40 sm:max-h-[initial]'>
         <UpbitOrders />
       </div>
       <div

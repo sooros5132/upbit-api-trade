@@ -50,7 +50,12 @@ export const UpbitOrderform = memo(() => {
           </div>
         </div>
       ) : (
-        <div className='h-full flex flex-col overflow-y-auto scrollbar-hidden flex-grow-0 flex-shrink-0'>
+        <div
+          className={classNames(
+            'flex flex-col scrollbar-hidden flex-grow-0 flex-shrink-0',
+            !hidden ? 'overflow-y-auto' : null
+          )}
+        >
           <div className='btn-group w-full [&>.btn]:grow gap-0.5'>
             <button
               onClick={handleClickOrdTypeBtn('limit')}
