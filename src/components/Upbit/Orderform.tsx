@@ -55,7 +55,7 @@ export const UpbitOrderform = memo(() => {
             <button
               onClick={handleClickOrdTypeBtn('limit')}
               className={classNames(
-                'btn btn-xs btn-ghost gap-x-1 lg:btn-xs',
+                'btn btn-xs btn-ghost gap-x-1',
                 ordType === 'limit' ? 'btn-active' : null
               )}
             >
@@ -70,7 +70,7 @@ export const UpbitOrderform = memo(() => {
             <button
               onClick={handleClickOrdTypeBtn('market')}
               className={classNames(
-                'btn btn-xs btn-ghost gap-x-1 lg:btn-xs',
+                'btn btn-xs btn-ghost gap-x-1',
                 ordType === 'price' || ordType === 'market' ? 'btn-active ' : null
               )}
             >
@@ -86,7 +86,7 @@ export const UpbitOrderform = memo(() => {
               <button
                 onClick={handleClickOrdTypeBtn('spider')}
                 className={classNames(
-                  'btn btn-xs btn-ghost gap-x-1 lg:btn-xs',
+                  'btn btn-xs btn-ghost gap-x-1',
                   ordType === 'spider' ? 'btn-active' : null
                 )}
               >
@@ -101,10 +101,7 @@ export const UpbitOrderform = memo(() => {
             )}
             <button
               onClick={() => setHidden((p) => !p)}
-              className={classNames(
-                'btn btn-xs btn-ghost !grow-0 shrink-0 gap-x-1 lg:btn-xs',
-                ordType === 'price' || ordType === 'market' ? 'btn-active ' : null
-              )}
+              className={classNames('btn btn-xs btn-ghost !grow-0 shrink-0 gap-x-1')}
             >
               <span>{hidden ? <RiArrowDownSLine /> : <RiArrowUpSLine />}</span>
             </button>
