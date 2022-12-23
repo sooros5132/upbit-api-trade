@@ -27,7 +27,7 @@ export const TableHead = () => {
 
   return (
     <thead>
-      <tr className='[&>td]:text-gray-600 [&>th:first-child]:z-0 [&>th:first-child]:rounded-none [&>th:last-child]:rounded-none text-right [&_svg]:inline-block [&>th>div]:cursor-pointer'>
+      <tr className='bg-base-300 [&>th]:text-zinc-500 [&>th:first-child]:z-0 [&>th:first-child]:rounded-none [&>th:last-child]:rounded-none text-right [&_svg]:inline-block [&>th>div]:cursor-pointer'>
         <th className='w-[1.25em]'></th>
         <th className='w-auto'>
           <div

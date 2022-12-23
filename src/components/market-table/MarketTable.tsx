@@ -1,15 +1,16 @@
 /* eslint-disable @next/next/no-img-element */
-import React, { memo } from 'react';
+import React, { memo, useState } from 'react';
 import isEqual from 'react-fast-compare';
 import { IUpbitSocketMessageTickerSimple } from 'src/types/upbit';
 import { useExchangeStore } from 'src/store/exchangeSockets';
 import { useMarketTableSettingStore } from 'src/store/marketTableSetting';
 import shallow from 'zustand/shallow';
-import { RiCloseCircleLine } from 'react-icons/ri';
+import { RiArrowDownSLine, RiArrowUpSLine } from 'react-icons/ri';
 import formatInTimeZone from 'date-fns-tz/formatInTimeZone';
 import { ko as koLocale } from 'date-fns/locale';
 import { BackgroundBlueBox, BackgroundRedBox } from '../modules/Box';
 import { MarketTableBody, MarketTableHead } from '.';
+import { IoIosClose } from 'react-icons/io';
 
 export interface IMarketTableItem extends IUpbitSocketMessageTickerSimple {
   korean_name?: string;
@@ -24,6 +25,7 @@ interface MarketTableProps {
 }
 
 const MarketTable: React.FC<MarketTableProps> = ({ isLastUpdatePage }) => {
+  const [hidden, setHidden] = useState(false);
   const { lastUpdatedAt } = useExchangeStore(({ lastUpdatedAt }) => {
     return {
       lastUpdatedAt
@@ -90,20 +92,31 @@ const MarketTable: React.FC<MarketTableProps> = ({ isLastUpdatePage }) => {
               </BackgroundRedBox>
             </div>
           </noscript>
-          <div className='flex items-center justify-between my-2 flex-auto flex-shrink-0 flex-grow-0'>
-            <div className='flex'>
+          <div className='flex items-center justify-end flex-auto flex-shrink-0 flex-grow-0 bg-base-200'>
+            <div className='mr-auto'>
               <UsdKrwToggle />
             </div>
             <MarketSearch />
+            {}
+            <div>
+              <span
+                className='btn btn-circle btn-ghost btn-xs cursor-pointer'
+                onClick={() => setHidden((p) => !p)}
+              >
+                {hidden ? <RiArrowDownSLine /> : <RiArrowUpSLine />}
+              </span>
+            </div>
           </div>
         </>
       )}
-      <div className='overflow-y-auto flex-auto font-mono text-right [&_th]:px-0.5 [&_th]:py-1.5 [&_th]:bg-base-200 [&_td]:px-0.5 [&_td]:py-1.5 [&_td]:whitespace-nowrap [&_tbody_tr]:border-b [&_tbody_tr]:border-base-300 [&_tbody_tr]:cursor-pointer [&_tbody_tr]:min-w-[40px] [&_tbody_tr:hover_td]:bg-white/5'>
-        <table className='border-separate border-spacing-0 w-full'>
-          <MarketTableHead />
-          <MarketTableBody />
-        </table>
-      </div>
+      {!hidden && (
+        <div className='overflow-y-auto flex-auto font-mono text-right [&_th]:px-0.5 [&_th]:py-1.5 [&_td]:px-0.5 [&_td]:py-1.5 [&_td]:whitespace-nowrap [&_tbody_tr]:border-b [&_tbody_tr]:cursor-pointer [&_tbody_tr]:min-w-[40px] [&_tbody_tr:hover_td]:bg-white/5'>
+          <table className='border-separate border-spacing-0 w-full'>
+            <MarketTableHead />
+            <MarketTableBody />
+          </table>
+        </div>
+      )}
     </div>
   );
 };
@@ -159,20 +172,20 @@ const MarketSearch = () => {
   };
 
   return (
-    <div className='border rounded-md form-control border-base-300 '>
-      <label className='input-group input-group-sm '>
+    <div className='border form-control border-base-300 '>
+      <label className='input-group input-group-xs '>
         <input
           type='text'
           placeholder='BTC, 비트, Bitcoin'
           value={searchValue}
           onChange={handleChangeMarketSearchInput}
-          className='input input-sm bg-transparent w-[170px] focus:outline-offset-0 focus:rounded-l-md'
+          className='input input-xs bg-transparent w-[170px] focus:outline-offset-0'
         />
         <span
           className='text-xl text-gray-600 bg-transparent cursor-pointer px-1.5 justify-end'
           onClick={handleClickClearSearchInputButton}
         >
-          <RiCloseCircleLine />
+          <IoIosClose />
         </span>
       </label>
     </div>
