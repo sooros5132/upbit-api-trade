@@ -2,7 +2,7 @@ import type { NextPage } from 'next';
 import React, { useEffect, useState } from 'react';
 import MarketTable, { IMarketTableItem } from 'src/components/market-table/MarketTable';
 import { IUpbitApiTicker, IUpbitMarket } from 'src/types/upbit';
-import { apiUrls } from 'src/lib/apiUrls';
+import { apiUrls, PROXY_PATH } from 'src/lib/apiUrls';
 import useSWR from 'swr';
 import { IBinanceSocketTicker, IBinanceTickerPrice } from 'src/types/binance';
 import { useExchangeStore } from 'src/store/exchangeSockets';
@@ -88,7 +88,9 @@ const Home: NextPage = () => {
 
 const ExchangeMarket: React.FC = () => {
   const [isReady, setIsReady] = useState(false);
-  const { data: forexRecent } = useSWR(apiUrls.upbit.rewriteUrl + apiUrls.upbit.forex.recent);
+  const { data: forexRecent } = useSWR(
+    PROXY_PATH + apiUrls.upbit.path + apiUrls.upbit.forex.recent
+  );
 
   useEffect(() => {
     if (isReady) {

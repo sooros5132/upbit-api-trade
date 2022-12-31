@@ -13,7 +13,7 @@ import { useExchangeStore } from 'src/store/exchangeSockets';
 import { toast } from 'react-toastify';
 import { IoMdRefresh } from 'react-icons/io';
 import useSWR from 'swr';
-import { apiUrls } from 'src/lib/apiUrls';
+import { apiUrls, PROXY_PATH } from 'src/lib/apiUrls';
 import { IUpbitForex } from 'src/types/upbit';
 import type { ICoincodexGetMetadataPick } from 'src/types/coincodex';
 import numeral from 'numeral';
@@ -250,7 +250,7 @@ const Header: React.FC = () => {
 
 const MarketInfo = () => {
   const { data: forex } = useSWR<IUpbitForex>(
-    apiUrls.upbit.rewriteUrl + apiUrls.upbit.forex.recent
+    PROXY_PATH + apiUrls.upbit.path + apiUrls.upbit.forex.recent
   );
   const { data: metadata } = useSWR<ICoincodexGetMetadataPick>(
     apiUrls.coincodex.path + apiUrls.coincodex.getMetadata

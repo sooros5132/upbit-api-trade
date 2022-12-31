@@ -12,7 +12,7 @@ import shallow from 'zustand/shallow';
 import { useSiteSettingStore } from 'src/store/siteSetting';
 import { useExchangeStore } from 'src/store/exchangeSockets';
 import axios from 'axios';
-import { apiUrls } from 'src/lib/apiUrls';
+import { apiUrls, PROXY_PATH } from 'src/lib/apiUrls';
 import useSWR from 'swr';
 import { ICoincodexGetMetadataPick } from 'src/types/coincodex';
 import { IUpbitForex } from 'src/types/upbit';
@@ -104,7 +104,7 @@ const PreventRerenderingWorks = () => {
 // 사이트에서 필수로 요구하는 SWR들
 const SWRFetchers = () => {
   useSWR(
-    apiUrls.upbit.rewriteUrl + apiUrls.upbit.forex.recent,
+    PROXY_PATH + apiUrls.upbit.path + apiUrls.upbit.forex.recent,
     async (url) => {
       const forexResult = await axios
         .get<Array<IUpbitForex>>(url + '?codes=FRX.KRWUSD')
@@ -119,12 +119,13 @@ const SWRFetchers = () => {
       return forexResult[0];
     },
     {
-      refreshInterval: 60 * 1000
+      revalidateOnFocus: false,
+      refreshInterval: 3 * 60 * 1000
     }
   );
 
   useSWR<ICoincodexGetMetadataPick>(
-    apiUrls.coincodex.path + apiUrls.coincodex.getMetadata,
+    PROXY_PATH + apiUrls.coincodex.path + apiUrls.coincodex.getMetadata,
     async (url) => {
       const res = await axios
         .get<ICoincodexGetMetadataPick>(url)
@@ -135,17 +136,20 @@ const SWRFetchers = () => {
     },
     {
       revalidateOnFocus: false,
-      refreshInterval: 60 * 1000
+      refreshInterval: 3 * 60 * 1000
     }
   );
 
   useSWR(
-    config.path + apiUrls.upbit.accounts,
+    PROXY_PATH + apiUrls.upbit.path + apiUrls.upbit.accounts,
     () => {
-      useUpbitApiStore.getState().revalidateKeys();
+      const { isLogin, revalidateKeys } = useUpbitApiStore.getState();
+      if (isLogin) {
+        revalidateKeys();
+      }
     },
     {
-      refreshInterval: 60 * 1000
+      refreshInterval: 2 * 60 * 1000
     }
   );
 
