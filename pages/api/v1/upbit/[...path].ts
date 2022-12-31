@@ -9,7 +9,7 @@ const handler = nc<NextApiRequest, NextApiResponse>({
   onError: Error.handleError,
   onNoMatch: Error.handleNoMatch
 }).all(async (req, res) => {
-  httpProxyMiddleware(req, res, {
+  await httpProxyMiddleware(req, res, {
     target: 'https://api.upbit.com/',
     changeOrigin: true,
     pathRewrite: [

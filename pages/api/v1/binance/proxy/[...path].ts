@@ -9,7 +9,7 @@ const handler = nc<NextApiRequest, NextApiResponse>({
   onError: Error.handleError,
   onNoMatch: Error.handleNoMatch
 }).get(async (req, res) => {
-  httpProxyMiddleware(req, res, {
+  await httpProxyMiddleware(req, res, {
     target: 'https://api.binance.com',
     changeOrigin: true,
     pathRewrite: [
