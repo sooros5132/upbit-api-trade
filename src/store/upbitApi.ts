@@ -102,7 +102,9 @@ export const useUpbitApiStore = create(
               }
             }
           )
-          .then((res) => res.data)
+          .then((res) => {
+            return res.data;
+          })
           .catch((res) => {
             return res?.response?.data || '알 수 없는 에러';
           });
@@ -140,6 +142,9 @@ export const useUpbitApiStore = create(
       },
       async getOrdersChance(market: string) {
         const { accessKey, secretKey } = get();
+        if (!accessKey || !secretKey) {
+          return;
+        }
         const token = createJwtAuthorizationToken({
           accessKey,
           secretKey,
@@ -162,6 +167,9 @@ export const useUpbitApiStore = create(
       },
       async getOrders(querys) {
         const { accessKey, secretKey } = get();
+        if (!accessKey || !secretKey) {
+          return;
+        }
         const serializedQueryString = queryString.stringify(querys);
         const token = createJwtAuthorizationToken({
           accessKey,

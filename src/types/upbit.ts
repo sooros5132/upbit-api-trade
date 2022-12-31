@@ -103,7 +103,7 @@ interface IUpbitOrderResponse {
 }
 
 export interface IUpbitGetOrderRquestParameters {
-  market: string; //	마켓 아이디	String
+  market?: string; //	마켓 아이디	String
   uuids?: Array<string>; //	주문 UUID의 목록	Array
   identifiers?: Array<string>; //	주문 identifier의 목록	Array
   state?: string; //	주문 상태
