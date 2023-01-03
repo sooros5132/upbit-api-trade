@@ -8,6 +8,7 @@ import shallow from 'zustand/shallow';
 import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai';
 import { useSiteSettingStore } from 'src/store/siteSetting';
 import classNames from 'classnames';
+import { useUpbitApiStore } from 'src/store/upbitApi';
 
 interface IAccountItemProps {
   account: IUpbitAccount & { currentPrice?: number; totalBalance: number };
@@ -42,10 +43,13 @@ const AccountItem = memo(({ account, visibleBalance }: IAccountItemProps) => {
   const totalPurchaseValue = totalBalance * avg_buy_price;
   const appraisedValue = totalBalance * currentPrice;
 
-  const upbitLink =
-    currency !== 'KRW'
-      ? `${apiUrls.upbit.marketHref + 'KRW-' + currency}`
-      : 'https://upbit.com/investments/balance';
+  const handleClickChangeMarketButton = () => {
+    useUpbitApiStore.getState().setUpbitTradeMarket(`KRW-${currency}`.toUpperCase());
+  };
+  // const upbitLink =
+  // currency !== 'KRW'
+  //   ? `${apiUrls.upbit.marketHref + 'KRW-' + currency}`
+  //   : 'https://upbit.com/investments/balance';
 
   const colorPrice =
     !profitAndLoss || profitAndLoss === 0
@@ -57,9 +61,13 @@ const AccountItem = memo(({ account, visibleBalance }: IAccountItemProps) => {
     <>
       <div className='flex items-center font-mono text-xs sm:text-sm'>
         <BsDot />
-        <a href={upbitLink} rel='noreferrer' target='_blank'>
-          <span className='font-bold hover:underline'>{currency}</span>
-        </a>
+        <div></div>
+        <div
+          className='font-bold hover:underline cursor-pointer'
+          onClick={handleClickChangeMarketButton}
+        >
+          {currency}
+        </div>
         {currency !== 'KRW' ? (
           <div className='dropdown dropdown-hover dropdown-end'>
             <label tabIndex={0}>
