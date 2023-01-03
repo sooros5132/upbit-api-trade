@@ -20,6 +20,7 @@ import numeral from 'numeral';
 import formatInTimeZone from 'date-fns-tz/formatInTimeZone';
 import { ko as koLocale } from 'date-fns/locale';
 import classNames from 'classnames';
+import siteConfig from 'site-config';
 
 const Header: React.FC = () => {
   const upbitApi = useUpbitApiStore();
@@ -159,40 +160,42 @@ const Header: React.FC = () => {
                 />
               </button>
             </li>
-            {hydrated && upbitApi.secretKey
-              ? [
-                  <div key={'header-menu-divider'} className='m-0 divider' />,
-                  <li
-                    key={'header-menu-visibleMyAccounts'}
-                    onClick={handleClickMenuItem('visibleMyAccounts')}
-                  >
-                    <button className='justify-between font-normal btn btn-ghost'>
-                      <span className='label-text'>잔고 표시</span>
-                      <input
-                        type='checkbox'
-                        checked={visibleMyAccounts}
-                        readOnly
-                        className='checkbox checkbox-sm'
-                      />
-                    </button>
-                  </li>,
-                  <li key={'header-menu-logout'} onClick={handleClickMenuItem('logout')}>
-                    <button className='justify-between font-normal btn btn-ghost'>
-                      <span className='text-red-400 label-text'>upbit API 끊기</span>
-                    </button>
-                  </li>
-                ]
-              : [
-                  <div key={'header-menu-divider'} className='m-0 divider' />,
-                  <li
-                    key={'header-menu-api-connect'}
-                    onClick={handleClickMenuItem('upbitApiConnect')}
-                  >
-                    <button className='justify-between font-normal btn btn-ghost'>
-                      <span className='text-green-500 label-text'>upbit API 연결</span>
-                    </button>
-                  </li>
-                ]}
+            {siteConfig.upbitApiTrade
+              ? hydrated && upbitApi.secretKey
+                ? [
+                    <div key={'header-menu-divider'} className='m-0 divider' />,
+                    <li
+                      key={'header-menu-visibleMyAccounts'}
+                      onClick={handleClickMenuItem('visibleMyAccounts')}
+                    >
+                      <button className='justify-between font-normal btn btn-ghost'>
+                        <span className='label-text'>잔고 표시</span>
+                        <input
+                          type='checkbox'
+                          checked={visibleMyAccounts}
+                          readOnly
+                          className='checkbox checkbox-sm'
+                        />
+                      </button>
+                    </li>,
+                    <li key={'header-menu-logout'} onClick={handleClickMenuItem('logout')}>
+                      <button className='justify-between font-normal btn btn-ghost'>
+                        <span className='text-red-400 label-text'>upbit API 끊기</span>
+                      </button>
+                    </li>
+                  ]
+                : [
+                    <div key={'header-menu-divider'} className='m-0 divider' />,
+                    <li
+                      key={'header-menu-api-connect'}
+                      onClick={handleClickMenuItem('upbitApiConnect')}
+                    >
+                      <button className='justify-between font-normal btn btn-ghost'>
+                        <span className='text-green-500 label-text'>upbit API 연결</span>
+                      </button>
+                    </li>
+                  ]
+              : null}
             <div className='m-0 divider' />
             <li className='disabled'>
               <div className='flex justify-between'>

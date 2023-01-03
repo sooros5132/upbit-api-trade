@@ -1,6 +1,7 @@
-export interface SiteConfig extends Record<string, any> {
+export interface SiteConfigType extends Record<string, any> {
   TZ: string;
-  origin: string;
-  path: string;
-  rewritePath: string;
+  origin: string | null;
+  proxyOrigin: string | null;
+  haveTvChartingLibrary: boolean;
+  upbitApiTrade: boolean;
 }

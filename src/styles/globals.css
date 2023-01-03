@@ -75,6 +75,15 @@
   @screen sm {
     .main-grid {
       grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+      grid-template-rows: minmax(300px, 500px) 300px minmax(350px, 600px);
+      grid-template-areas:
+        'chart chart chart orderbook orderbook'
+        'chart chart chart trades trades'
+        'market market market market market';
+    }
+
+    .main-grid.main-grid-trade {
+      grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
       grid-template-rows: minmax(300px, 500px) auto 300px minmax(350px, 600px);
       grid-template-areas:
         'chart chart chart orderbook orderbook'
@@ -118,6 +127,14 @@
 
   @screen lg {
     .main-grid {
+      grid-template-columns: minmax(280px, 350px) minmax(400px, 1fr) minmax(320px, 400px);
+      grid-template-rows: minmax(50%, 1fr) minmax(auto, 500px);
+      grid-template-areas:
+        'orderbook chart market'
+        'trades chart market';
+    }
+
+    .main-grid.main-grid-trade {
       grid-template-columns: minmax(280px, 350px) minmax(400px, 1fr) minmax(320px, 400px);
       grid-template-rows: minmax(50%, 1fr) minmax(auto, 350px) minmax(auto, 200px);
       grid-template-areas:

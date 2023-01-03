@@ -19,12 +19,19 @@ import { UpbitOrderform } from 'src/components/Upbit/Orderform';
 import { UpbitRecentTrades } from 'src/components/Upbit/Trades';
 import { UpbitOrderBook } from 'src/components/Upbit/Orderbook';
 import { UpbitOrders } from 'src/components/Upbit/Orders';
+import siteConfig from 'site-config';
+import classNames from 'classnames';
 
 const Home: NextPage = () => {
   const hydrated = useSiteSettingStore((state) => state.hydrated, shallow);
 
   return (
-    <main className='w-full mt-1 px-3 mx-auto max-w-7xl sm:gap-[1px] sm:p-0 main-grid lg:max-w-none lg:min-h-[900px] lg:grow lg:overflow-y-auto'>
+    <main
+      className={classNames(
+        'w-full mt-1 px-3 mx-auto max-w-7xl sm:gap-[1px] sm:p-0  lg:max-w-none lg:min-h-[900px] lg:grow lg:overflow-y-auto main-grid',
+        siteConfig.upbitApiTrade ? 'main-grid-trade' : null
+      )}
+    >
       {/* <div className='overflow-x-auto overflow-y-hidden lg:col-span-3 lg:row-span-1'>
         <div className='mx-auto'>
           <TradingViewTickers pointerEvents='none' />
@@ -36,16 +43,20 @@ const Home: NextPage = () => {
       <div data-grid-area='orderbook' className='max-h-40 sm:max-h-[initial]'>
         <UpbitOrderBook />
       </div>
-      {hydrated && (
-        <div data-grid-area='orderform'>
-          <UpbitOrderform />
-        </div>
+      {siteConfig.upbitApiTrade && (
+        <>
+          {hydrated && (
+            <div data-grid-area='orderform'>
+              <UpbitOrderform />
+            </div>
+          )}
+          <div data-grid-area='orders' className='max-h-40 sm:max-h-[initial]'>
+            <UpbitOrders />
+          </div>
+        </>
       )}
       <div data-grid-area='trades' className='max-h-28 sm:max-h-[initial]'>
         <UpbitRecentTrades />
-      </div>
-      <div data-grid-area='orders' className='max-h-40 sm:max-h-[initial]'>
-        <UpbitOrders />
       </div>
       <div
         data-grid-area='market'

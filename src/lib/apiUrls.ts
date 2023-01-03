@@ -1,6 +1,7 @@
-export const PROXY_ORIGIN = process.env.NEXT_PUBLIC_BASE_API_PROXY_ORIGIN || '';
-export const PROXY_PATH = process.env.NEXT_PUBLIC_BASE_API_PROXY_ORIGIN ? '/api/proxy' : '';
-export const API_PATH = process.env.NEXT_PUBLIC_BASE_API_PATH || '/api/v1';
+import siteConfig from 'site-config';
+
+export const PROXY_ORIGIN = siteConfig.proxyOrigin || '';
+export const PROXY_PATH = siteConfig.proxyOrigin ? '/api/proxy' : '';
 
 export const apiUrls = {
   upbit: {

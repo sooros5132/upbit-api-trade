@@ -14,7 +14,6 @@ import {
   IBinanceSocketMessage,
   IBinanceUiKline
 } from 'src/types/binance';
-import { API_PATH } from '../../../lib/apiUrls';
 import { getNextBarOpenTime } from './helpers';
 
 // interface Bar extends ChartingLibraryBar {
@@ -106,7 +105,7 @@ const binanceResolutionRecord = {
 } as Record<ResolutionString, ResolutionString>;
 
 const binanceDataFeed = (): ChartingLibraryWidgetOptions['datafeed'] => {
-  const datafeedUrl = API_PATH + '/binance/proxy/api/v3';
+  const datafeedUrl = '/api/v1/binance/proxy/api/v3';
   const symbolInfoStorage: Record<string, LibrarySymbolInfo> = {};
   const unsubscribes: Record<string, ReturnType<typeof useExchangeStore.subscribe>> = {};
   const lastBarsCache = new Map<string, Bar & { isBarClosed?: boolean; isLastBar?: boolean }>();
