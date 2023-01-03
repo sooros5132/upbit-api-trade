@@ -120,14 +120,14 @@ export const useUpbitApiStore = create(
         return accounts;
       },
       async revalidateKeys() {
-        const { accessKey, secretKey } = get();
+        const { accessKey, secretKey, registerKey } = get();
 
         if (!accessKey || !secretKey) {
           set({ ...defaultState });
           return;
         }
 
-        await this.registerKey(accessKey, secretKey);
+        await registerKey(accessKey, secretKey);
       },
       resetAll() {
         set(() => ({

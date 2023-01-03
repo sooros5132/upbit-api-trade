@@ -143,8 +143,8 @@ const SWRFetchers = () => {
   useSWR(
     PROXY_PATH + apiUrls.upbit.path + apiUrls.upbit.accounts,
     () => {
-      const { isLogin, revalidateKeys } = useUpbitApiStore.getState();
-      if (isLogin) {
+      const { accessKey, secretKey, revalidateKeys } = useUpbitApiStore.getState();
+      if (accessKey && secretKey) {
         revalidateKeys();
       }
     },
