@@ -236,7 +236,7 @@ const Header: React.FC = () => {
           </ul>
         </div>
       </div>
-      {hydrated && visibleMyAccounts && upbitApi.accounts.length ? (
+      {siteConfig.upbitApiTrade && hydrated && visibleMyAccounts && upbitApi.accounts.length ? (
         <div className='xl:mx-auto'>
           <MyAccounts upbitAccounts={upbitApi.accounts} />
         </div>

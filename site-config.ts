@@ -25,7 +25,6 @@ const siteConfig = siteConfigMaker({
   //! 필수 설정
 
   //* 선택적인 설정
-
   /**
    *? origin을 변경하고싶을 경우 null을 http origin으로 변경
    * ex) 'https://api.sooros.com',

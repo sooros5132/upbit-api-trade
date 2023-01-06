@@ -18,6 +18,7 @@ import { ICoincodexGetMetadataPick } from 'src/types/coincodex';
 import { IUpbitForex } from 'src/types/upbit';
 import config from 'site-config';
 import { useUpbitApiStore } from 'src/store/upbitApi';
+import siteConfig from 'site-config';
 
 // 'sm': '640px',
 // 'md': '768px',
@@ -144,7 +145,7 @@ const SWRFetchers = () => {
     PROXY_PATH + apiUrls.upbit.path + apiUrls.upbit.accounts,
     () => {
       const { accessKey, secretKey, revalidateKeys } = useUpbitApiStore.getState();
-      if (accessKey && secretKey) {
+      if (siteConfig.upbitApiTrade && accessKey && secretKey) {
         revalidateKeys();
       }
     },
