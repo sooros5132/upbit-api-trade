@@ -1,9 +1,24 @@
-## 소개
+# Upbit Api Trade
 
-실시간 프리미엄 시세를 확인하고 사이트내에서 바로 매수/매도를 할 수 있게 제작중입니다.
+This project is...
+1. You can trade on the site using upbit api.
+2. You can see the difference in the price of upbit - binance in real time.
+3. If JavaScript is not available, you can view the current market price [here](https://upbit-api-trade-demo.vercel.app/last).
 
-- Socket을 이용한 Upbit ↔ Binance 시세 차이를 알 수 있습니다.
-- pre-rendering 기능을 이용해서 자바스크립트, 소켓을 지원하지 않는 브라우저에서도 현재 시세를 알 수 있습니다.
-- 아이콘을 클릭해서 차트 변경이나 거래소로 바로 이동할 수 있습니다.
+## Live Demo
+This demo does not have api trading under the [Upbit Terms and Conditions](https://www.upbit.com/terms_of_service).<br />
+[https://upbit-api-trade-demo.vercel.app](https://upbit-api-trade-demo.vercel.app//)
 
-[미리보기 - crypto.sooros.com](https://crypto.sooros.com/)
+## ⚡️Getting Started
+This project require permission from the [tradingview/charting_library](https://github.com/tradingview/charting_library) GitHub repository.<br />
+If it looks like `404 Not Found`, You not have permission, so you need to request access.
+
+You can request permission for that library at the address below.<br />
+[https://www.tradingview.com/HTML5-stock-forex-bitcoin-charting-library/?feature=technical-analysis-charts](https://www.tradingview.com/HTML5-stock-forex-bitcoin-charting-library/?feature=technical-analysis-charts)
+
+commit hash applied to this project - [58407be459423b5837d6a0c6bd36d049fd6703b9](https://github.com/tradingview/charting_library/tree/58407be459423b5837d6a0c6bd36d049fd6703b9)
+
+If you have access to the library
+1. Copy `charting_library` folder from [https://github.com/tradingview/charting_library](https://github.com/tradingview/charting_library)
+`/public` and `/src`
+2. In the `site-config.ts` file, change the value of `haveTvChartingLibrary` to `true`.
