@@ -21,15 +21,18 @@ import { UpbitOrderBook } from 'src/components/Upbit/Orderbook';
 import { UpbitOrders } from 'src/components/Upbit/Orders';
 import siteConfig from 'site-config';
 import classNames from 'classnames';
+import { useUpbitApiStore } from 'src/store/upbitApi';
 
 const Home: NextPage = () => {
   const hydrated = useSiteSettingStore((state) => state.hydrated, shallow);
+  const isLogin = useUpbitApiStore((state) => state.isLogin, shallow);
 
   return (
     <main
       className={classNames(
-        'w-full mt-1 px-3 mx-auto max-w-7xl sm:gap-[1px] sm:p-0  lg:max-w-none lg:min-h-[900px] lg:grow lg:overflow-y-auto main-grid',
-        siteConfig.upbitApiTrade ? 'main-grid-trade' : null
+        'w-full mt-1 px-3 mx-auto max-w-7xl sm:gap-[1px] sm:p-0 lg:max-w-none lg:min-h-[900px] lg:grow lg:overflow-y-auto main-grid',
+        siteConfig.upbitApiTrade ? 'main-grid-trade' : null,
+        siteConfig.upbitApiTrade && !isLogin ? 'not-login' : null
       )}
     >
       {/* <div className='overflow-x-auto overflow-y-hidden lg:col-span-3 lg:row-span-1'>

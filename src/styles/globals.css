@@ -142,6 +142,16 @@
         'trades orderform orderform'
         'orders orders orders';
     }
+
+    .main-grid.main-grid-trade.not-login {
+      grid-template-columns: minmax(280px, 350px) minmax(400px, 1fr) minmax(320px, 400px);
+      grid-template-rows: minmax(50%, 1fr) minmax(auto, 350px) minmax(auto, 100px) auto;
+      grid-template-areas:
+        'orderbook chart market'
+        'trades chart market'
+        'trades orderform orderform'
+        'orders orders orders';
+    }
   }
 
   .market-td-padding {
