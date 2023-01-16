@@ -2,7 +2,6 @@ import { siteConfigMaker } from 'src/lib/siteConfig';
 
 const siteConfig = siteConfigMaker({
   TZ: 'Asia/Seoul',
-  origin: 'https://crypto.sooros.com',
 
   //! 필수 설정
   /**
