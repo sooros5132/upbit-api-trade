@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import React, { FC, memo, useEffect, useState } from 'react';
+import React, { FC, memo, useEffect, useRef, useState } from 'react';
 import { AiFillLock, AiOutlineInfoCircle, AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { apiUrls } from 'src/lib/apiUrls';
 import { useExchangeStore } from 'src/store/exchangeSockets';
@@ -20,6 +20,7 @@ import isEqual from 'react-fast-compare';
 import { NumericFormat } from 'react-number-format';
 import numeral from 'numeral';
 import { RiArrowDownSLine, RiArrowUpSLine } from 'react-icons/ri';
+import { useSiteSettingStore } from 'src/store/siteSetting';
 
 export const UpbitOrderform = memo(() => {
   const isLogin = useUpbitApiStore((state) => state.isLogin);
@@ -296,13 +297,46 @@ interface TradeInnerProps {
 const TradeInner: FC<TradeInnerProps> = ({ ord_type, side, orderChance, mutateChance }) => {
   const krwBalance = Number(orderChance.bid_account.balance);
 
+  const priceRef = useRef<HTMLDivElement>(null);
+  const highlight = useSiteSettingStore(({ highlight }) => highlight);
+
+  useEffect(() => {
+    if (!priceRef?.current || ord_type !== 'market') {
+      return;
+    }
+
+    const node = priceRef.current;
+    const callback: MutationCallback = (e) => {
+      if (!highlight) {
+        return;
+      }
+      for (const mutationNode of e) {
+        mutationNode.target.parentElement?.classList.remove('highlight');
+        setTimeout(() => {
+          mutationNode.target.parentElement?.classList.add('highlight');
+        }, 0);
+      }
+    };
+    const config: MutationObserverInit = {
+      subtree: true,
+      characterData: true
+    };
+    const observer = new MutationObserver(callback);
+
+    observer.observe(node, config);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [highlight, ord_type, priceRef]);
+
   return (
     <div className='flex flex-col py-1'>
       {(ord_type === 'price' || ord_type === 'market') && (
         <div className='flex justify-between items-center mb-2'>
           <div className='text-sm'>{sideText[side === 'ask' ? 'bid' : 'ask']} 호가</div>
           <div className='font-mono'>
-            <div className='inline-flex items-center'>
+            <div className='inline-flex items-center' ref={priceRef}>
               <CurrentTradePricePanel side={side} />
             </div>
             <span className='text-xs self-end font-mono'>&nbsp;KRW</span>
