@@ -115,9 +115,10 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
     const callback: MutationCallback = (e) => {
       for (const mutationNode of e) {
         mutationNode.target.parentElement?.classList.remove('highlight');
-        setTimeout(() => {
-          mutationNode.target.parentElement?.classList.add('highlight');
-        }, 0);
+        // animation 초기화
+        void mutationNode.target.parentElement?.offsetWidth;
+        // animation 초기화
+        mutationNode.target.parentElement?.classList.add('highlight');
       }
       // const animations = mutationNode.target.parentElement?.getAnimations()
       // if(animations){
@@ -153,9 +154,10 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
       }
       for (const mutationNode of e) {
         mutationNode.target.parentElement?.classList.remove('highlight');
-        setTimeout(() => {
-          mutationNode.target.parentElement?.classList.add('highlight');
-        }, 0);
+        // animation 초기화
+        void mutationNode.target.parentElement?.offsetWidth;
+        // animation 초기화
+        mutationNode.target.parentElement?.classList.add('highlight');
       }
     };
     const config: MutationObserverInit = {

@@ -301,7 +301,7 @@ const TradeInner: FC<TradeInnerProps> = ({ ord_type, side, orderChance, mutateCh
   const highlight = useSiteSettingStore(({ highlight }) => highlight);
 
   useEffect(() => {
-    if (!priceRef?.current || ord_type !== 'market') {
+    if (!priceRef?.current || (ord_type !== 'price' && ord_type !== 'market')) {
       return;
     }
 
@@ -310,11 +310,13 @@ const TradeInner: FC<TradeInnerProps> = ({ ord_type, side, orderChance, mutateCh
       if (!highlight) {
         return;
       }
+
       for (const mutationNode of e) {
         mutationNode.target.parentElement?.classList.remove('highlight');
-        setTimeout(() => {
-          mutationNode.target.parentElement?.classList.add('highlight');
-        }, 0);
+        // animation 초기화
+        void mutationNode.target.parentElement?.offsetWidth;
+        // animation 초기화
+        mutationNode.target.parentElement?.classList.add('highlight');
       }
     };
     const config: MutationObserverInit = {
