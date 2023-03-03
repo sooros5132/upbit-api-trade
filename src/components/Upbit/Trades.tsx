@@ -122,7 +122,7 @@ const UpbitRecentTradesInner: React.FC<UpbitRecentTradesInnerProps> = ({
   }, [market, trades]);
 
   return (
-    <div className='relative flex flex-col h-full text-right text-xs overflow-y-auto font-mono bg-base-300 2xl:text-sm'>
+    <div className='relative flex flex-col h-full text-right text-xs overflow-y-auto bg-base-300 2xl:text-sm'>
       <table className='border-separate border-spacing-0 w-full text-zinc-500'>
         <colgroup>
           <col width='35%'></col>
@@ -131,12 +131,16 @@ const UpbitRecentTradesInner: React.FC<UpbitRecentTradesInnerProps> = ({
         </colgroup>
         <thead className='sticky top-0 left-0 bg-base-300'>
           <tr>
-            <th>체결가격(KRW)</th>
-            <th>체결액(KRW)</th>
+            <th>
+              체결가격(<span className='font-mono'>KRW</span>)
+            </th>
+            <th>
+              체결액(<span className='font-mono'>KRW</span>)
+            </th>
             <th>체결시간</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody className='font-mono'>
           {trades.map((trade) => (
             <tr
               key={`${trade.cd}-${trade.sid}`}

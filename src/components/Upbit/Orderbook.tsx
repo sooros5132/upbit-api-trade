@@ -125,7 +125,7 @@ const OrderBook: React.FC<OrderBookProps> = ({ market, orderbook }) => {
   return (
     <div
       ref={orderbookRef}
-      className='relative flex flex-col mt-1 text-right text-xs font-mono overflow-y-auto xl:text-sm'
+      className='relative flex flex-col mt-1 text-right text-xs overflow-y-auto xl:text-sm'
     >
       <table className='border-separate border-spacing-0 w-full text-zinc-500'>
         <colgroup>
@@ -136,11 +136,15 @@ const OrderBook: React.FC<OrderBookProps> = ({ market, orderbook }) => {
         <thead className='sticky top-0 left-0 bg-base-300'>
           <tr>
             <th>변동</th>
-            <th>호가(KRW)</th>
-            <th>잔량(KRW)</th>
+            <th>
+              호가(<span className='font-mono'>KRW</span>)
+            </th>
+            <th>
+              잔량(<span className='font-mono'>KRW</span>)
+            </th>
           </tr>
         </thead>
-        <tbody>
+        <tbody className='font-mono'>
           {asks.map((trade, i) => {
             // const [priceInt, priceFloat] = trade.ap.toString().split('.');
             // const [quantityInt, quantityFloat] = trade.as.toString().split('.');

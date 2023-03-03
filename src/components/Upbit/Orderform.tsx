@@ -243,7 +243,7 @@ const Trade: FC<TradeProps> = ({ orderChance, ordType }) => {
   };
 
   return (
-    <div className='h-full flex flex-col py-1 px-2 bg-base-300 font-mono'>
+    <div className='h-full flex flex-col py-1 px-2 bg-base-300'>
       <div className='flex-center'>
         <div className='form-control bg-base-200'>
           <label className='input-group overflow-hidden'>
@@ -298,9 +298,20 @@ const TradeInner: FC<TradeInnerProps> = ({ ord_type, side, orderChance, mutateCh
 
   return (
     <div className='flex flex-col py-1'>
+      {(ord_type === 'price' || ord_type === 'market') && (
+        <div className='flex justify-between items-center mb-2'>
+          <div className='text-sm'>{sideText[side === 'ask' ? 'bid' : 'ask']} 호가</div>
+          <div className='font-mono'>
+            <div className='inline-flex items-center'>
+              <CurrentTradePricePanel side={side} />
+            </div>
+            <span className='text-xs self-end font-mono'>&nbsp;KRW</span>
+          </div>
+        </div>
+      )}
       <div className='flex justify-between items-center'>
-        <span className='text-sm'>사용 가능</span>
-        <span className='text-right'>
+        <span className='text-sm font-sans'>사용 가능</span>
+        <span className='text-right font-mono'>
           {side === 'bid'
             ? Math.floor(krwBalance || 0).toLocaleString()
             : orderChance?.ask_account?.balance || '0'}
@@ -310,17 +321,6 @@ const TradeInner: FC<TradeInnerProps> = ({ ord_type, side, orderChance, mutateCh
           </span>
         </span>
       </div>
-      {(ord_type === 'price' || ord_type === 'market') && (
-        <div className='flex justify-between items-center'>
-          <div className='text-sm'>{sideText[side === 'ask' ? 'bid' : 'ask']} 호가</div>
-          <div>
-            <div className='inline-flex items-center'>
-              <CurrentTradePricePanel side={side} />
-            </div>
-            <span className='text-xs self-end'>&nbsp;KRW</span>
-          </div>
-        </div>
-      )}
       <OrderPanel
         orderChance={orderChance}
         side={side}
@@ -790,7 +790,7 @@ const LimitOrderPanel: FC<LimitOrderPanelProps> = ({
           />
         </div>
       </div>
-      <div className='form-control'>
+      <div className='form-control font-mono'>
         <label className='input-group input-group-sm'>
           <NumericFormat
             type='text'
@@ -866,7 +866,7 @@ const OrderVolumePanel: FC<OrderVolumePanelProps> = ({
               />
             </div>
           </div>
-          <div className='form-control'>
+          <div className='form-control font-mono'>
             <label className='input-group input-group-sm'>
               <NumericFormat
                 type='text'
@@ -883,7 +883,7 @@ const OrderVolumePanel: FC<OrderVolumePanelProps> = ({
               <span>{market.toUpperCase()?.replace(krwRegex, '')}</span>
             </label>
           </div>
-          <div className='form-control'>
+          <div className='form-control font-mono'>
             <label className='input-group input-group-sm'>
               <NumericFormat
                 type='text'
