@@ -6,6 +6,7 @@ import isEqual from 'react-fast-compare';
 import { RiArrowDownSLine, RiArrowUpSLine } from 'react-icons/ri';
 import { apiUrls, PROXY_PATH } from 'src/lib/apiUrls';
 import { subscribeOnUpbitStream } from 'src/store/exchangeSockets';
+import { useSiteSettingStore } from 'src/store/siteSetting';
 import { useUpbitApiStore } from 'src/store/upbitApi';
 import { IUpbitSocketMessageTradeSimple, IUpbitTradesTicks } from 'src/types/upbit';
 import { upbitPadEnd } from 'src/utils/utils';
@@ -55,20 +56,20 @@ const UpbitRecentTradesContainer = () => {
           res.data.map(
             (t) =>
               ({
-                ty: 'trade', //									타입
-                cd: t.market, //									마켓 코드 (ex. KRW-BTC)
-                tp: t.trade_price, //									체결 가격
-                tv: t.trade_volume, //									체결량
-                ab: t.ask_bid, //						매수/매도 구분 ASK: 매도, BID: 매수
-                pcp: t.prev_closing_price, //									전일 종가
-                c: 'EVEN', //	전일 대비 - RISE: 상승, EVEN: 보합, FALL: 하락
-                cp: t.change_price, //									부호 없는 전일 대비 값
-                td: t.trade_date_utc, //									체결 일자(UTC 기준) yyyy-MM-dd
-                ttm: t.trade_time_utc, //									체결 시각(UTC 기준) HH:mm:ss
-                ttms: t.timestamp, //								체결 타임스탬프 (millisecond)
-                tms: 0, //									타임스탬프 (millisecond)
-                sid: t.sequential_id, //									체결 번호 (Unique)
-                st: 'SNAPSHOT' //	스트림 타입 - SNAPSHOT : 스냅샷, REALTIME 실시간
+                ty: 'trade', //								타입
+                cd: t.market, //							마켓 코드 (ex. KRW-BTC)
+                tp: t.trade_price, //					체결 가격
+                tv: t.trade_volume, //				체결량
+                ab: t.ask_bid, //							매수/매도 구분 ASK: 매도, BID: 매수
+                pcp: t.prev_closing_price, //	전일 종가
+                c: 'EVEN', //									전일 대비 - RISE: 상승, EVEN: 보합, FALL: 하락
+                cp: t.change_price, //				부호 없는 전일 대비 값
+                td: t.trade_date_utc, //			체결 일자(UTC 기준) yyyy-MM-dd
+                ttm: t.trade_time_utc, //			체결 시각(UTC 기준) HH:mm:ss
+                ttms: t.timestamp, //					체결 타임스탬프 (millisecond)
+                tms: 0, //										타임스탬프 (millisecond)
+                sid: t.sequential_id, //			체결 번호 (Unique)
+                st: 'SNAPSHOT' //							스트림 타입 - SNAPSHOT : 스냅샷, REALTIME 실시간
               } as IUpbitSocketMessageTradeSimple)
           )
         )
@@ -101,7 +102,7 @@ const UpbitRecentTradesInner: React.FC<UpbitRecentTradesInnerProps> = ({
   trades: tradesProp
 }) => {
   const [trades, setTrades] = useState<Array<IUpbitSocketMessageTradeSimple>>(tradesProp);
-
+  const highlight = useSiteSettingStore(({ highlight }) => highlight, shallow);
   useEffect(() => {
     const unsubscribe = subscribeOnUpbitStream((message: IUpbitSocketMessageTradeSimple) => {
       if (message?.ty !== 'trade' || market !== message?.cd) {
@@ -139,7 +140,7 @@ const UpbitRecentTradesInner: React.FC<UpbitRecentTradesInnerProps> = ({
           {trades.map((trade) => (
             <tr
               key={`${trade.cd}-${trade.sid}`}
-              className={classNames(trade.ab.toLowerCase(), 'highlight')}
+              className={classNames(trade.ab.toLowerCase(), highlight ? 'highlight' : null)}
             >
               <td>{upbitPadEnd(trade.tp)}</td>
               <td>{Math.round(trade.tv * trade.tp).toLocaleString()}</td>

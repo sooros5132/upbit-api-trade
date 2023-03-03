@@ -27,15 +27,13 @@ export interface TableItemProps {
 const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }) => {
   const krwPriceRef = useRef<HTMLSpanElement>(null);
   const usdPriceRef = useRef<HTMLSpanElement>(null);
-  const { highlight, currency } = useMarketTableSettingStore(
-    ({ highlight, currency }) => ({ highlight, currency }),
+  const currency = useMarketTableSettingStore(({ currency }) => currency, shallow);
+  const upbitMarket = useExchangeStore((state) => state.upbitMarketDatas[krwSymbol], shallow);
+  const { chartLength, highlight } = useSiteSettingStore(
+    (state) => ({ chartLength: state.subscribeChartCodes.length, highlight: state.highlight }),
     shallow
   );
-  const upbitMarket = useExchangeStore((state) => state.upbitMarketDatas[krwSymbol], shallow);
-  const chartLength = useSiteSettingStore((state) => state.subscribeChartCodes.length, shallow);
   const upbitTradeMarket = useUpbitApiStore((state) => state.upbitTradeMarket, shallow);
-  const [openBinanceChartDropDown, setOpenBinanceChartDropDown] = useState(false);
-  const [openUpbitChartDropDown, setOpenUpbitChartDropDown] = useState(false);
   const marketSymbol = upbitMarket.cd.replace(marketRegex, '');
 
   // const upbitBtcMarket = useExchangeStore(
@@ -79,8 +77,6 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
       }
       newSubscribeChartCodes.splice(chartIndex, 1, { code: symbol, exchange });
       setSubscribeChartCodes(newSubscribeChartCodes);
-      setOpenBinanceChartDropDown(false);
-      setOpenUpbitChartDropDown(false);
     };
 
   const handleClickStarIcon = (symbol: string) => (event: React.MouseEvent<HTMLDivElement>) => {

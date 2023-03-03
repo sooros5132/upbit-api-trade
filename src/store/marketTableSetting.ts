@@ -6,7 +6,6 @@ interface IMarketTableSettingState {
   sortColumn: keyof IMarketTableItem;
   sortType: 'ASC' | 'DESC';
   favoriteSymbols: Record<string, boolean>;
-  highlight: boolean;
   stickyChart: boolean;
   searchValue: string;
   currency: 'USD' | 'KRW';
@@ -25,7 +24,6 @@ const defaultState: IMarketTableSettingState = {
   sortColumn: 'tp',
   sortType: 'DESC',
   favoriteSymbols: {},
-  highlight: true,
   stickyChart: false,
   searchValue: '',
   currency: 'KRW'

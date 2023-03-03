@@ -9,6 +9,7 @@ interface ISiteSettingState {
   hydrated: boolean;
   theme: 'dark' | 'light' | 'black';
   fontSize: number;
+  highlight: boolean;
   visibleMyAccounts: boolean;
   visibleCurrencyBalances: boolean;
   subscribeChartCodes: Array<{
@@ -40,6 +41,7 @@ const defaultState: ISiteSettingState = {
   hydrated: false,
   theme: 'black',
   fontSize: 14,
+  highlight: true,
   visibleMyAccounts: true,
   visibleCurrencyBalances: true,
   subscribeChartCodes: [...defaultSubscribeChartCodes].slice(2)

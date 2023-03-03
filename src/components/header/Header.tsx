@@ -24,16 +24,17 @@ import siteConfig from 'site-config';
 
 const Header: React.FC = () => {
   const upbitApi = useUpbitApiStore();
-  const { hideMyAccounts, showMyAccounts, visibleMyAccounts, hydrated } = useSiteSettingStore(
-    ({ hideMyAccounts, showMyAccounts, visibleMyAccounts, hydrated }) => ({
-      hideMyAccounts,
-      showMyAccounts,
-      visibleMyAccounts,
-      hydrated
-    }),
-    shallow
-  );
-  const { highlight } = useMarketTableSettingStore(({ highlight }) => ({ highlight }), shallow);
+  const { hideMyAccounts, showMyAccounts, visibleMyAccounts, hydrated, highlight } =
+    useSiteSettingStore(
+      ({ hideMyAccounts, showMyAccounts, visibleMyAccounts, hydrated, highlight }) => ({
+        hideMyAccounts,
+        showMyAccounts,
+        visibleMyAccounts,
+        hydrated,
+        highlight
+      }),
+      shallow
+    );
   const [openRegisterUpbitApiDialog, setOpenRegisterUpbitApiDialog] = useState(false);
   const headerRef = useRef<HTMLHeadElement>(null);
   const { connectedUpbit, connectedBinance } = useExchangeStore(
@@ -90,7 +91,7 @@ const Header: React.FC = () => {
           break;
         }
         case 'highlight': {
-          useMarketTableSettingStore.setState((state) => ({
+          useSiteSettingStore.setState((state) => ({
             highlight: !state.highlight
           }));
           break;
