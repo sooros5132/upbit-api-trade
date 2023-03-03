@@ -103,8 +103,8 @@ export const TVChartInner: React.FC<TVChartProps> = React.memo<TVChartProps>(
         fullscreen: fullscreen,
         autosize: autosize,
         studies_overrides: {
-          'volume.volume.color.0': '#14b8a6',
-          'volume.volume.color.1': '#f43f52',
+          'volume.volume.color.0': '#f43f52',
+          'volume.volume.color.1': '#14b8a6',
           ...studiesOverrides
         },
         auto_save_delay,
