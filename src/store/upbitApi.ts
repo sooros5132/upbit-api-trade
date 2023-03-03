@@ -246,7 +246,9 @@ export const useUpbitApiStore = create(
       deserialize: (str) => JSON.parse(window.atob(str)),
       partialize: (state) =>
         Object.fromEntries(
-          Object.entries(state).filter(([key]) => ['accessKey', 'secretKey'].includes(key))
+          Object.entries(state).filter(([key]) =>
+            ['accessKey', 'secretKey', 'upbitTradeMarket'].includes(key)
+          )
         ) as IUpbitApiStore,
       getStorage: () => localStorage, // (optional) by default, 'localStorage' is used
       version: 0.1
