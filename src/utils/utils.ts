@@ -192,6 +192,14 @@ export function upbitPadEnd(number: number) {
   return numeral(number).format(`0,0${decimalScale > 0 ? '.' : ''}${decimalPad}`);
 }
 
+export function satoshiPad(number: number, customDecimalScale = '00000000') {
+  if (number < 0.000001) {
+    return number.toFixed(8);
+  }
+
+  return numeral(number).format(`0,0.${customDecimalScale}`);
+}
+
 export function base64UrlFromBase64(str: string) {
   return str.replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
 }

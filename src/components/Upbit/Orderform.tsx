@@ -10,6 +10,7 @@ import {
   percentageCalculator,
   percentRatio,
   priceCorrection,
+  satoshiPad,
   upbitDecimalScale,
   upbitPadEnd
 } from 'src/utils/utils';
@@ -350,7 +351,7 @@ const TradeInner: FC<TradeInnerProps> = ({ ord_type, side, orderChance, mutateCh
         <span className='text-right font-mono'>
           {side === 'bid'
             ? Math.floor(krwBalance || 0).toLocaleString()
-            : orderChance?.ask_account?.balance || '0'}
+            : satoshiPad(Number(orderChance?.ask_account?.balance) || 0)}
           <span className='text-xs'>
             &nbsp;
             {side === 'bid' ? orderChance.bid_account.currency : orderChance.ask_account.currency}
@@ -813,13 +814,13 @@ const LimitOrderPanel: FC<LimitOrderPanelProps> = ({
         </span>
         <div
           className='flex-center w-full tooltip'
-          data-tip={`현재가 대비 ${priceRange.toLocaleString()}%`}
+          data-tip={`현재가 대비 ${numeral(priceRange).format(`0,0.00`)}%`}
         >
           <input
             type='range'
             min='-50'
             max='50'
-            step={1}
+            step={0.01}
             className='range range-sm'
             value={priceRange}
             onChange={onChangeRange('price', side)}
