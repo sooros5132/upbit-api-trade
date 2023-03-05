@@ -115,6 +115,7 @@ const ExchangeMarket: React.FC = () => {
     }
     (async function () {
       try {
+        useSiteSettingStore.setState({ isLastUpdatePage: false });
         const upbitMarketAllRecord: Record<string, IUpbitMarket> = {};
         const upbitMarketAll = await axios
           .get<Array<IUpbitMarket>>(

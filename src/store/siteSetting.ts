@@ -8,6 +8,7 @@ const MAX_FONT_SIZE = 18;
 interface ISiteSettingState {
   hydrated: boolean;
   theme: 'dark' | 'light' | 'black';
+  isLastUpdatePage: boolean;
   fontSize: number;
   highlight: boolean;
   visibleMyAccounts: boolean;
@@ -40,6 +41,7 @@ export const defaultSubscribeChartCodes = [
 const defaultState: ISiteSettingState = {
   hydrated: false,
   theme: 'black',
+  isLastUpdatePage: false,
   fontSize: 14,
   highlight: true,
   visibleMyAccounts: true,
@@ -107,7 +109,9 @@ export const useSiteSettingStore = create(
       name: 'siteSetting', // unique name
       partialize: (state) =>
         Object.fromEntries(
-          Object.entries(state).filter(([key]) => !['hydrated', 'theme'].includes(key))
+          Object.entries(state).filter(
+            ([key]) => !['hydrated', 'theme', 'isLastUpdatePage'].includes(key)
+          )
         ) as ISiteSettingStore,
       getStorage: () => localStorage, // (optional) by default, 'localStorage' is used
       version: 0.1

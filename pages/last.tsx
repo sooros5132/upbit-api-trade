@@ -9,6 +9,7 @@ import { krwRegex } from 'src/utils/regex';
 import { binanceApis } from 'src-server/utils/binanceApis';
 import { keyBy } from 'lodash';
 import { useMarketTableSettingStore } from 'src/store/marketTableSetting';
+import { useSiteSettingStore } from 'src/store/siteSetting';
 
 interface HomeProps {
   upbitForex: IUpbitForex;
@@ -33,6 +34,7 @@ const Home: NextPage<HomeProps> = ({
 
   if (!isMounted && upbitMarketSnapshot) {
     useExchangeStore.setState({ upbitForex, lastUpdatedAt: new Date(lastUpdatedAt) });
+    useSiteSettingStore.setState({ isLastUpdatePage: true });
 
     if (upbitMarketSnapshot) useExchangeStore.setState({ upbitMarketDatas: upbitMarketSnapshot });
     if (upbitMarketList) {
@@ -54,7 +56,7 @@ const Home: NextPage<HomeProps> = ({
 
   return (
     <main className='relative w-full px-3 mx-auto max-w-7xl'>
-      <MarketTable isLastUpdatePage={true} />
+      <MarketTable />
     </main>
   );
 };

@@ -11,6 +11,7 @@ import { ko as koLocale } from 'date-fns/locale';
 import { BackgroundBlueBox, BackgroundRedBox } from '../modules/Box';
 import { MarketTableBody, MarketTableHead } from '.';
 import { IoIosClose } from 'react-icons/io';
+import { useSiteSettingStore } from 'src/store/siteSetting';
 
 export interface IMarketTableItem extends IUpbitSocketMessageTickerSimple {
   korean_name?: string;
@@ -20,17 +21,12 @@ export interface IMarketTableItem extends IUpbitSocketMessageTickerSimple {
   premium?: number;
 }
 
-interface MarketTableProps {
-  isLastUpdatePage?: boolean;
-}
+interface MarketTableProps {}
 
-const MarketTable: React.FC<MarketTableProps> = ({ isLastUpdatePage }) => {
+const MarketTable: React.FC<MarketTableProps> = () => {
   const [hidden, setHidden] = useState(false);
-  const { lastUpdatedAt } = useExchangeStore(({ lastUpdatedAt }) => {
-    return {
-      lastUpdatedAt
-    };
-  }, shallow);
+  const isLastUpdatePage = useSiteSettingStore(({ isLastUpdatePage }) => isLastUpdatePage, shallow);
+  const lastUpdatedAt = useExchangeStore(({ lastUpdatedAt }) => lastUpdatedAt, shallow);
 
   return (
     <div className='w-full max-w-screen-xl overflow-hidden sm:m-0 flex flex-col'>

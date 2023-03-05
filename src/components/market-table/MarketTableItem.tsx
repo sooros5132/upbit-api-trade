@@ -36,7 +36,11 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
   const upbitTradeMarket = useUpbitApiStore((state) => state.upbitTradeMarket, shallow);
   const marketSymbol = upbitMarket.cd.replace(marketRegex, '');
 
-  const [isIntersecting, setIsIntersecting] = useState<boolean>(false);
+  const { isLastUpdatePage, hydrated } = useSiteSettingStore(
+    ({ isLastUpdatePage, hydrated }) => ({ isLastUpdatePage, hydrated }),
+    shallow
+  );
+  const [isIntersecting, setIsIntersecting] = useState<boolean>(isLastUpdatePage ?? false); // 마지막 시세 페이지라면 모두 true로
 
   const onIntersect: IntersectionObserverCallback = (entries) => {
     const isIntersecting = entries?.[0]?.isIntersecting || false;
@@ -252,26 +256,31 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
               <div
                 className={classNames(
                   'market-chart-icon',
-                  chartLength !== 1 ? 'dropdown dropdown-bottom' : null
+                  hydrated && chartLength !== 1 ? 'dropdown dropdown-bottom' : null
                 )}
                 onClick={handleClickMarketIcon('UPBIT', marketSymbol)}
               >
                 <label tabIndex={0} className='text-zinc-500 text-sm cursor-pointer'>
                   <AiOutlineAreaChart />
                 </label>
-                <ul
-                  tabIndex={0}
-                  className={classNames(
-                    'dropdown-content menu p-2 shadow bg-base-100 rounded-box w-32',
-                    chartLength === 1 ? 'hidden pointer-events-none' : null
-                  )}
-                >
-                  {[...new Array(chartLength)].map((_, i) => (
-                    <li key={i} onClick={handleClickChangeSubscribeChart('UPBIT', marketSymbol, i)}>
-                      <a>{i + 1}번 차트</a>
-                    </li>
-                  ))}
-                </ul>
+                {hydrated && (
+                  <ul
+                    tabIndex={0}
+                    className={classNames(
+                      'dropdown-content menu p-2 shadow bg-base-100 rounded-box w-32',
+                      chartLength === 1 ? 'hidden pointer-events-none' : null
+                    )}
+                  >
+                    {[...new Array(chartLength)].map((_, i) => (
+                      <li
+                        key={i}
+                        onClick={handleClickChangeSubscribeChart('UPBIT', marketSymbol, i)}
+                      >
+                        <a>{i + 1}번 차트</a>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
               {upbitMarket.binance_price && (
                 <>
@@ -293,29 +302,31 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
                   <div
                     className={classNames(
                       'market-chart-icon',
-                      chartLength !== 1 ? 'dropdown dropdown-bottom' : null
+                      hydrated && chartLength !== 1 ? 'dropdown dropdown-bottom' : null
                     )}
                     onClick={handleClickMarketIcon('BINANCE', marketSymbol)}
                   >
                     <label tabIndex={0} className='text-zinc-500 text-sm cursor-pointer'>
                       <AiOutlineAreaChart />
                     </label>
-                    <ul
-                      tabIndex={0}
-                      className={classNames(
-                        'dropdown-content menu p-2 shadow bg-base-100 rounded-box w-32',
-                        chartLength === 1 ? 'hidden pointer-events-none' : null
-                      )}
-                    >
-                      {[...new Array(chartLength)].map((_, i) => (
-                        <li
-                          key={i}
-                          onClick={handleClickChangeSubscribeChart('BINANCE', marketSymbol, i)}
-                        >
-                          <span>{i + 1}번 차트</span>
-                        </li>
-                      ))}
-                    </ul>
+                    {hydrated && (
+                      <ul
+                        tabIndex={0}
+                        className={classNames(
+                          'dropdown-content menu p-2 shadow bg-base-100 rounded-box w-32',
+                          chartLength === 1 ? 'hidden pointer-events-none' : null
+                        )}
+                      >
+                        {[...new Array(chartLength)].map((_, i) => (
+                          <li
+                            key={i}
+                            onClick={handleClickChangeSubscribeChart('BINANCE', marketSymbol, i)}
+                          >
+                            <span>{i + 1}번 차트</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
                 </>
               )}
