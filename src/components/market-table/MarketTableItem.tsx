@@ -26,8 +26,7 @@ export interface TableItemProps {
 }
 
 const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }) => {
-  const krwPriceRef = useRef<HTMLSpanElement>(null);
-  const usdPriceRef = useRef<HTMLSpanElement>(null);
+  const priceCellRef = useRef<HTMLTableCellElement>(null);
   const currency = useMarketTableSettingStore(({ currency }) => currency, shallow);
   const upbitMarket = useExchangeStore((state) => state.upbitMarketDatas[krwSymbol], shallow);
   const { chartLength, highlight } = useSiteSettingStore(
@@ -110,50 +109,11 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
   };
 
   useEffect(() => {
-    if (!isIntersecting || !highlight || !krwPriceRef?.current) {
+    if (!isIntersecting || !highlight || !priceCellRef?.current) {
       return;
     }
-    const node = krwPriceRef.current;
+    const node = priceCellRef.current;
     const callback: MutationCallback = (e) => {
-      for (const mutationNode of e) {
-        mutationNode.target.parentElement?.classList.remove('highlight');
-        // animation 초기화
-        void mutationNode.target.parentElement?.offsetWidth;
-        // animation 초기화
-        mutationNode.target.parentElement?.classList.add('highlight');
-      }
-      // const animations = mutationNode.target.parentElement?.getAnimations()
-      // if(animations){
-      //   for(const animation of animations){
-      //     if (node.contains((animation.effect as KeyframeEffect).target)) {
-      //       animation.cancel();
-      //       animation.play();
-      //     }
-      //   }
-      // }
-    };
-    const config: MutationObserverInit = {
-      subtree: true,
-      characterData: true
-    };
-    const observer = new MutationObserver(callback);
-
-    observer.observe(node, config);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [highlight, isIntersecting, krwPriceRef]);
-
-  useEffect(() => {
-    if (!isIntersecting || !highlight || !usdPriceRef?.current) {
-      return;
-    }
-    const node = usdPriceRef.current;
-    const callback: MutationCallback = (e) => {
-      if (!highlight) {
-        return;
-      }
       for (const mutationNode of e) {
         mutationNode.target.parentElement?.classList.remove('highlight');
         // animation 초기화
@@ -173,7 +133,7 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
     return () => {
       observer.disconnect();
     };
-  }, [highlight, isIntersecting, usdPriceRef]);
+  }, [highlight, isIntersecting, priceCellRef]);
 
   const upbitChangeRate = upbitMarket.scr * 100;
 
@@ -361,9 +321,9 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
               )}
             </div>
           </td>
-          <td className={colorPrice}>
+          <td className={colorPrice} ref={priceCellRef}>
             <p>
-              <span ref={krwPriceRef}>
+              <span>
                 {krwTooSmallNumber
                   ? `0.${krwPriceDecimal}`
                   : numeral(krwPriceNum).format(
@@ -372,7 +332,7 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
               </span>
             </p>
             <p className={'opacity-60'}>
-              <span ref={usdPriceRef}>
+              <span>
                 {upbitMarket?.binance_price
                   ? usdTooSmallNumber
                     ? `0.${usdPriceDecimal}`
