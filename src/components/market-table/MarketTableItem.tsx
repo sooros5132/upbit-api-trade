@@ -110,7 +110,7 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
   };
 
   useEffect(() => {
-    if (!highlight || !krwPriceRef?.current) {
+    if (!isIntersecting || !highlight || !krwPriceRef?.current) {
       return;
     }
     const node = krwPriceRef.current;
@@ -143,10 +143,10 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
     return () => {
       observer.disconnect();
     };
-  }, [highlight, krwPriceRef]);
+  }, [highlight, isIntersecting, krwPriceRef]);
 
   useEffect(() => {
-    if (!usdPriceRef?.current) {
+    if (!isIntersecting || !highlight || !usdPriceRef?.current) {
       return;
     }
     const node = usdPriceRef.current;
@@ -173,7 +173,7 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
     return () => {
       observer.disconnect();
     };
-  }, [highlight, usdPriceRef]);
+  }, [highlight, isIntersecting, usdPriceRef]);
 
   const upbitChangeRate = upbitMarket.scr * 100;
 
