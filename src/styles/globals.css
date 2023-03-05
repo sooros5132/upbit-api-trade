@@ -75,7 +75,7 @@
   @screen sm {
     .main-grid {
       grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
-      grid-template-rows: minmax(300px, 500px) 300px minmax(350px, 600px);
+      grid-template-rows: minmax(300px, 500px) 300px auto;
       grid-template-areas:
         'chart chart chart orderbook orderbook'
         'chart chart chart trades trades'
@@ -84,7 +84,7 @@
 
     .main-grid.main-grid-trade {
       grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
-      grid-template-rows: minmax(300px, 500px) auto 300px minmax(350px, 600px);
+      grid-template-rows: minmax(300px, 500px) auto 300px auto;
       grid-template-areas:
         'chart chart chart orderbook orderbook'
         'orderform orderform orderform orderform orderform'

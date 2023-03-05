@@ -80,7 +80,7 @@ const TableBody: React.FC<TableBodyProps> = () => {
 
   return (
     <tbody>
-      {searchedSymbols.map((krwSymbol, index) => {
+      {searchedSymbols.map((krwSymbol) => {
         const favorite = hydrated ? Boolean(favoriteSymbols[krwSymbol]) : false;
 
         return (
@@ -97,4 +97,4 @@ const TableBody: React.FC<TableBodyProps> = () => {
   );
 };
 
-export default memo(TableBody, isEqual);
+export default TableBody;

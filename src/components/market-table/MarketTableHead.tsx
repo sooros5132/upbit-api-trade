@@ -140,4 +140,4 @@ export const TableHead = () => {
   );
 };
 
-export default memo(TableHead, isEqual);
+export default TableHead;

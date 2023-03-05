@@ -9,6 +9,7 @@ import { subscribeOnUpbitStream } from 'src/store/exchangeSockets';
 import { useSiteSettingStore } from 'src/store/siteSetting';
 import { useUpbitApiStore } from 'src/store/upbitApi';
 import { IUpbitSocketMessageTradeSimple, IUpbitTradesTicks } from 'src/types/upbit';
+import { useIntersectionObserver } from 'src/utils/useIntersectionObserver';
 import { upbitPadEnd } from 'src/utils/utils';
 import useSWR from 'swr';
 import shallow from 'zustand/shallow';
@@ -142,19 +143,48 @@ const UpbitRecentTradesInner: React.FC<UpbitRecentTradesInnerProps> = ({
         </thead>
         <tbody className='font-mono'>
           {trades.map((trade) => (
-            <tr
-              key={`${trade.cd}-${trade.sid}`}
-              className={classNames(trade.ab.toLowerCase(), highlight ? 'highlight' : null)}
-            >
-              <td>{upbitPadEnd(trade.tp)}</td>
-              <td>{Math.round(trade.tv * trade.tp).toLocaleString()}</td>
-              <td className='text-zinc-500'>{format(new Date(trade.ttms), 'HH:mm:ss')}</td>
-            </tr>
+            <TableRow key={`${trade.cd}-${trade.sid}`} highlight={highlight} trade={trade} />
           ))}
         </tbody>
       </table>
     </div>
   );
 };
+
+type TableRowProps = {
+  highlight: boolean;
+  trade: IUpbitSocketMessageTradeSimple;
+};
+
+const TableRow: React.FC<TableRowProps> = memo(({ highlight, trade }) => {
+  const [isIntersecting, setIsIntersecting] = useState<boolean>(false);
+
+  const onIntersect: IntersectionObserverCallback = (entries) => {
+    const isIntersecting = entries?.[0]?.isIntersecting || false;
+    setIsIntersecting(isIntersecting);
+  };
+
+  const { setTarget: setTargetRef } = useIntersectionObserver(onIntersect);
+
+  return (
+    <tr
+      ref={setTargetRef}
+      className={classNames(
+        !isIntersecting ? 'h-[1.5em]' : null,
+        trade.ab.toLowerCase(),
+        highlight ? 'highlight' : null
+      )}
+    >
+      {isIntersecting ? (
+        <>
+          <td>{upbitPadEnd(trade.tp)}</td>
+          <td>{Math.round(trade.tv * trade.tp).toLocaleString()}</td>
+          <td className='text-zinc-500'>{format(new Date(trade.ttms), 'HH:mm:ss')}</td>
+        </>
+      ) : null}
+    </tr>
+  );
+}, isEqual);
+TableRow.displayName = 'TableRow';
 
 export { UpbitRecentTrades };
