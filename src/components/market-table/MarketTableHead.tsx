@@ -1,5 +1,3 @@
-import { memo } from 'react';
-import isEqual from 'react-fast-compare';
 import { BiUpArrowAlt, BiDownArrowAlt } from 'react-icons/bi';
 import { useMarketTableSettingStore } from 'src/store/marketTableSetting';
 import shallow from 'zustand/shallow';

@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 import React, { memo, useState } from 'react';
 import isEqual from 'react-fast-compare';
 import { IUpbitSocketMessageTickerSimple } from 'src/types/upbit';

@@ -1,5 +1,4 @@
-import { memo, useEffect } from 'react';
-import isEqual from 'react-fast-compare';
+import { useEffect } from 'react';
 import { useExchangeStore } from 'src/store/exchangeSockets';
 import { useMarketTableSettingStore } from 'src/store/marketTableSetting';
 import { useSiteSettingStore } from 'src/store/siteSetting';
