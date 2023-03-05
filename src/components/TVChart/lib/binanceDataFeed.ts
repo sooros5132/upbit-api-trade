@@ -107,7 +107,13 @@ const binanceResolutionRecord = {
 const binanceDataFeed = (): ChartingLibraryWidgetOptions['datafeed'] => {
   const datafeedUrl = '/api/v1/binance/proxy/api/v3';
   const symbolInfoStorage: Record<string, LibrarySymbolInfo> = {};
-  const unsubscribes: Record<string, ReturnType<typeof useExchangeStore.subscribe>> = {};
+  const unsubscribes: Record<
+    string,
+    {
+      barUpdateInterval: NodeJS.Timer;
+      socketUnsubscribe: ReturnType<typeof useExchangeStore.subscribe>;
+    }
+  > = {};
   const lastBarsCache = new Map<string, Bar & { isBarClosed?: boolean; isLastBar?: boolean }>();
   return {
     onReady: (onReadyCallback) => {
@@ -336,6 +342,7 @@ const binanceDataFeed = (): ChartingLibraryWidgetOptions['datafeed'] => {
 
         // 다음 봉 오픈시간을 구해서 큰지 작은지 비교해야 에러가 안남.
         const nextDailyBarTime = getNextBarOpenTime(lastDailyBar.time, resolution);
+
         if (time >= nextDailyBarTime) {
           bar = {
             time: nextDailyBarTime,
@@ -345,6 +352,7 @@ const binanceDataFeed = (): ChartingLibraryWidgetOptions['datafeed'] => {
             close: price,
             volume: parseFloat(quantity)
           };
+          onRealtimeCallback(bar);
         } else {
           bar = {
             ...lastDailyBar,
@@ -355,21 +363,31 @@ const binanceDataFeed = (): ChartingLibraryWidgetOptions['datafeed'] => {
           };
         }
         lastDailyBar = bar;
-
-        onRealtimeCallback(bar);
       });
 
       if (unsubscribes[subscriberUID]) {
-        unsubscribes[subscriberUID]();
+        clearInterval(unsubscribes[subscriberUID].barUpdateInterval);
+        unsubscribes[subscriberUID].socketUnsubscribe();
       }
-      unsubscribes[subscriberUID] = unsubscribe;
+
+      // 초기화 코드 저장
+      const barUpdateInterval = setInterval(() => {
+        onRealtimeCallback(lastDailyBar);
+      }, 300);
+      unsubscribes[subscriberUID] = {
+        barUpdateInterval: barUpdateInterval,
+        socketUnsubscribe: unsubscribe
+      };
     },
     unsubscribeBars: (subscriberUID) => {
       // console.log('[!] unsubscribeBars', { listenerGuid: subscriberUID });
-      const unsubscribe = unsubscribes[subscriberUID];
-      if (unsubscribe) {
-        unsubscribe();
+
+      if (!unsubscribes[subscriberUID]) {
+        return;
       }
+      const { barUpdateInterval, socketUnsubscribe } = unsubscribes[subscriberUID];
+      clearInterval(barUpdateInterval);
+      socketUnsubscribe();
     },
     getMarks(symbolInfo, from, to, onDataCallback, resolution) {
       // console.log('[!] getMarks running', symbolInfo);
