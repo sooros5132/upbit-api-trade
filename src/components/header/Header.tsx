@@ -267,8 +267,22 @@ const MarketInfo = () => {
           <span className='text-zinc-500'>USD/KRW</span>{' '}
           <span>{forex?.basePrice.toLocaleString()}₩</span>
           <div className='dropdown-content bg-base-300 p-2 whitespace-nowrap'>
-            <div>
-              <span>달러/원 환율</span>
+            <div>달러/원 환율</div>
+            <div className='p-2'>
+              변동{' '}
+              <span
+                className={classNames(
+                  'hidden md:inline',
+                  !forex.changePrice || forex.basePrice - forex.openingPrice === 0
+                    ? 'text-gray-400'
+                    : forex.basePrice - forex.openingPrice > 0
+                    ? 'text-teal-500'
+                    : 'text-rose-500'
+                )}
+              >
+                {forex.changePrice > 0 && '+'}
+                {numeral(forex.basePrice - forex.openingPrice).format('0,0.00')}₩
+              </span>
             </div>
             <div className='text-zinc-500'>
               <span>
@@ -340,6 +354,7 @@ const MarketInfo = () => {
           </span>
           <div className='dropdown-content bg-base-300 p-2 whitespace-nowrap'>
             <div>코인 시장 토탈(달러)</div>
+            <p>{numeral(metadata.total_market_cap).format('0,0')}$</p>
             <div className='grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 bg-base-300 p-2 [&>p:nth-child(even)]:text-right'>
               <p>24시간 변동</p>
               <p
