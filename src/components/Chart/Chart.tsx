@@ -43,7 +43,7 @@ export const Chart = memo(() => {
 
   if (!isReady) {
     return (
-      <div className='animate-pulse flex-center flex-col gap-2 h-full bg-base-300 p-5'>
+      <div className='animate-pulse flex-center flex-col gap-2 h-full bg-base-200 p-5'>
         <div className='animate-spin text-3xl'>
           <AiOutlineLoading3Quarters />
         </div>
@@ -69,7 +69,7 @@ export const Chart = memo(() => {
 
   return (
     <div className='flex flex-col h-full'>
-      <div className='w-full flex items-center grow-0 shrink-0 px-2 gap-2 bg-base-100 text-xs'>
+      <div className='w-full flex items-center grow-0 shrink-0 px-2 gap-2 bg-base-200 text-xs'>
         <div className='tooltip tooltip-right' data-tip='차트가 많을수록 부하가 심합니다.'>
           차트 개수{' '}
         </div>
@@ -185,7 +185,7 @@ export const ChartInner: React.FC<Pick<ChartProps, 'chart'>> = memo(
             exchange={'UPBIT'}
           />
         ) : (
-          <div className='flex-center h-full bg-base-300'>상단에서 차트를 선택해주세요</div>
+          <div className='flex-center h-full bg-base-200'>상단에서 차트를 선택해주세요</div>
         )}
       </div>
     );
@@ -231,7 +231,7 @@ const SelectChart: React.FC<Pick<ChartProps, 'chart'>> = ({ chart }) => {
   };
 
   return (
-    <div className='form-control bg-base-200'>
+    <div className='form-control bg-base-100'>
       <label className='input-group overflow-hidden'>
         <select
           placeholder='차트 선택'
