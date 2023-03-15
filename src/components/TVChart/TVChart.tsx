@@ -73,8 +73,6 @@ export const TVChartInner: React.FC<TVChartProps> = React.memo<TVChartProps>(
       const widgetOptions: ChartingLibraryWidgetOptions = {
         symbol: symbol as string,
         // BEWARE: no trailing slash is expected in feed URL
-        // tslint:disable-next-line:no-any
-        // datafeed: DataFeed,
         datafeed: exchange === 'UPBIT' ? upbitDataFeed() : binanceDataFeed(),
         interval: (interval || '60') as ChartingLibraryWidgetOptions['interval'],
         container: ref.current,
@@ -122,20 +120,8 @@ export const TVChartInner: React.FC<TVChartProps> = React.memo<TVChartProps>(
           { text: '5y', resolution: '5y' as ResolutionString }
         ],
         overrides: {
-          // paneProperties: {
-          //   background: '#ffffff',
-          //   backgroundGradientEndColor: '#ffffff',
-          //   backgroundGradientStartColor: '#ffffff',
-          //   backgroundType: 'solid'
-          // },
           'mainSeriesProperties.barStyle.downColor': '#f43f52',
           'mainSeriesProperties.barStyle.upColor': '#14b8a6',
-          // 'paneProperties.background': theme.color.mainDrakBackground,
-          // 'scalesProperties.lineColor': 'rgba(255, 255, 255, 0.6)',
-          // 'scalesProperties.textColor': 'rgba(255, 255, 255, 0.6)',
-          // 'mainSeriesProperties.candleStyle.wickUpColor': '#336854',
-          // 'mainSeriesProperties.candleStyle.wickDownColor': '#7f323f',
-          // 'mainSeriesProperties.showCountdown': true,
           'mainSeriesProperties.candleStyle.upColor': '#14b8a6',
           'mainSeriesProperties.candleStyle.downColor': '#f43f52',
           'mainSeriesProperties.candleStyle.borderColor': '#666666',
@@ -144,10 +130,12 @@ export const TVChartInner: React.FC<TVChartProps> = React.memo<TVChartProps>(
           'mainSeriesProperties.candleStyle.wickUpColor': '#14b8a6',
           'mainSeriesProperties.candleStyle.wickDownColor': '#f43f52',
           'mainSeriesProperties.showCountdown': true,
-          // volumePaneSize: 'medium',
-          // 'mainSeriesProperties.highLowAvgPrice.highLowPriceLabelsVisible': true,
           'scalesProperties.fontSize': 12,
-          'paneProperties.backgroundType': 'solid'
+          'paneProperties.background': '#131313',
+          'paneProperties.backgroundType': 'solid',
+          'horzGridProperties.color': '#131313',
+          'vertGridProperties.color': '#202020',
+          'vertGridProperties.style': 0
         },
         debug: false, // process.env.NODE_ENV === 'development' ? true : false,
         // save_load_adapter: {
@@ -178,44 +166,14 @@ export const TVChartInner: React.FC<TVChartProps> = React.memo<TVChartProps>(
             }
             localStorage.removeItem(key);
           }
-        }
+        },
+        custom_css_url: '/tv-custom.css'
       };
 
       const tvWidget = new widget(widgetOptions);
 
       tvWidget.onChartReady(() => {
         tvWidgetRef.current = tvWidget;
-        // tvWidget.headerReady().then(() => {
-        //   const button = tvWidget.createButton();
-        //   button.setAttribute('title', 'Click to show a notification popup');
-        //   button.classList.add('apply-common-tooltip');
-        //   button.addEventListener('click', () =>
-        //     tvWidget.showNoticeDialog({
-        //       title: 'Notification',
-        //       body: 'TradingView Charting Library API works correctly',
-        //       callback: () => {
-        //         // console.log('Noticed!');
-        //       }
-        //     })
-        //   );
-        //   button.innerHTML = 'Check API';
-        // });
-        // tvWidget.subscribe('onAutoSaveNeeded', () => tvWidget.saveChartToServer());
-        // tvWidget
-        //   .activeChart()
-        //   .onSymbolChanged()
-        //   .subscribe(null, () => {
-        //     console.log('symbol changed ', tvWidget.activeChart().symbol());
-        //     // useUpbitApiStore.subscribe(state => {
-        //     //   state.accounts.map(account => account.)
-        //     // })
-        //   });
-        // tvWidget
-        //   .activeChart()
-        //   .onIntervalChanged()
-        //   .subscribe(null, () => {
-        //     tvWidget.load();
-        //   });
         switch (exchange) {
           case 'UPBIT': {
             let accountPositionLine: IPositionLineAdapter | null = tvWidget

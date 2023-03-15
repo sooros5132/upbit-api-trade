@@ -1,0 +1,23 @@
+html.theme-dark div.wrap-3obNZqvj,
+html.theme-dark body.chart-page {
+  background-color: #141414;
+}
+html.theme-dark .content-379NmUSU {
+  background-color: #141414;
+}
+
+.theme-dark:root {
+  --tv-color-platform-background: #0d0d0d;
+  --tv-color-pane-background: #0d0d0d;
+  --tv-color-toolbar-button-text: #aaaaaa;
+  --tv-color-toolbar-button-background-hover: transparent;
+  --tv-color-toolbar-button-text-hover: #dedede;
+  --tv-color-toolbar-button-text-active: #e6f18d;
+  --tv-color-toolbar-button-text-active-hover: #cdd77b;
+  --tv-color-toolbar-toggle-button-background-active: #303030;
+  --tv-color-toolbar-toggle-button-background-active-hover: #181818;
+}
+
+.dateRangeWrapper-2yU8ifXU {
+  display: none;
+}
