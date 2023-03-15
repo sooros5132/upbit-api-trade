@@ -16,7 +16,7 @@ export const UpbitMarketHeader: FC = memo(() => {
   const market = useExchangeStore((state) => state.upbitMarketDatas[upbitTradeMarket], shallow);
 
   return (
-    <div className='bg-base-300'>
+    <div className='bg-base-300/70'>
       {market && <UpbitMarketHeaderInner market={market}></UpbitMarketHeaderInner>}
     </div>
   );
