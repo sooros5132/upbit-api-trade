@@ -30,7 +30,7 @@ const Home: NextPage = () => {
   return (
     <main
       className={classNames(
-        'w-full mt-1 px-3 mx-auto max-w-7xl sm:gap-[1px] sm:p-0 lg:max-w-none lg:min-h-[900px] lg:grow lg:overflow-y-auto main-grid',
+        'w-full mt-1 px-3 mx-auto max-w-7xl sm:gap-[1px] sm:p-0 lg:max-w-none lg:grow lg:overflow-y-auto main-grid',
         siteConfig.upbitApiTrade ? 'main-grid-trade' : null,
         siteConfig.upbitApiTrade && !isLogin ? 'not-login' : null
       )}
