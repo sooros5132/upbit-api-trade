@@ -129,26 +129,26 @@ const Header: React.FC = () => {
   };
 
   return (
-    <nav className='sticky top-0 left-0 z-10 bg-base-200 px-2.5' ref={headerRef}>
-      <div className='flex items-center justify-between h-11 xl:mx-auto '>
+    <nav className='sticky top-0 left-0 z-10 bg-base-200' ref={headerRef}>
+      <div className='flex items-center justify-between xl:mx-auto '>
         <Link href={'/'}>
           <a>
-            <button className='text-xl btn btn-circle btn-ghost btn-sm bg-base-200'>
+            <button className='text-lg btn btn-circle btn-ghost btn-sm bg-base-200'>
               <FaSlackHash />
             </button>
           </a>
         </Link>
-        <div className='px-2.5 basis-full text-center'>
+        <div className='basis-full text-center'>
           {/* <TradingViewTapeWidget /> */}
           <MarketInfo />
         </div>
         <div className='dropdown dropdown-end'>
-          <label tabIndex={0} className='m-1 text-xl btn btn-circle btn-ghost btn-sm bg-base-200'>
+          <label tabIndex={0} className='text-lg btn btn-circle btn-ghost btn-sm bg-base-200'>
             <AiFillSetting />
           </label>
           <ul
             tabIndex={0}
-            className='p-2 shadow dropdown-content menu bg-base-100 rounded-box w-52 z-[10]'
+            className='p-2 shadow dropdown-content menu bg-base-100 rounded-box w-52 z-10 text-sm'
           >
             <li onClickCapture={handleClickMenuItem('highlight')}>
               <button className='justify-between font-normal btn btn-ghost'>
@@ -273,15 +273,15 @@ const MarketInfo = () => {
               <span
                 className={classNames(
                   'hidden md:inline',
-                  !forex.changePrice || forex.basePrice - forex.openingPrice === 0
-                    ? 'text-gray-400'
-                    : forex.basePrice - forex.openingPrice > 0
+                  forex.signedChangePrice > 0
                     ? 'text-teal-500'
-                    : 'text-rose-500'
+                    : forex.signedChangePrice < 0
+                    ? 'text-rose-500'
+                    : 'text-gray-400'
                 )}
               >
-                {forex.changePrice > 0 && '+'}
-                {numeral(forex.basePrice - forex.openingPrice).format('0,0.00')}₩
+                {forex.signedChangePrice > 0 && '+'}
+                {numeral(forex.signedChangePrice).format('0,0.00')}₩
               </span>
             </div>
             <div className='text-zinc-500'>
@@ -310,7 +310,8 @@ const MarketInfo = () => {
                   : 'text-rose-500'
               )}
             >
-              &nbsp;{metadata.btc_dominance_24h_change_percent}%
+              &nbsp;{metadata.btc_dominance_24h_change_percent > 0 && '+'}
+              {metadata.btc_dominance_24h_change_percent}%
             </span>
           </span>
           <div className='dropdown-content bg-base-300 p-2 whitespace-nowrap'>
@@ -327,6 +328,7 @@ const MarketInfo = () => {
                     : 'text-rose-500'
                 }
               >
+                {metadata.btc_dominance_24h_change_percent > 0 && '+'}
                 {metadata.btc_dominance_24h_change_percent}%
               </p>
             </div>
@@ -342,14 +344,15 @@ const MarketInfo = () => {
               className={classNames(
                 'hidden md:inline',
                 !metadata.total_market_cap_24h_change_percent ||
-                  metadata.total_market_cap_24h_change_percent === 0
-                  ? 'text-gray-400'
-                  : metadata.total_market_cap_24h_change_percent > 0
+                  metadata.total_market_cap_24h_change_percent > 0
                   ? 'text-teal-500'
-                  : 'text-rose-500'
+                  : metadata.total_market_cap_24h_change_percent < 0
+                  ? 'text-rose-500'
+                  : 'text-gray-400'
               )}
             >
-              &nbsp;{metadata.total_market_cap_24h_change_percent}%
+              &nbsp;{metadata.total_market_cap_24h_change_percent > 0 && '+'}
+              {metadata.total_market_cap_24h_change_percent}%
             </span>
           </span>
           <div className='dropdown-content bg-base-300 p-2 whitespace-nowrap'>
