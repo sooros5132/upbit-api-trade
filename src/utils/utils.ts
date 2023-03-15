@@ -187,6 +187,9 @@ export function upbitDecimalScaleToInputStep(decimalScale: number) {
 }
 
 export function upbitPadEnd(number: number) {
+  if (number === 0) {
+    return 0;
+  }
   const decimalScale = upbitDecimalScale(number);
   const decimalPad = ''.padStart(decimalScale, '0');
   return numeral(number).format(`0,0${decimalScale > 0 ? '.' : ''}${decimalPad}`);

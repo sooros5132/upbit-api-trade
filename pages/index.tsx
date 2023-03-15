@@ -22,6 +22,7 @@ import { UpbitOrders } from 'src/components/Upbit/Orders';
 import siteConfig from 'site-config';
 import classNames from 'classnames';
 import { useUpbitApiStore } from 'src/store/upbitApi';
+import { UpbitMarketHeader } from 'src/components/Upbit/MarketHeader';
 
 const Home: NextPage = () => {
   const hydrated = useSiteSettingStore((state) => state.hydrated, shallow);
@@ -30,11 +31,14 @@ const Home: NextPage = () => {
   return (
     <main
       className={classNames(
-        'w-full mt-1 px-3 mx-auto max-w-7xl sm:gap-[1px] sm:p-0 lg:max-w-none lg:grow lg:overflow-y-auto main-grid',
+        'main-grid w-full mt-1 px-3 max-w-7xl mx-auto sm:gap-[1px] sm:p-0 lg:max-w-none lg:grow lg:overflow-y-auto',
         siteConfig.upbitApiTrade ? 'main-grid-trade' : null,
         siteConfig.upbitApiTrade && !isLogin ? 'not-login' : null
       )}
     >
+      <div data-grid-area='header' className='overflow-hidden lg:overflow-clip'>
+        <UpbitMarketHeader />
+      </div>
       {/* <div className='overflow-x-auto overflow-y-hidden lg:col-span-3 lg:row-span-1'>
         <div className='mx-auto'>
           <TradingViewTickers pointerEvents='none' />

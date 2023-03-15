@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer components {
+@layer utilities {
   html {
     scrollbar-width: thin;
   }
@@ -78,8 +78,9 @@
   @screen sm {
     .main-grid {
       grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
-      grid-template-rows: minmax(300px, 500px) 300px auto;
+      grid-template-rows: auto minmax(300px, 500px) 300px 1fr;
       grid-template-areas:
+        'header header header header header'
         'chart chart chart orderbook orderbook'
         'chart chart chart trades trades'
         'market market market market market';
@@ -87,8 +88,9 @@
 
     .main-grid.main-grid-trade {
       grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
-      grid-template-rows: minmax(300px, 500px) auto 300px auto;
+      grid-template-rows: auto minmax(300px, 500px) auto 300px 1fr;
       grid-template-areas:
+        'header header header header header'
         'chart chart chart orderbook orderbook'
         'orderform orderform orderform orderform orderform'
         'trades trades orders orders orders'
@@ -131,25 +133,33 @@
   @screen lg {
     .main-grid {
       grid-template-columns: minmax(280px, 350px) minmax(400px, 1fr) minmax(320px, 400px);
-      grid-template-rows: minmax(50%, 1fr) minmax(auto, 500px);
+      grid-template-rows: minmax(auto, 50px) minmax(50%, 1fr) minmax(auto, 500px);
       grid-template-areas:
+        'header header market'
         'orderbook chart market'
         'trades chart market';
     }
 
     .main-grid.main-grid-trade {
       grid-template-columns: minmax(280px, 350px) minmax(400px, 1fr) minmax(320px, 400px);
-      grid-template-rows: minmax(50%, 1fr) minmax(auto, 350px) minmax(auto, 200px);
+      grid-template-rows:
+        minmax(auto, 50px) minmax(53%, 1fr) minmax(auto, 150px) minmax(auto, 300px)
+        minmax(200px, 300px);
       grid-template-areas:
+        'header header market'
         'orderbook chart market'
+        'trades chart market'
         'trades orderform orderform'
         'orders orders orders';
     }
 
     .main-grid.main-grid-trade.not-login {
       grid-template-columns: minmax(280px, 350px) minmax(400px, 1fr) minmax(320px, 400px);
-      grid-template-rows: minmax(50%, 1fr) minmax(auto, 350px) minmax(auto, 100px) auto;
+      grid-template-rows:
+        minmax(auto, 50px) minmax(65%, 1fr) minmax(auto, 300px) minmax(auto, 100px)
+        minmax(200px, 300px);
       grid-template-areas:
+        'header header market'
         'orderbook chart market'
         'trades chart market'
         'trades orderform orderform'
