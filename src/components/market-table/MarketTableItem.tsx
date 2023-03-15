@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import { isEqual } from 'lodash';
 import Image from 'next/image';
-import React, { useState } from 'react';
+import React, { FC, useState } from 'react';
 import { memo, useEffect, useRef } from 'react';
 import { TiPin } from 'react-icons/ti';
 import { useExchangeStore } from 'src/store/exchangeSockets';
@@ -26,20 +26,8 @@ export interface TableItemProps {
 }
 
 const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }) => {
-  const priceCellRef = useRef<HTMLTableCellElement>(null);
-  const currency = useMarketTableSettingStore(({ currency }) => currency, shallow);
-  const upbitMarket = useExchangeStore((state) => state.upbitMarketDatas[krwSymbol], shallow);
-  const { chartLength, highlight } = useSiteSettingStore(
-    (state) => ({ chartLength: state.subscribeChartCodes.length, highlight: state.highlight }),
-    shallow
-  );
-  const upbitTradeMarket = useUpbitApiStore((state) => state.upbitTradeMarket, shallow);
-  const marketSymbol = upbitMarket.cd.replace(marketRegex, '');
-
-  const { isLastUpdatePage, hydrated } = useSiteSettingStore(
-    ({ isLastUpdatePage, hydrated }) => ({ isLastUpdatePage, hydrated }),
-    shallow
-  );
+  const upbitTradeMarket = useUpbitApiStore(({ upbitTradeMarket }) => upbitTradeMarket, shallow);
+  const isLastUpdatePage = useSiteSettingStore(({ isLastUpdatePage }) => isLastUpdatePage, shallow);
   const [isIntersecting, setIsIntersecting] = useState<boolean>(isLastUpdatePage ?? false); // 마지막 시세 페이지라면 모두 true로
 
   const onIntersect: IntersectionObserverCallback = (entries) => {
@@ -48,6 +36,49 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
   };
 
   const { setTarget: setTargetRef } = useIntersectionObserver(onIntersect);
+
+  const handleClickMarket = (market: string) => (event: React.MouseEvent<HTMLTableRowElement>) => {
+    if (event.currentTarget.tagName === 'TR') {
+      useUpbitApiStore.getState().setUpbitTradeMarket(market);
+      const { subscribeChartCodes } = useSiteSettingStore.getState();
+      const chartLength = subscribeChartCodes.length;
+      if (chartLength === 1) {
+        useSiteSettingStore.getState().setSubscribeChartCodes([
+          {
+            code: market.replace(krwRegex, ''),
+            exchange: 'UPBIT'
+          }
+        ]);
+      }
+    }
+  };
+
+  return (
+    <tr
+      ref={setTargetRef}
+      className={classNames(
+        !isIntersecting ? 'h-[44px] sm:h-[52px] lg:h-[44px] xl:h-[52px]' : null,
+        upbitTradeMarket === krwSymbol ? 'bg-green-800/20' : undefined
+      )}
+      onClick={handleClickMarket(krwSymbol)}
+    >
+      {!isIntersecting ? null : (
+        <ItemInner krwSymbol={krwSymbol} upbitForex={upbitForex} favorite={favorite} />
+      )}
+    </tr>
+  );
+};
+
+const ItemInner: FC<TableItemProps> = ({ favorite, krwSymbol, upbitForex }) => {
+  const upbitMarket = useExchangeStore((state) => state.upbitMarketDatas[krwSymbol], shallow);
+  const { chartLength, highlight } = useSiteSettingStore(
+    (state) => ({ chartLength: state.subscribeChartCodes.length, highlight: state.highlight }),
+    shallow
+  );
+  const hydrated = useSiteSettingStore(({ hydrated }) => hydrated, shallow);
+  const priceCellRef = useRef<HTMLTableCellElement>(null);
+  const currency = useMarketTableSettingStore(({ currency }) => currency, shallow);
+  const marketSymbol = upbitMarket.cd.replace(marketRegex, '');
 
   const handleClickMarketIcon =
     (exchange: 'BINANCE' | 'UPBIT', symbol: string) =>
@@ -95,25 +126,8 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
     useExchangeStore.getState().sortSymbolList(sortColumn, sortType);
   };
 
-  const handleClickMarket = (market: string) => (event: React.MouseEvent<HTMLTableRowElement>) => {
-    if (event.currentTarget.tagName === 'TR') {
-      useUpbitApiStore.getState().setUpbitTradeMarket(market);
-
-      if (chartLength === 1) {
-        useSiteSettingStore.getState().setSubscribeChartCodes([
-          {
-            code: market.replace(krwRegex, ''),
-            exchange: 'UPBIT'
-          }
-        ]);
-        return;
-      }
-      return;
-    }
-  };
-
   useEffect(() => {
-    if (!isIntersecting || !highlight || !priceCellRef?.current) {
+    if (!highlight || !priceCellRef?.current) {
       return;
     }
     const node = priceCellRef.current;
@@ -137,7 +151,7 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
     return () => {
       observer.disconnect();
     };
-  }, [highlight, isIntersecting, priceCellRef]);
+  }, [highlight, priceCellRef]);
 
   const upbitChangeRate = upbitMarket.scr * 100;
 
@@ -192,65 +206,99 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
       : 'ask';
 
   return (
-    <tr
-      ref={setTargetRef}
-      className={classNames(
-        !isIntersecting ? 'h-[44px] sm:h-[52px] lg:h-[44px] xl:h-[52px]' : null,
-        upbitTradeMarket === krwSymbol ? 'bg-green-800/20' : undefined
-      )}
-      onClick={handleClickMarket(upbitMarket.cd)}
-    >
-      {!isIntersecting ? null : (
-        <>
-          <td>
-            <div className='text-center'>
-              <Image
-                className='object-contain overflow-hidden bg-white rounded-full'
-                src={`/asset/upbit/logos/${marketSymbol}.png`}
-                width={14}
-                height={14}
-                quality={100}
-                loading='lazy'
-                alt={`${upbitMarket.cd}-icon`}
-              />
-            </div>
-            <div className='flex justify-center'>
-              <div className='flex'>
-                <div
-                  className={classNames(
-                    'cursor-pointer',
-                    favorite ? 'text-yellow-300' : 'text-gray-600'
-                  )}
-                  onClick={handleClickStarIcon(upbitMarket.cd)}
-                >
-                  <TiPin />
-                </div>
-              </div>
-            </div>
-          </td>
-          <td className='text-left min-w-[60px]'>
-            <div>
-              <span className='text-gray-300 whitespace-pre-wrap font-sans'>
-                {upbitMarket.korean_name}
-              </span>
-            </div>
+    <>
+      <td>
+        <div className='text-center'>
+          <Image
+            className='object-contain overflow-hidden bg-white rounded-full'
+            src={`/asset/upbit/logos/${marketSymbol}.png`}
+            width={14}
+            height={14}
+            quality={100}
+            loading='lazy'
+            alt={`${upbitMarket.cd}-icon`}
+          />
+        </div>
+        <div className='flex justify-center'>
+          <div className='flex'>
             <div
-              className='inline-grid grid-cols-[1em_1em_1em_1em] gap-1'
-              onClick={(evt) => evt.stopPropagation()}
+              className={classNames(
+                'cursor-pointer',
+                favorite ? 'text-yellow-300' : 'text-gray-600'
+              )}
+              onClick={handleClickStarIcon(upbitMarket.cd)}
             >
+              <TiPin />
+            </div>
+          </div>
+        </div>
+      </td>
+      <td className='text-left min-w-[60px]'>
+        <div>
+          <span className='text-gray-300 whitespace-pre-wrap font-sans'>
+            {upbitMarket.korean_name}
+          </span>
+        </div>
+        <div
+          className='inline-grid grid-cols-[1em_1em_1em_1em] gap-1'
+          onClick={(evt) => evt.stopPropagation()}
+        >
+          <a
+            className='leading-[1em]'
+            href={apiUrls.upbit.marketHref + upbitMarket.cd}
+            target='_blank'
+            rel='noreferrer'
+          >
+            <Image
+              className='market-exchange-image'
+              src='/icons/upbit.png'
+              width={14}
+              height={14}
+              loading='lazy'
+              alt='upbit favicon'
+            />
+          </a>
+          <div
+            className={classNames(
+              'market-chart-icon',
+              hydrated && chartLength !== 1 ? 'dropdown dropdown-bottom' : null
+            )}
+            onClick={handleClickMarketIcon('UPBIT', marketSymbol)}
+          >
+            <label tabIndex={0} className='text-zinc-500 text-sm cursor-pointer'>
+              <AiOutlineAreaChart />
+            </label>
+            {hydrated && (
+              <ul
+                tabIndex={0}
+                className={classNames(
+                  'dropdown-content menu p-2 shadow bg-base-100 rounded-box w-32',
+                  chartLength === 1 ? 'hidden pointer-events-none' : null
+                )}
+              >
+                {[...new Array(chartLength)].map((_, i) => (
+                  <li key={i} onClick={handleClickChangeSubscribeChart('UPBIT', marketSymbol, i)}>
+                    <a>{i + 1}번 차트</a>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          {upbitMarket.binance_price && (
+            <>
               <a
                 className='leading-[1em]'
-                href={apiUrls.upbit.marketHref + upbitMarket.cd}
+                href={`${apiUrls.binance.marketHref}/${marketSymbol}_USDT`}
                 target='_blank'
                 rel='noreferrer'
               >
                 <Image
                   className='market-exchange-image'
-                  src='/icons/upbit.png'
+                  src='/icons/binance.ico'
                   width={14}
                   height={14}
                   loading='lazy'
-                  alt='upbit favicon'
+                  alt='binance favicon'
                 />
               </a>
               <div
@@ -258,7 +306,7 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
                   'market-chart-icon',
                   hydrated && chartLength !== 1 ? 'dropdown dropdown-bottom' : null
                 )}
-                onClick={handleClickMarketIcon('UPBIT', marketSymbol)}
+                onClick={handleClickMarketIcon('BINANCE', marketSymbol)}
               >
                 <label tabIndex={0} className='text-zinc-500 text-sm cursor-pointer'>
                   <AiOutlineAreaChart />
@@ -274,135 +322,83 @@ const TableItem: React.FC<TableItemProps> = ({ krwSymbol, upbitForex, favorite }
                     {[...new Array(chartLength)].map((_, i) => (
                       <li
                         key={i}
-                        onClick={handleClickChangeSubscribeChart('UPBIT', marketSymbol, i)}
+                        onClick={handleClickChangeSubscribeChart('BINANCE', marketSymbol, i)}
                       >
-                        <a>{i + 1}번 차트</a>
+                        <span>{i + 1}번 차트</span>
                       </li>
                     ))}
                   </ul>
                 )}
               </div>
-              {upbitMarket.binance_price && (
-                <>
-                  <a
-                    className='leading-[1em]'
-                    href={`${apiUrls.binance.marketHref}/${marketSymbol}_USDT`}
-                    target='_blank'
-                    rel='noreferrer'
-                  >
-                    <Image
-                      className='market-exchange-image'
-                      src='/icons/binance.ico'
-                      width={14}
-                      height={14}
-                      loading='lazy'
-                      alt='binance favicon'
-                    />
-                  </a>
-                  <div
-                    className={classNames(
-                      'market-chart-icon',
-                      hydrated && chartLength !== 1 ? 'dropdown dropdown-bottom' : null
-                    )}
-                    onClick={handleClickMarketIcon('BINANCE', marketSymbol)}
-                  >
-                    <label tabIndex={0} className='text-zinc-500 text-sm cursor-pointer'>
-                      <AiOutlineAreaChart />
-                    </label>
-                    {hydrated && (
-                      <ul
-                        tabIndex={0}
-                        className={classNames(
-                          'dropdown-content menu p-2 shadow bg-base-100 rounded-box w-32',
-                          chartLength === 1 ? 'hidden pointer-events-none' : null
-                        )}
-                      >
-                        {[...new Array(chartLength)].map((_, i) => (
-                          <li
-                            key={i}
-                            onClick={handleClickChangeSubscribeChart('BINANCE', marketSymbol, i)}
-                          >
-                            <span>{i + 1}번 차트</span>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                </>
-              )}
-            </div>
-          </td>
-          <td className={colorPrice} ref={priceCellRef}>
-            <p>
-              <span>
-                {krwTooSmallNumber
-                  ? `0.${krwPriceDecimal}`
-                  : numeral(krwPriceNum).format(
-                      `0,0[.]${currency === 'KRW' ? krwPricePad : usdPricePad}`
-                    )}
-              </span>
-            </p>
+            </>
+          )}
+        </div>
+      </td>
+      <td className={colorPrice} ref={priceCellRef}>
+        <p>
+          <span>
+            {krwTooSmallNumber
+              ? `0.${krwPriceDecimal}`
+              : numeral(krwPriceNum).format(
+                  `0,0[.]${currency === 'KRW' ? krwPricePad : usdPricePad}`
+                )}
+          </span>
+        </p>
+        <p className={'opacity-60'}>
+          <span>
+            {upbitMarket?.binance_price
+              ? usdTooSmallNumber
+                ? `0.${usdPriceDecimal}`
+                : numeral(usdPriceNum).format(
+                    `0,0[.]${currency === 'KRW' ? krwPricePad : usdPricePad}`
+                  )
+              : null}
+          </span>
+        </p>
+      </td>
+      <td className={colorPrice}>
+        <p>{upbitChangeRate.toFixed(2)}%</p>
+        <p className={'opacity-60'}>
+          {currency === 'KRW'
+            ? krwTooSmallNumber
+              ? `0.${upbitMarket.scp}`
+              : numeral(upbitMarket.scp).format(`0,0[.][${krwPricePad}]`)
+            : 0.000001 > usdChange
+            ? `${usdChange.toFixed(usdPriceDecimal.length)}`
+            : numeral(usdChange).format(`0,0[.][${usdPricePad}]`)}
+        </p>
+      </td>
+      <td className={colorPremium}>
+        {typeof upbitMarket.premium === 'number' && (
+          <>
+            <p>{upbitMarket.premium.toFixed(2).padStart(2, '0')}%</p>
             <p className={'opacity-60'}>
-              <span>
-                {upbitMarket?.binance_price
-                  ? usdTooSmallNumber
-                    ? `0.${usdPriceDecimal}`
-                    : numeral(usdPriceNum).format(
-                        `0,0[.]${currency === 'KRW' ? krwPricePad : usdPricePad}`
-                      )
-                  : null}
-              </span>
+              {upbitMarket.binance_price
+                ? currency === 'KRW'
+                  ? krwTooSmallNumber
+                    ? `${upbitMarket.tp - Number(upbitMarket.binance_price) * upbitForex.basePrice}`
+                    : numeral(
+                        upbitMarket.tp - Number(upbitMarket.binance_price) * upbitForex.basePrice
+                      ).format(`0,0[.][${krwPricePad}]`)
+                  : 0.000001 > usdPremium
+                  ? (
+                      upbitMarket.tp / upbitForex.basePrice -
+                      Number(upbitMarket.binance_price)
+                    ).toFixed(usdPriceDecimal.length)
+                  : numeral(usdPremium).format(`0,0[.][${usdPricePad}]`)
+                : null}
             </p>
-          </td>
-          <td className={colorPrice}>
-            <p>{upbitChangeRate.toFixed(2)}%</p>
-            <p className={'opacity-60'}>
-              {currency === 'KRW'
-                ? krwTooSmallNumber
-                  ? `0.${upbitMarket.scp}`
-                  : numeral(upbitMarket.scp).format(`0,0[.][${krwPricePad}]`)
-                : 0.000001 > usdChange
-                ? `${usdChange.toFixed(usdPriceDecimal.length)}`
-                : numeral(usdChange).format(`0,0[.][${usdPricePad}]`)}
-            </p>
-          </td>
-          <td className={colorPremium}>
-            {typeof upbitMarket.premium === 'number' && (
-              <>
-                <p>{upbitMarket.premium.toFixed(2).padStart(2, '0')}%</p>
-                <p className={'opacity-60'}>
-                  {upbitMarket.binance_price
-                    ? currency === 'KRW'
-                      ? krwTooSmallNumber
-                        ? `${
-                            upbitMarket.tp -
-                            Number(upbitMarket.binance_price) * upbitForex.basePrice
-                          }`
-                        : numeral(
-                            upbitMarket.tp -
-                              Number(upbitMarket.binance_price) * upbitForex.basePrice
-                          ).format(`0,0[.][${krwPricePad}]`)
-                      : 0.000001 > usdPremium
-                      ? (
-                          upbitMarket.tp / upbitForex.basePrice -
-                          Number(upbitMarket.binance_price)
-                        ).toFixed(usdPriceDecimal.length)
-                      : numeral(usdPremium).format(`0,0[.][${usdPricePad}]`)
-                    : null}
-                </p>
-              </>
-            )}
-          </td>
-          <td className='text-gray-400'>
-            <p>{koPriceLabelFormat(upbitMarket.atp24h)}</p>
-            <p className='opacity-60'>
-              {upbitMarket.binance_price &&
-                koPriceLabelFormat(Number(upbitMarket.binance_volume) * upbitForex.basePrice)}
-            </p>
-          </td>
-        </>
-      )}
-    </tr>
+          </>
+        )}
+      </td>
+      <td className='text-gray-400'>
+        <p>{koPriceLabelFormat(upbitMarket.atp24h)}</p>
+        <p className='opacity-60'>
+          {upbitMarket.binance_price &&
+            koPriceLabelFormat(Number(upbitMarket.binance_volume) * upbitForex.basePrice)}
+        </p>
+      </td>
+    </>
   );
 };
 
