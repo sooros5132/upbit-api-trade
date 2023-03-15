@@ -66,7 +66,7 @@ const MyAccounts = memo(({ upbitAccounts: upbitAccountsTemp }: IMyAccountsProps)
       >
         <span>잔고&nbsp;</span>
       </div>
-      <div className='flex flex-grow whitespace-nowrap gap-x-2 scrollbar-hidden'>
+      <div className='flex flex-grow flex-wrap whitespace-nowrap gap-x-2 scrollbar-hidden'>
         {upbitAccounts.map((account) => (
           <AccountItem
             key={`header-my-account-${account.currency}`}
