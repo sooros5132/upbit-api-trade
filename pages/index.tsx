@@ -179,11 +179,6 @@ const ExchangeMarket: React.FC = () => {
               binanceSymbol = 'BTTCUSDT';
               break;
             }
-            case 'POLY':
-            // {
-            //   binanceSymbol = 'POLYXUSDT';
-            //   break;
-            // }
             case 'BTG':
             case 'NU': {
               binanceSymbol = undefined;
