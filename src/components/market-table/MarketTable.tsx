@@ -28,7 +28,7 @@ const MarketTable: React.FC<MarketTableProps> = () => {
   const lastUpdatedAt = useExchangeStore(({ lastUpdatedAt }) => lastUpdatedAt, shallow);
 
   return (
-    <div className='w-full max-w-screen-xl overflow-hidden sm:m-0 flex flex-col'>
+    <div className='w-full h-full max-w-screen-xl overflow-hidden sm:m-0 flex flex-col'>
       {isLastUpdatePage ? (
         <div className='my-4'>
           <BackgroundBlueBox>
