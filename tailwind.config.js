@@ -15,6 +15,7 @@ module.exports = {
     },
     extend: {
       fontFamily: {
+        sans: ['Noto Sans KR', ...defaultTheme.fontFamily.sans],
         mono: ['Roboto Mono', ...defaultTheme.fontFamily.mono]
       }
     }
