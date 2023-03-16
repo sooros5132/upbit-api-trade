@@ -22,9 +22,29 @@ import { NumericFormat } from 'react-number-format';
 import numeral from 'numeral';
 import { RiArrowDownSLine, RiArrowUpSLine } from 'react-icons/ri';
 import { useSiteSettingStore } from 'src/store/siteSetting';
+import { IoMdRefresh } from 'react-icons/io';
+import { throttle } from 'lodash';
 
 export const UpbitOrderform = memo(() => {
-  const isLogin = useUpbitApiStore((state) => state.isLogin);
+  const isLogin = useUpbitApiStore((state) => state.isLogin, shallow);
+  const [isPending, setPending] = useState(false);
+
+  const handleClickRefreshButton = throttle(async () => {
+    if (isPending) {
+      toast.info('다시 불러오는 중 입니다.');
+      return;
+    }
+    setPending(true);
+    const { upbitTradeMarket, getOrders, getOrdersChance } = useUpbitApiStore.getState();
+    await Promise.all([
+      getOrdersChance(upbitTradeMarket),
+      getOrders({ market: upbitTradeMarket })
+    ]).finally(() => {
+      setTimeout(() => {
+        setPending(false);
+      }, 1000);
+    });
+  }, 500);
 
   const [ordType, setOrdType] = useState<UpbitTradeValues['ord_type']>('limit');
   const [hidden, setHidden] = useState(false);
@@ -72,7 +92,7 @@ export const UpbitOrderform = memo(() => {
               </div>
             </div>
           </button>
-          {process.env.NODE_ENV !== 'production' && (
+          {/* {process.env.NODE_ENV !== 'production' && (
             <button
               onClick={handleClickOrdTypeBtn('spider')}
               className={classNames(
@@ -88,12 +108,22 @@ export const UpbitOrderform = memo(() => {
                 </div>
               </div>
             </button>
-          )}
+          )} */}
+          <button
+            onClick={handleClickRefreshButton}
+            className={classNames(
+              'tooltip tooltip-left btn btn-xs btn-ghost !grow-0 shrink-0 px-1.5',
+              isPending ? 'btn-disabled' : ''
+            )}
+            data-tip='잔고를 다시 불러옵니다.'
+          >
+            <IoMdRefresh />
+          </button>
           <button
             onClick={() => setHidden((p) => !p)}
-            className={classNames('btn btn-xs btn-ghost !grow-0 shrink-0 gap-x-1')}
+            className={'btn btn-xs btn-ghost !grow-0 shrink-0 px-1.5'}
           >
-            <span>{hidden ? <RiArrowDownSLine /> : <RiArrowUpSLine />}</span>
+            {hidden ? <RiArrowDownSLine /> : <RiArrowUpSLine />}
           </button>
         </div>
         {!hidden ? (
@@ -168,11 +198,13 @@ const TradeContainer: FC<TradeContainerProps> = ({ ordType }) => {
   );
 
   if (error) {
-    <div className='bg-base-200 flex-center p-5 text-center'>
-      <div>
-        <div>마켓 정보를 가져오는 중 에러가 발생했습니다.</div>
+    return (
+      <div className='bg-base-200 flex-center p-5 text-center'>
+        <div>
+          <div>마켓 정보를 가져오는 중 에러가 발생했습니다.</div>
+        </div>
       </div>
-    </div>;
+    );
   }
 
   if (!ordersChance) {
@@ -204,13 +236,15 @@ const Trade: FC<TradeProps> = ({ orderChance, ordType }) => {
     }),
     shallow
   );
-  const upbitMarkets = useExchangeStore((state) => state.upbitMarkets, shallow);
+  // const upbitMarkets = useExchangeStore((state) => state.upbitMarkets, shallow);
 
   const { error, mutate: mutateChance } = useSWR(
     `${apiUrls.upbit.path}${apiUrls.upbit.ordersChance}?market=${upbitTradeMarket}`,
     async () => {
-      await useUpbitApiStore.getState().getOrdersChance(upbitTradeMarket);
-      await useUpbitApiStore.getState().getOrders({ market: upbitTradeMarket });
+      await Promise.all([
+        useUpbitApiStore.getState().getOrdersChance(upbitTradeMarket),
+        useUpbitApiStore.getState().getOrders({ market: upbitTradeMarket })
+      ]);
     },
     {
       refreshInterval: 60 * 1000
@@ -238,15 +272,15 @@ const Trade: FC<TradeProps> = ({ orderChance, ordType }) => {
     );
   }
 
-  const handleChangeMarket = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const newMarket = event.target.value;
-    setUpbitTradeMarket(newMarket);
-    useExchangeStore.getState().changedOrderbookCode();
-  };
+  // const handleChangeMarket = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  //   const newMarket = event.target.value;
+  //   setUpbitTradeMarket(newMarket);
+  //   useExchangeStore.getState().changedOrderbookCode();
+  // };
 
   return (
     <div className='h-full flex flex-col py-1 px-2 bg-base-300'>
-      <div className='flex-center'>
+      {/* <div className='flex-center'>
         <div className='form-control bg-base-200'>
           <label className='input-group overflow-hidden'>
             <select
@@ -269,7 +303,7 @@ const Trade: FC<TradeProps> = ({ orderChance, ordType }) => {
             </select>
           </label>
         </div>
-      </div>
+      </div> */}
       <div className='flex grow flex-wrap gap-y-5 sm:gap-y-0 sm:flex-nowrap sm:gap-x-6 sm:justify-evenly lg:justify-center lg:gap-x-10 lg:px-5 [&>div]:basis-full [&>div]:shrink-0 [&>div]:grow sm:[&>div]:basis-64 sm:[&>div]:max-w-sm'>
         <TradeInner
           ord_type={ordType}

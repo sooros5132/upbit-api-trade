@@ -1,8 +1,10 @@
 import classNames from 'classnames';
 import { format } from 'date-fns-tz';
+import { throttle } from 'lodash';
 import React, { FC, memo, useState } from 'react';
 import isEqual from 'react-fast-compare';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
+import { IoMdRefresh } from 'react-icons/io';
 import { RiArrowDownSLine, RiArrowUpSLine } from 'react-icons/ri';
 import { toast } from 'react-toastify';
 import { apiUrls } from 'src/lib/apiUrls';
@@ -13,6 +15,24 @@ import shallow from 'zustand/shallow';
 
 export const UpbitOrders = memo(() => {
   const [hidden, setHidden] = useState(false);
+  const [isPending, setPending] = useState(false);
+
+  const handleClickRefreshButton = throttle(async () => {
+    if (isPending) {
+      toast.info('다시 불러오는 중 입니다.');
+      return;
+    }
+    setPending(true);
+    const { upbitTradeMarket, getOrders, getOrdersChance } = useUpbitApiStore.getState();
+    await Promise.all([
+      getOrdersChance(upbitTradeMarket),
+      getOrders({ market: upbitTradeMarket })
+    ]).finally(() => {
+      setTimeout(() => {
+        setPending(false);
+      }, 1000);
+    });
+  }, 500);
 
   return (
     <div
@@ -22,13 +42,24 @@ export const UpbitOrders = memo(() => {
       )}
     >
       <div className='flex items-center justify-between pl-1 flex-auto flex-shrink-0 flex-grow-0'>
-        <span className='text-sm'>주문 목록</span>
-        <span
-          className='btn btn-circle btn-ghost btn-xs cursor-pointer'
-          onClick={() => setHidden((p) => !p)}
+        <div className='text-sm'>주문 목록</div>
+        <div
+          className='ml-auto tooltip tooltip-left'
+          data-tip='잔고를 다시 불러옵니다.'
+          onClick={handleClickRefreshButton}
         >
+          <button
+            className={classNames(
+              'btn btn-circle btn-ghost btn-xs',
+              isPending ? 'btn-disabled' : ''
+            )}
+          >
+            <IoMdRefresh />
+          </button>
+        </div>
+        <button className='btn btn-circle btn-ghost btn-xs' onClick={() => setHidden((p) => !p)}>
           {hidden ? <RiArrowDownSLine /> : <RiArrowUpSLine />}
-        </span>
+        </button>
       </div>
       {!hidden && <UpbitOrdersContainer />}
     </div>
