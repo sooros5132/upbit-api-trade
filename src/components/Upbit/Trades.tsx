@@ -123,7 +123,7 @@ const UpbitRecentTradesInner: React.FC<UpbitRecentTradesInnerProps> = ({
   }, [market, trades]);
 
   return (
-    <div className='relative flex flex-col h-full text-right text-xs overflow-y-auto bg-base-300 2xl:text-sm'>
+    <div className='relative flex flex-col h-full text-right text-xs overflow-y-auto bg-base-300/50 2xl:text-sm'>
       <table className='border-separate border-spacing-0 w-full text-zinc-500'>
         <colgroup>
           <col width='35%'></col>

@@ -121,7 +121,7 @@ const UpbitOrdersContainer = () => {
   }
 
   return (
-    <div className='h-full bg-base-300'>
+    <div className='h-full'>
       <UpbitOrdersInner upbitTradeMarket={upbitTradeMarket} orders={orders} mutate={mutate} />
     </div>
   );
@@ -149,7 +149,7 @@ const UpbitOrdersInner: FC<UpbitOrdersInnerProps> = ({ upbitTradeMarket, orders,
   };
 
   return (
-    <div className='relative flex flex-col h-full text-right whitespace-nowrap text-xs overflow-y-auto font-mono bg-base-300'>
+    <div className='relative flex flex-col h-full text-right whitespace-nowrap text-xs overflow-y-auto font-mono bg-base-300/50'>
       <table className='border-separate border-spacing-0 w-full text-zinc-500 hover:[&>tbody>tr]:bg-base-200/40 [&_th]:py-1 [&_td]:py-1 [&_td]:border-t-[1px] [&_td]:border-t-neutral'>
         <colgroup>
           <col width='15%'></col>

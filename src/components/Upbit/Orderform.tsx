@@ -279,7 +279,7 @@ const Trade: FC<TradeProps> = ({ orderChance, ordType }) => {
   // };
 
   return (
-    <div className='h-full flex flex-col py-1 px-2 bg-base-300'>
+    <div className='h-full flex flex-col py-1 px-2 bg-base-300/50'>
       {/* <div className='flex-center'>
         <div className='form-control bg-base-200'>
           <label className='input-group overflow-hidden'>

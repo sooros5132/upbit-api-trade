@@ -78,7 +78,7 @@ const TableBody: React.FC<TableBodyProps> = () => {
   }
 
   return (
-    <tbody>
+    <tbody className='bg-base-300/50'>
       {searchedSymbols.map((krwSymbol) => {
         const favorite = hydrated ? Boolean(favoriteSymbols[krwSymbol]) : false;
 
