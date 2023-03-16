@@ -16,6 +16,8 @@ import type {
 } from '../../charting_library';
 import { widget, ChartingLibraryWidgetOptions, LanguageCode } from '../../charting_library';
 import { cloneDeep } from 'lodash';
+import { krwRegex } from 'src/utils/regex';
+import { toast } from 'react-toastify';
 
 function getLanguageFromURL(): LanguageCode | null {
   const regex = new RegExp('[\\?&]lang=([^&#]*)');
@@ -179,9 +181,9 @@ export const TVChartInner: React.FC<TVChartProps> = React.memo<TVChartProps>(
             let accountPositionLine: IPositionLineAdapter | null = tvWidget
               .activeChart()
               .createPositionLine()
-              .setText('매수평균')
-              .setLineLength(2)
+              .setLineLength(90)
               .setLineStyle(1)
+              .setText('매수평균')
               .setBodyBackgroundColor('#0ea5e9')
               .setLineColor('#0ea5e9')
               .setBodyTextColor('#ffffff')
@@ -224,17 +226,41 @@ export const TVChartInner: React.FC<TVChartProps> = React.memo<TVChartProps>(
                     .activeChart()
                     .createOrderLine()
                     .setText(text)
-                    .setLineLength(2)
+                    .setPrice(Number(order.price))
+                    .setLineLength(80)
                     .setLineStyle(1)
-                    .setBodyBackgroundColor(color)
-                    .setBodyBorderColor(color)
-                    .setQuantityBorderColor(color)
-                    .setQuantityBackgroundColor('#ffffff')
-                    .setQuantityTextColor(color)
                     .setLineColor(color)
                     .setBodyTextColor('#ffffff')
-                    .setQuantity(order.volume)
-                    .setPrice(Number(order.price));
+                    .setBodyBackgroundColor(color)
+                    .setBodyBorderColor(color)
+                    .setQuantity(order.volume + order.market.replace(krwRegex, ''))
+                    .setQuantityTextColor(color)
+                    .setQuantityBackgroundColor('#ffffff')
+                    .setQuantityBorderColor(color)
+                    .setCancellable(true)
+                    .setCancelTooltip('X')
+                    .setCancelButtonIconColor(color)
+                    .setCancelButtonBackgroundColor('#ffffff')
+                    .setCancelButtonBorderColor(color)
+                    .onCancel(() => {
+                      useUpbitApiStore
+                        .getState()
+                        .deleteOrder({
+                          uuid: order.uuid
+                        })
+                        .then(async () => {
+                          toast.success('주문이 취소되었습니다.');
+                          const { upbitTradeMarket, getOrders, getOrdersChance } =
+                            useUpbitApiStore.getState();
+                          Promise.all([
+                            getOrdersChance(upbitTradeMarket),
+                            getOrders({ market: upbitTradeMarket })
+                          ]);
+                        })
+                        .catch(() => {
+                          toast.error('주문을 취소하지 못 했습니다.');
+                        });
+                    });
                   orderLines.push(orderLine);
                 }
               } catch (e) {}
