@@ -229,22 +229,18 @@ interface TradeProps {
 }
 
 const Trade: FC<TradeProps> = ({ orderChance, ordType }) => {
-  const { upbitTradeMarket, setUpbitTradeMarket } = useUpbitApiStore(
-    ({ upbitTradeMarket, setUpbitTradeMarket }) => ({
-      upbitTradeMarket,
-      setUpbitTradeMarket
+  const { upbitTradeMarket } = useUpbitApiStore(
+    ({ upbitTradeMarket }) => ({
+      upbitTradeMarket
     }),
     shallow
   );
   // const upbitMarkets = useExchangeStore((state) => state.upbitMarkets, shallow);
 
-  const { error, mutate: mutateChance } = useSWR(
+  const { error } = useSWR(
     `${apiUrls.upbit.path}${apiUrls.upbit.ordersChance}?market=${upbitTradeMarket}`,
     async () => {
-      await Promise.all([
-        useUpbitApiStore.getState().getOrdersChance(upbitTradeMarket),
-        useUpbitApiStore.getState().getOrders({ market: upbitTradeMarket })
-      ]);
+      await Promise.all([useUpbitApiStore.getState().getOrdersChance(upbitTradeMarket)]);
     },
     {
       refreshInterval: 60 * 1000
@@ -305,18 +301,8 @@ const Trade: FC<TradeProps> = ({ orderChance, ordType }) => {
         </div>
       </div> */}
       <div className='flex grow flex-wrap gap-y-5 sm:gap-y-0 sm:flex-nowrap sm:gap-x-6 sm:justify-evenly lg:justify-center lg:gap-x-10 lg:px-5 [&>div]:basis-full [&>div]:shrink-0 [&>div]:grow sm:[&>div]:basis-64 sm:[&>div]:max-w-sm'>
-        <TradeInner
-          ord_type={ordType}
-          side={'bid'}
-          orderChance={orderChance}
-          mutateChance={mutateChance}
-        />
-        <TradeInner
-          ord_type={ordType}
-          side={'ask'}
-          orderChance={orderChance}
-          mutateChance={mutateChance}
-        />
+        <TradeInner ord_type={ordType} side={'bid'} orderChance={orderChance} />
+        <TradeInner ord_type={ordType} side={'ask'} orderChance={orderChance} />
       </div>
     </div>
   );
@@ -326,10 +312,9 @@ interface TradeInnerProps {
   side: UpbitTradeValues['side'];
   ord_type: UpbitTradeValues['ord_type'];
   orderChance: IUpbitOrdersChance;
-  mutateChance: () => void;
 }
 
-const TradeInner: FC<TradeInnerProps> = ({ ord_type, side, orderChance, mutateChance }) => {
+const TradeInner: FC<TradeInnerProps> = ({ ord_type, side, orderChance }) => {
   const krwBalance = Number(orderChance.bid_account.balance);
 
   const priceRef = useRef<HTMLDivElement>(null);
@@ -392,12 +377,7 @@ const TradeInner: FC<TradeInnerProps> = ({ ord_type, side, orderChance, mutateCh
           </span>
         </span>
       </div>
-      <OrderPanel
-        orderChance={orderChance}
-        side={side}
-        ord_type={ord_type}
-        mutateChance={mutateChance}
-      />
+      <OrderPanel orderChance={orderChance} side={side} ord_type={ord_type} />
     </div>
   );
 };
@@ -412,7 +392,6 @@ interface OrderPanelProps {
   side: UpbitTradeValues['side'];
   ord_type: UpbitTradeValues['ord_type'];
   orderChance: IUpbitOrdersChance;
-  mutateChance: () => void;
 }
 
 const ordTypeText = {
@@ -428,7 +407,7 @@ const sideText = {
   BID: '매수'
 } as const;
 
-const OrderPanel: FC<OrderPanelProps> = ({ side, ord_type, orderChance, mutateChance }) => {
+const OrderPanel: FC<OrderPanelProps> = ({ side, ord_type, orderChance }) => {
   const marketCode = orderChance.market.id;
   // const krwBalance = Math.floor(Number(orderChance.bid_account.balance)) || 0;
   // const coinBalance = orderChance.ask_account.balance;
@@ -648,13 +627,17 @@ const OrderPanel: FC<OrderPanelProps> = ({ side, ord_type, orderChance, mutateCh
           await useUpbitApiStore
             .getState()
             .createOrder(params)
-            .then((res) => {
+            .then(async (res) => {
               toast.info(
                 `${numeral(Number(res.price)).format(`0,0[.][0000]`)}가격에 ${numeral(
                   Number(res.volume)
                 ).format(`0,0[.][00000000]`)}만큼 주문을 넣었습니다.`
               );
-              mutateChance();
+              const { upbitTradeMarket, getOrdersChance, getOrders } = useUpbitApiStore.getState();
+              await Promise.all([
+                getOrdersChance(upbitTradeMarket),
+                getOrders({ market: upbitTradeMarket })
+              ]);
             })
             .catch((err) => {
               toast.error(err?.response?.data?.error?.message ?? '주문에 실패했습니다.');
@@ -680,13 +663,18 @@ const OrderPanel: FC<OrderPanelProps> = ({ side, ord_type, orderChance, mutateCh
               await useUpbitApiStore
                 .getState()
                 .createOrder(params)
-                .then((res) => {
+                .then(async (res) => {
                   toast.info(
                     `${numeral(Number(res.price)).format(`0,0[.][0000]`)}가격에 ${numeral(
                       Number(res.volume)
                     ).format(`0,0[.][00000000]`)}만큼 시장가매수 주문을 넣었습니다.`
                   );
-                  mutateChance();
+                  const { upbitTradeMarket, getOrdersChance, getOrders } =
+                    useUpbitApiStore.getState();
+                  await Promise.all([
+                    getOrdersChance(upbitTradeMarket),
+                    getOrders({ market: upbitTradeMarket })
+                  ]);
                 })
                 .catch((err) => {
                   toast.error(
@@ -710,13 +698,18 @@ const OrderPanel: FC<OrderPanelProps> = ({ side, ord_type, orderChance, mutateCh
               await useUpbitApiStore
                 .getState()
                 .createOrder(params)
-                .then((res) => {
+                .then(async (res) => {
                   toast.info(
                     `${numeral(Number(res.price)).format(`0,0[.][0000]`)}가격에 ${numeral(
                       Number(res.volume)
                     ).format(`0,0[.][00000000]`)}만큼 시장가매도 주문을 넣었습니다.`
                   );
-                  mutateChance();
+                  const { upbitTradeMarket, getOrdersChance, getOrders } =
+                    useUpbitApiStore.getState();
+                  await Promise.all([
+                    getOrdersChance(upbitTradeMarket),
+                    getOrders({ market: upbitTradeMarket })
+                  ]);
                 })
                 .catch((err) => {
                   toast.error(
