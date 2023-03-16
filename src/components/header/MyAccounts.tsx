@@ -174,10 +174,7 @@ const AccountItem = memo(({ account, visibleBalance }: IAccountItemProps) => {
             <label tabIndex={0}>
               <p className={colorPrice}>
                 &nbsp;
-                {visibleBalance &&
-                  `${profitAndLoss > 0 ? '+' : profitAndLoss < 0 ? '-' : ''}${Math.round(
-                    currentPrice * totalBalance
-                  ).toLocaleString()}₩ `}
+                {visibleBalance && `${Math.round(currentPrice * totalBalance).toLocaleString()}₩ `}
                 {`${profitAndLoss > 0 ? '+' : profitAndLoss < 0 ? '' : ''}${profitAndLoss.toFixed(
                   2
                 )}%`}
