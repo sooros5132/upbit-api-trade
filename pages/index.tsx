@@ -31,12 +31,12 @@ const Home: NextPage = () => {
   return (
     <main
       className={classNames(
-        'main-grid w-full mt-1 px-3 max-w-7xl mx-auto sm:gap-[1px] sm:p-0 lg:max-w-none lg:grow lg:overflow-y-auto',
+        'main-grid w-full mt-1 px-3 max-w-7xl mx-auto sm:gap-[1px] sm:p-0 lg:max-w-none lg:grow',
         siteConfig.upbitApiTrade ? 'main-grid-trade' : null,
         siteConfig.upbitApiTrade && !isLogin ? 'not-login' : null
       )}
     >
-      <div data-grid-area='header' className='overflow-hidden lg:overflow-clip'>
+      <div data-grid-area='header'>
         <UpbitMarketHeader />
       </div>
       {/* <div className='overflow-x-auto overflow-y-hidden lg:col-span-3 lg:row-span-1'>

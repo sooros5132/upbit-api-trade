@@ -16,7 +16,7 @@ export const UpbitMarketHeader: FC = memo(() => {
   const market = useExchangeStore((state) => state.upbitMarketDatas[upbitTradeMarket], shallow);
 
   return (
-    <div className='bg-base-300/70'>
+    <div className='h-full bg-base-300/70'>
       {market && <UpbitMarketHeaderInner market={market}></UpbitMarketHeaderInner>}
     </div>
   );
@@ -26,7 +26,7 @@ const UpbitMarketHeaderInner: FC<{ market: IMarketTableItem }> = ({ market }) =>
   const marketSymbol = market.cd.replace(krwRegex, '');
 
   return (
-    <div className='py-2 flex items-center gap-x-2 whitespace-nowrap overflow-x-auto overflow-y-hidden sm:px-2'>
+    <div className='flex items-center h-full px-1 py-2 gap-x-2 whitespace-nowrap overflow-x-auto overflow-y-hidden sm:px-2 lg:py-0'>
       <div className='flex flex-wrap items-end gap-x-1 sm:flex-nowrap'>
         <div className='shrink-0 self-auto sm:text-lg [&>*]:!w-[0.9em]'>
           <Image
