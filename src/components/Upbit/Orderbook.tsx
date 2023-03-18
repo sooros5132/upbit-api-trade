@@ -152,7 +152,10 @@ const OrderBook: React.FC<OrderBookProps> = ({ market, orderbook }) => {
             const volumeWidth = Math.round(100 - (trade.as / maxVolume) * 100);
             const changeRate = (trade.ap / market.pcp) * 100 - 100;
             return (
-              <tr key={`${trade.ap}-${i}`} className='ask bg-rose-700/10'>
+              <tr
+                key={trade?.ap ? `${trade.ap}` : `${trade.ap}-${i}`}
+                className='ask bg-rose-700/10'
+              >
                 <td>
                   <span
                     className={
@@ -181,7 +184,10 @@ const OrderBook: React.FC<OrderBookProps> = ({ market, orderbook }) => {
             const changeRate = (trade.bp / market.pcp) * 100 - 100;
 
             return (
-              <tr key={`${trade.bp}-${i}`} className='bid bg-zinc-700/20'>
+              <tr
+                key={trade?.bp ? `${trade.bp}` : `${trade.bp}-${i}`}
+                className='bid bg-zinc-700/20'
+              >
                 <td>
                   <span
                     className={
