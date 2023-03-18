@@ -202,6 +202,26 @@
   .btn-order-bid {
     @apply bg-teal-700 text-teal-300 hover:bg-teal-800;
   }
+
+  .horizontal-scrolling-animation {
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-name: horizontal-scrolling-keyframes;
+    animation-delay: 2s;
+    animation-duration: 100s;
+  }
+  .animation-paused {
+    animation-play-state: paused;
+  }
+}
+
+@keyframes horizontal-scrolling-keyframes {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
 }
 
 @keyframes highlight-keyframes {
