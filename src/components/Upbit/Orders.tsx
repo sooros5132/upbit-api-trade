@@ -14,6 +14,7 @@ import useSWR from 'swr';
 import shallow from 'zustand/shallow';
 
 export const UpbitOrders = memo(() => {
+  const isLogin = useUpbitApiStore((state) => state.isLogin, shallow);
   const [hidden, setHidden] = useState(false);
   const [isPending, setPending] = useState(false);
 
@@ -48,29 +49,40 @@ export const UpbitOrders = memo(() => {
           data-tip='잔고를 다시 불러옵니다.'
           onClick={handleClickRefreshButton}
         >
-          <button
-            className={classNames(
-              'btn btn-circle btn-ghost btn-xs',
-              isPending ? 'btn-disabled' : ''
-            )}
-          >
-            <IoMdRefresh />
-          </button>
+          {isLogin && (
+            <button
+              className={classNames(
+                'btn btn-circle btn-ghost btn-xs',
+                isPending ? 'btn-disabled' : ''
+              )}
+            >
+              <IoMdRefresh />
+            </button>
+          )}
         </div>
         <button className='btn btn-circle btn-ghost btn-xs' onClick={() => setHidden((p) => !p)}>
           {hidden ? <RiArrowDownSLine /> : <RiArrowUpSLine />}
         </button>
       </div>
-      {!hidden && <UpbitOrdersContainer />}
+      {!hidden ? (
+        !isLogin ? (
+          <div className='h-full bg-base-200 flex-center p-5 text-center'>
+            <div>
+              <div>주문 목록을 보려면 오른쪽 상단에서 업비트 API Key를 등록해주세요.</div>
+            </div>
+          </div>
+        ) : (
+          <UpbitOrdersContainer />
+        )
+      ) : null}
     </div>
   );
 }, isEqual);
 UpbitOrders.displayName = 'UpbitOrders';
 
 const UpbitOrdersContainer = () => {
-  const { isLogin, upbitTradeMarket, orders } = useUpbitApiStore(
-    ({ isLogin, upbitTradeMarket, orders }) => ({
-      isLogin,
+  const { upbitTradeMarket, orders } = useUpbitApiStore(
+    ({ upbitTradeMarket, orders }) => ({
       upbitTradeMarket,
       orders
     }),
@@ -78,7 +90,7 @@ const UpbitOrdersContainer = () => {
   );
 
   const { error, mutate } = useSWR(
-    `${apiUrls.upbit.path}${apiUrls.upbit.orders}/${upbitTradeMarket}/${isLogin}`,
+    `${apiUrls.upbit.path}${apiUrls.upbit.orders}/${upbitTradeMarket}`,
     async () => {
       await useUpbitApiStore.getState().getOrders({ market: upbitTradeMarket });
     },
@@ -86,16 +98,6 @@ const UpbitOrdersContainer = () => {
       refreshInterval: 60 * 1000
     }
   );
-
-  if (!isLogin) {
-    return (
-      <div className='h-full bg-base-200 flex-center p-5 text-center'>
-        <div>
-          <div>오른쪽 상단에서 업비트 API를 먼저 연결해주세요.</div>
-        </div>
-      </div>
-    );
-  }
 
   if (error) {
     return (

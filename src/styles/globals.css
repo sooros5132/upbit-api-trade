@@ -157,7 +157,7 @@
       grid-template-columns: minmax(280px, 350px) minmax(400px, 1fr) minmax(320px, 400px);
       grid-template-rows:
         50px minmax(65%, 1fr) minmax(auto, 300px) minmax(auto, 100px)
-        minmax(200px, 300px);
+        minmax(100px, 200px);
       grid-template-areas:
         'header header market'
         'orderbook chart market'

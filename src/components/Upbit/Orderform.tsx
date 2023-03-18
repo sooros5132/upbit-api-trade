@@ -109,16 +109,18 @@ export const UpbitOrderform = memo(() => {
               </div>
             </button>
           )} */}
-          <button
-            onClick={handleClickRefreshButton}
-            className={classNames(
-              'tooltip tooltip-left btn btn-xs btn-ghost !grow-0 shrink-0 px-1.5',
-              isPending ? 'btn-disabled' : ''
-            )}
-            data-tip='잔고를 다시 불러옵니다.'
-          >
-            <IoMdRefresh />
-          </button>
+          {isLogin && (
+            <button
+              onClick={handleClickRefreshButton}
+              className={classNames(
+                'tooltip tooltip-left btn btn-xs btn-ghost !grow-0 shrink-0 px-1.5',
+                isPending ? 'btn-disabled' : ''
+              )}
+              data-tip='잔고를 다시 불러옵니다.'
+            >
+              <IoMdRefresh />
+            </button>
+          )}
           <button
             onClick={() => setHidden((p) => !p)}
             className={'btn btn-xs btn-ghost !grow-0 shrink-0 px-1.5'}
@@ -131,7 +133,7 @@ export const UpbitOrderform = memo(() => {
             <div className='flex-center p-5 h-full text-center'>
               <div>
                 <div>
-                  업비트 API 거래 기능을 이용하시려면 오른쪽 상단에서 업비트 API Key를 등록해주세요.
+                  매수/매도 주문을 이용하려면 오른쪽 상단에서 업비트 API Key를 등록해주세요.
                 </div>
               </div>
             </div>
