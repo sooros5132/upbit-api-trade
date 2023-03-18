@@ -14,6 +14,15 @@ module.exports = {
       '2xl': '1536px'
     },
     extend: {
+      height: {
+        'dvh-100': '100dvh'
+      },
+      maxHeight: {
+        'dvh-100': '100dvh'
+      },
+      minHeight: {
+        'dvh-100': '100dvh'
+      },
       fontFamily: {
         sans: ['Noto Sans KR', ...defaultTheme.fontFamily.sans],
         mono: ['Roboto Mono', ...defaultTheme.fontFamily.mono]
