@@ -185,34 +185,11 @@ const useExchangeStore = create<IExchangeStore>(
       }
     },
     reconnectUpbitSocket() {
-      const {
-        socketTimeout,
-        throttleDelay,
-        upbitMarketDatas,
-        upbitTradeMessages,
-        upbitOrderbook,
-        upbitTradeCodes,
-        upbitTickerCodes
-      } = get();
+      const { socketTimeout, throttleDelay, upbitMarketDatas, upbitTradeMessages, upbitOrderbook } =
+        get();
       const format = 'SIMPLE'; // socket 간소화된 필드명
       const isOnlySnapshot = true; // socket 시세 스냅샷만 제공
       const isOnlyRealtime = true; // socket 실시간 시세만 제공
-
-      const message: Array<any> = [];
-      message.push(
-        { ticket: uuidv4() },
-        { type: 'ticker', codes: upbitTickerCodes, isOnlyRealtime }
-      );
-      const tradeCodes = [...upbitTradeCodes];
-      const tradePanelCode = useUpbitApiStore.getState().upbitTradeMarket;
-      if (tradePanelCode && !tradeCodes.includes(tradePanelCode)) {
-        tradeCodes.push(tradePanelCode);
-      }
-      if (tradeCodes && Array.isArray(tradeCodes) && tradeCodes.length > 0) {
-        message.push({ type: 'trade', codes: tradeCodes, isOnlyRealtime });
-        message.push({ type: 'orderbook', codes: [tradePanelCode], isOnlyRealtime });
-      }
-      message.push({ format });
 
       let lastActivity = Date.now();
 
@@ -250,7 +227,25 @@ const useExchangeStore = create<IExchangeStore>(
         newSocket.binaryType = 'blob';
 
         const handleOpen: WebSocket['onopen'] = function () {
+          const { upbitTradeCodes, upbitTickerCodes } = get();
           lastActivity = Date.now();
+          const message: Array<any> = [];
+
+          message.push(
+            { ticket: uuidv4() },
+            { type: 'ticker', codes: upbitTickerCodes, isOnlyRealtime }
+          );
+          const tradeCodes = [...upbitTradeCodes];
+          const tradePanelCode = useUpbitApiStore.getState().upbitTradeMarket;
+          if (tradePanelCode && !tradeCodes.includes(tradePanelCode)) {
+            tradeCodes.push(tradePanelCode);
+          }
+          if (tradeCodes && Array.isArray(tradeCodes) && tradeCodes.length > 0) {
+            message.push({ type: 'trade', codes: tradeCodes, isOnlyRealtime });
+            message.push({ type: 'orderbook', codes: [tradePanelCode], isOnlyRealtime });
+          }
+          message.push({ format });
+
           newSocket.send(JSON.stringify(message));
         };
 
@@ -378,14 +373,7 @@ const useExchangeStore = create<IExchangeStore>(
       reconnectBinanceSocket();
     },
     reconnectBinanceSocket() {
-      const {
-        socketTimeout,
-        throttleDelay,
-        binanceMarketDatas,
-        binanceTradeMessages,
-        binanceTradeCodes,
-        binanceTickerCodes
-      } = get();
+      const { socketTimeout, throttleDelay, binanceMarketDatas, binanceTradeMessages } = get();
       let lastActivity = Date.now();
       const dataBuffer: IExchangeState['binanceMarketDatas'] = binanceMarketDatas || {};
       let tradeMessageBuffer: IExchangeState['binanceTradeMessages'] = binanceTradeMessages || [];
@@ -416,14 +404,16 @@ const useExchangeStore = create<IExchangeStore>(
 
         const handleOpen: WebSocket['onopen'] = function () {
           if (newSocket) {
+            const { binanceTradeCodes, binanceTickerCodes } = get();
             lastActivity = Date.now();
-            newSocket.send(
-              JSON.stringify({
-                method: 'SUBSCRIBE',
-                params: binanceTickerCodes.concat(binanceTradeCodes),
-                id: binanceSocketMessageId++
-              })
-            );
+
+            const message = JSON.stringify({
+              method: 'SUBSCRIBE',
+              params: [...binanceTickerCodes].concat(binanceTradeCodes),
+              id: binanceSocketMessageId++
+            });
+
+            newSocket.send(message);
           }
         };
 
