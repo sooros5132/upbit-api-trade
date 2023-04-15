@@ -341,14 +341,6 @@ export const TVChartInner: React.FC<TVChartProps> = React.memo<TVChartProps>(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ref]);
 
-    useEffect(() => {
-      if (!tvWidgetRef.current) {
-        return;
-      }
-      const tvWidget = tvWidgetRef.current;
-      tvWidget.chart().setSymbol(symbol);
-    }, [symbol]);
-
     return <div id={containerId} ref={ref} className={'h-full flex-auto'} />;
   },
   isEqual
