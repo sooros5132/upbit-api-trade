@@ -26,6 +26,7 @@ export interface IUpbitApiState {
   accounts: Array<IUpbitAccount>;
   orders: Array<IUpbitGetOrderResponse>;
   ordersChance?: IUpbitOrdersChance;
+  ordersChanceIsValidating: boolean;
   upbitTradeMarket: string;
 }
 
@@ -36,6 +37,7 @@ const defaultState: IUpbitApiState = {
   accounts: [],
   orders: [],
   ordersChance: undefined,
+  ordersChanceIsValidating: true,
   upbitTradeMarket: 'KRW-BTC'
 };
 
@@ -151,6 +153,9 @@ export const useUpbitApiStore = create(
           querys: { market }
         });
 
+        set({
+          ordersChanceIsValidating: true
+        });
         const result = await axios
           .get<IUpbitOrdersChance>(PROXY_PATH + apiUrls.upbit.path + apiUrls.upbit.ordersChance, {
             params: {
@@ -162,8 +167,14 @@ export const useUpbitApiStore = create(
           })
           .then((res) => res.data);
         set({
-          ordersChance: result
+          ordersChanceIsValidating: false
         });
+
+        if (result.market.id === get().upbitTradeMarket) {
+          set({
+            ordersChance: result
+          });
+        }
       },
       async getOrders(querys) {
         const { accessKey, secretKey } = get();

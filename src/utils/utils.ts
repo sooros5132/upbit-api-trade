@@ -43,7 +43,7 @@ export function koPriceLabelFormat(price: number) {
  * @param price 기준 가격
  * @returns 보정된 가격
  */
-export function priceCorrection(price: number) {
+export function upbitOrderPriceCorrection(price: number) {
   // 최소 호가 (이상)		최대 호가 (미만)	주문 가격 단위 (원)
   // 2,000,000											1,000
   // 1,000,000				2,000,000			500
