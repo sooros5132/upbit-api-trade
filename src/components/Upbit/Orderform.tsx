@@ -465,6 +465,7 @@ const OrderVolumePanel: FC<OrderVolumePanelProps> = ({ ordersChance, side }) => 
     }),
     shallow
   );
+  const ORDER_FEE = Number(ordersChance[`${side}_fee`]);
   const market = ordersChance.market.id;
   const krwBalance = ordersChance.bid_account.balance;
   const krwVolumeIsHigherThanMaximum = values.krwVolume > Number(ordersChance.market.max_total);
@@ -564,15 +565,16 @@ const OrderVolumePanel: FC<OrderVolumePanelProps> = ({ ordersChance, side }) => 
                   `최소 주문은 ${Number(
                     ordersChance.market[side].min_total
                   ).toLocaleString()}원입니다.`
+                ) : side === 'ask' ? (
+                  <span>
+                    업비트 매매수수료는&nbsp;
+                    <b>{satoshiPad(values.volume * ORDER_FEE, '[00000000]')}</b>
+                    {ordersChance.ask_account.currency} 입니다.
+                  </span>
                 ) : (
                   <span>
                     업비트 매매수수료는&nbsp;
-                    <b>
-                      {numeral(values.krwVolume * Number(ordersChance.bid_fee)).format(
-                        '0,0[.][00]'
-                      )}
-                    </b>
-                    원입니다.
+                    <b>{numeral(values.krwVolume * ORDER_FEE).format('0,0[.][00]')}</b>원 입니다.
                   </span>
                 )
               ) : null}
@@ -594,6 +596,7 @@ const MarketOrderPanel: FC<OrderVolumePanelProps> = ({ ordersChance, side }) => 
       bidPrice: upbitOrderbook?.obu?.[0]?.bp ?? null
     };
   }, shallow);
+  const ORDER_FEE = Number(ordersChance[`${side}_fee`]);
 
   const { values, changeRange, changeNumericValue } = useUpbitOrderFormStore(
     (state) => ({
@@ -686,17 +689,16 @@ const MarketOrderPanel: FC<OrderVolumePanelProps> = ({ ordersChance, side }) => 
                       <span>
                         {`≈ ${numeral(values.krwVolume / orderbook.askPrice).format(
                           '0,0[.][00000000]'
-                        )} ${ordersChance.ask_account.currency}`}
+                        )}${ordersChance.ask_account.currency}`}
                       </span>
                     </div>
                     <div className='text-info-content'>
-                      업비트 매매수수료는&nbsp;
+                      업비트 매매수수료&nbsp;
                       <b>
-                        {numeral(values.krwVolume * Number(ordersChance.bid_fee)).format(
-                          '0,0[.][00]'
-                        )}
+                        {satoshiPad(values.volume * ORDER_FEE, '[00000000]')}
+                        {ordersChance.ask_account.currency}
                       </b>
-                      원입니다.
+                      &nbsp;포함
                     </div>
                   </div>
                 )
@@ -734,7 +736,7 @@ const MarketOrderPanel: FC<OrderVolumePanelProps> = ({ ordersChance, side }) => 
               />
             </div>
           </div>
-          <div className='form-control'>
+          <div className='form-control font-mono'>
             <label className='input-group input-group-sm'>
               <NumericFormat
                 type='text'
@@ -765,19 +767,19 @@ const MarketOrderPanel: FC<OrderVolumePanelProps> = ({ ordersChance, side }) => 
                   <div>
                     <div>
                       <span>
-                        {`≈ ${numeral(values.volume * orderbook.bidPrice).format('0,0[.][00]')} ${
+                        {`≈ ${numeral(values.volume * orderbook.bidPrice).format('0,0[.][00]')}${
                           ordersChance.bid_account.currency
                         }`}
                       </span>
                     </div>
                     <div className='text-info-content'>
-                      업비트 매매수수료는&nbsp;
+                      업비트 매매수수료&nbsp;
                       <b>
-                        {numeral(
-                          values.volume * orderbook.bidPrice * Number(ordersChance.ask_fee)
-                        ).format('0,0[.][00]')}
+                        {numeral(values.volume * orderbook.bidPrice * ORDER_FEE).format(
+                          '0,0[.][00]'
+                        )}
                       </b>
-                      원입니다.
+                      원 포함
                     </div>
                   </div>
                 )
@@ -801,8 +803,9 @@ interface OrderBtnPanelProps {
 const OrderBtnPanel: FC<OrderBtnPanelProps> = ({ ordersChance, side }) => {
   const krwBalance = Number(ordersChance.bid_account.balance);
   const coinBalance = Number(ordersChance.ask_account.balance);
+  const ORDER_FEE = Number(ordersChance[`${side}_fee`]);
   const isShortBalance =
-    (side === 'bid' && krwBalance < 5000 * (1 + Number(ordersChance.bid_fee))) ||
+    (side === 'bid' && krwBalance < 5000 * (1 + ORDER_FEE)) ||
     (side === 'ask' && coinBalance === 0);
 
   const { orderType, createOrder } = useUpbitOrderFormStore(

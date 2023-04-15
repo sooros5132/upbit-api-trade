@@ -1,4 +1,3 @@
-import { IUpbitOrdersChance } from 'src/types/upbit';
 import create from 'zustand';
 import { useExchangeStore } from './exchangeSockets';
 import { cloneDeep } from 'lodash';
@@ -133,11 +132,7 @@ export const useUpbitOrderFormStore = create<UpbitOrderFormStore>((set, get) => 
           case 'balance': {
             let newVolume = (BALANCE / bid.price) * (1 - ORDER_FEE) * (percentage / 100);
 
-            if (!newVolume || newVolume < 0.00000001) {
-              newVolume = 0;
-            }
-
-            bid.volume = Number(numeral(newVolume).format(`0.[00000000]`, Math.floor));
+            bid.volume = Number(numeral(newVolume).format(`0.[00000000]`, Math.floor)) || 0;
 
             bid.krwVolume = Math.floor(bid.volume * bid.price * (1 + ORDER_FEE));
             bid.balanceRange = percentage || 0;
@@ -203,13 +198,13 @@ export const useUpbitOrderFormStore = create<UpbitOrderFormStore>((set, get) => 
       case 'market': {
         switch (side) {
           case 'bid': {
-            const currentPrice = useExchangeStore.getState()?.upbitOrderbook?.obu?.[0]?.bp;
+            const currentPrice = useExchangeStore.getState()?.upbitOrderbook?.obu?.[0]?.ap;
             bid.price = currentPrice ?? bid.price;
             bid.priceRange = 0;
             break;
           }
           case 'ask': {
-            const currentPrice = useExchangeStore.getState()?.upbitOrderbook?.obu?.[0]?.ap;
+            const currentPrice = useExchangeStore.getState()?.upbitOrderbook?.obu?.[0]?.bp;
             ask.price = currentPrice ?? ask.price;
             ask.priceRange = 0;
             break;
@@ -223,8 +218,10 @@ export const useUpbitOrderFormStore = create<UpbitOrderFormStore>((set, get) => 
       case 'bid': {
         switch (valueKey) {
           case 'price': {
-            bid.price = Number(numberValue.toFixed(upbitDecimalScale(numberValue)));
-            bid.krwVolume = Math.round(bid.volume * bid.price);
+            if (!['price', 'market'].includes(orderType)) {
+              bid.price = Number(numberValue.toFixed(upbitDecimalScale(numberValue)));
+            }
+            bid.krwVolume = Math.round(bid.volume * bid.price * (1 + ORDER_FEE));
             break;
           }
           case 'volume': {
@@ -249,14 +246,15 @@ export const useUpbitOrderFormStore = create<UpbitOrderFormStore>((set, get) => 
       case 'ask': {
         switch (valueKey) {
           case 'price': {
-            ask.price = Number(numberValue.toFixed(upbitDecimalScale(numberValue)));
+            if (!['price', 'market'].includes(orderType)) {
+              ask.price = Number(numberValue.toFixed(upbitDecimalScale(numberValue)));
+            }
             ask.krwVolume = Math.round(ask.volume * ask.price);
-
             break;
           }
           case 'volume': {
             ask.volume = numberValue;
-            ask.krwVolume = Math.round(ask.volume * ask.price * (1 + ORDER_FEE));
+            ask.krwVolume = Math.round(ask.volume * ask.price);
             break;
           }
           case 'krwVolume': {

@@ -18,6 +18,7 @@ import shallow from 'zustand/shallow';
 import { IMarketTableItem } from '../market-table/MarketTable';
 import { krwRegex } from 'src/utils/regex';
 import numeral from 'numeral';
+import { NumericValueType, useUpbitOrderFormStore } from 'src/store/upbitOrderForm';
 
 export const UpbitOrderBook = memo(() => {
   const [hidden, setHidden] = useState(false);
@@ -152,6 +153,15 @@ const OrderBook: React.FC<OrderBookProps> = ({ market, orderbook, amountToggle }
   const maxBid = Math.max(...orderbook.obu.map((o) => o.bs));
   const maxVolume = Math.max(maxAsk, maxBid);
 
+  const handleClickPrice = (price: number) => () => {
+    useUpbitOrderFormStore.getState().changeNumericValue('price', 'ask', String(price));
+    useUpbitOrderFormStore.getState().changeNumericValue('price', 'bid', String(price));
+  };
+  const handleClickVolume = (key: NumericValueType, volume: number) => () => {
+    useUpbitOrderFormStore.getState().changeNumericValue(key, 'ask', String(volume));
+    useUpbitOrderFormStore.getState().changeNumericValue(key, 'bid', String(volume));
+  };
+
   return (
     <div
       ref={orderbookRef}
@@ -195,15 +205,29 @@ const OrderBook: React.FC<OrderBookProps> = ({ market, orderbook, amountToggle }
                     {changeRate.toFixed(2)}%
                   </span>
                 </td>
-                <td>{upbitPadEnd(trade.ap)}</td>
-                <td
-                  style={{
-                    background: `linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) ${volumeWidth}%, rgba(244,63,94,0.15) ${volumeWidth}%)`
-                  }}
-                >
-                  {amountToggle === 'KRW'
-                    ? numeral(quantity).format('0,0')
-                    : satoshiVolumePad(trade.ap, quantity)}
+                <td>
+                  <div
+                    className='cursor-pointer hover:bg-rose-600/40'
+                    onClick={handleClickPrice(trade.ap)}
+                  >
+                    {upbitPadEnd(trade.ap)}
+                  </div>
+                </td>
+                <td>
+                  <div
+                    className='cursor-pointer hover:bg-rose-600/40'
+                    onClick={handleClickVolume('volume', trade.as)}
+                  >
+                    <div
+                      style={{
+                        background: `linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) ${volumeWidth}%, rgba(244,63,94,0.15) ${volumeWidth}%)`
+                      }}
+                    >
+                      {amountToggle === 'KRW'
+                        ? numeral(quantity).format('0,0')
+                        : satoshiVolumePad(trade.ap, quantity)}
+                    </div>
+                  </div>
                 </td>
               </tr>
             );
@@ -230,20 +254,29 @@ const OrderBook: React.FC<OrderBookProps> = ({ market, orderbook, amountToggle }
                     {changeRate.toFixed(2)}%
                   </span>
                 </td>
-                <td>{upbitPadEnd(trade.bp)}</td>
-                <td
-                  style={{
-                    background: `linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) ${volumeWidth}%, rgba(20,184,166,0.15) ${volumeWidth}%)`
-                  }}
-                >
-                  {
-                    amountToggle === 'KRW'
-                      ? numeral(quantity).format('0,0')
-                      : satoshiVolumePad(trade.bp, quantity)
-                    // numeral(quantity).format(
-                    //     `0,0[.][${new Array(upbitDecimalScale(quantity)).map((_) => '0').join('')}]`
-                    //   )
-                  }
+                <td>
+                  <div
+                    className='cursor-pointer hover:bg-teal-600/40'
+                    onClick={handleClickPrice(trade.bp)}
+                  >
+                    {upbitPadEnd(trade.bp)}
+                  </div>
+                </td>
+                <td>
+                  <div
+                    className='cursor-pointer hover:bg-teal-600/40'
+                    onClick={handleClickVolume('volume', trade.bs)}
+                  >
+                    <div
+                      style={{
+                        background: `linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) ${volumeWidth}%, rgba(20,184,166,0.15) ${volumeWidth}%)`
+                      }}
+                    >
+                      {amountToggle === 'KRW'
+                        ? numeral(quantity).format('0,0')
+                        : satoshiVolumePad(trade.bp, quantity)}
+                    </div>
+                  </div>
                 </td>
               </tr>
             );
@@ -259,6 +292,7 @@ const MarketInfo: React.FC = memo(() => {
   const upbitTradeMessages = useExchangeStore.getState().upbitTradeMessages;
   const lastMessage = upbitTradeMessages[upbitTradeMessages?.length - 1];
   const [trade, setTrade] = useState<IUpbitSocketMessageTradeSimple>(lastMessage);
+  const [change, setChange] = useState<'RISE' | 'EVEN' | 'FALL'>('EVEN');
 
   const MAX_TRADE = 1;
   const { data } = useSWR(
@@ -300,33 +334,63 @@ const MarketInfo: React.FC = memo(() => {
   );
 
   useEffect(() => {
+    let prevMessage: IUpbitSocketMessageTradeSimple | null = null;
     const unsubscribe = useExchangeStore.subscribe(({ upbitTradeMessages }) => {
       const len = upbitTradeMessages.length;
 
       const lastMessage = upbitTradeMessages[len - 1];
-      if (lastMessage && lastMessage.cd === upbitTradeMarket) {
+      if (lastMessage && prevMessage !== lastMessage && lastMessage.cd === upbitTradeMarket) {
+        const newChange =
+          !prevMessage || prevMessage.tp === lastMessage.tp
+            ? 'EVEN'
+            : prevMessage.tp < lastMessage.tp
+            ? 'RISE'
+            : 'FALL';
+        prevMessage = lastMessage;
+        setChange(newChange);
         setTrade(lastMessage);
       }
     });
+
+    //? 실시간 스트림
+    // const unsubscribe = subscribeOnUpbitStream<IUpbitSocketMessageTradeSimple>((newMessage) => {
+    //   if (newMessage?.ty !== 'trade') {
+    //     return;
+    //   }
+    //   if (newMessage && prevMessage !== newMessage && newMessage.cd === upbitTradeMarket) {
+    //     const newChange =
+    //       !prevMessage || prevMessage.tp === newMessage.tp
+    //         ? 'EVEN'
+    //         : prevMessage.tp < newMessage.tp
+    //         ? 'RISE'
+    //         : 'FALL';
+    //     prevMessage = newMessage;
+    //     setChange(newChange);
+    //     setTrade(newMessage);
+    //   }
+    // });
 
     return () => {
       unsubscribe();
     };
   }, [upbitTradeMarket]);
 
-  return <MarketInfoInner trade={trade || data} />;
+  return <MarketInfoInner trade={trade || data} change={change} />;
 }, isEqual);
 
 MarketInfo.displayName = 'MarketInfo';
 
-const MarketInfoInner: React.FC<{ trade?: IUpbitSocketMessageTradeSimple }> = ({ trade }) => {
+const MarketInfoInner: React.FC<{
+  change: 'RISE' | 'EVEN' | 'FALL';
+  trade?: IUpbitSocketMessageTradeSimple;
+}> = ({ trade, change }) => {
   return (
     <tr className='text-[1.2em] h-[1.25em]'>
       {trade && (
         <td colSpan={3} className='text-center text-base-content'>
-          <span>
+          <span className={change === 'RISE' ? 'bid' : change === 'FALL' ? 'ask' : ''}>
             {upbitPadEnd(trade.tp)}
-            <span>{trade.ab === 'BID' ? '▲' : trade.ab === 'ASK' ? '▼' : ''}</span>
+            <span>{change === 'RISE' ? '▲' : change === 'FALL' ? '▼' : ''}</span>
           </span>
         </td>
       )}
