@@ -119,8 +119,8 @@ export const Chart = memo(() => {
           subscribeChartCodes.length > 3 ? 'grid grid-cols-2' : 'flex flex-col'
         )}
       >
-        {subscribeChartCodes.map((chart, i) => (
-          <ChartInner key={`${chart?.exchange}@${chart?.code}-${i}`} chart={chart} />
+        {subscribeChartCodes.map((chart) => (
+          <ChartInner key={`${chart?.exchange}@${chart?.code}`} chart={chart} />
         ))}
       </div>
     </div>
@@ -170,7 +170,6 @@ export const ChartInner: React.FC<Pick<ChartProps, 'chart'>> = memo(
         </div>
         {chart?.exchange === 'BINANCE' ? (
           <TVChart
-            key={'binance-chart'}
             interval={'15' as ResolutionString}
             symbol={chart?.code + 'USDT'}
             currency={chart?.code}
@@ -178,7 +177,6 @@ export const ChartInner: React.FC<Pick<ChartProps, 'chart'>> = memo(
           />
         ) : chart?.exchange === 'UPBIT' ? (
           <TVChart
-            key={'upbit-chart'}
             interval={'15' as ResolutionString}
             symbol={chart?.code + 'KRW'}
             currency={chart?.code}

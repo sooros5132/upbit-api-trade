@@ -1,5 +1,5 @@
 import dynamic from 'next/dynamic';
-import { TVChartProps } from './TVChart';
+import type { TVChartProps } from './TVChart';
 const TVChartInner = dynamic(() => import('./TVChart').then((res) => res.TVChartInner), {
   ssr: false
 });
