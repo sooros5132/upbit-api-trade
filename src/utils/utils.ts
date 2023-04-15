@@ -203,6 +203,37 @@ export function satoshiPad(number: number, customDecimalScale = '00000000') {
   return numeral(number).format(`0,0.${customDecimalScale}`);
 }
 
+export function satoshiVolumePad(price: number, volume: number, customDecimalScale?: string) {
+  if (customDecimalScale) {
+    return numeral(volume).format(`0,0.${customDecimalScale}`);
+  }
+  let scale = 0;
+  if (price < 0.000001) {
+    return volume.toFixed();
+  } else if (price > 1000000) {
+    scale = 8;
+  } else if (price > 100000) {
+    scale = 7;
+  } else if (price > 10000) {
+    scale = 6;
+  } else if (price > 1000) {
+    scale = 5;
+  } else if (price > 100) {
+    scale = 4;
+  } else if (price > 10) {
+    scale = 3;
+  } else if (price > 1) {
+    scale = 2;
+  } else if (price > 0.1) {
+    scale = 1;
+  } else if (price > 0.01) {
+    scale = 0;
+  }
+
+  const decimalPad = scale ? '.' + ''.padEnd(scale, '0') : '';
+  return numeral(volume).format(`0,0${decimalPad}`);
+}
+
 export function base64UrlFromBase64(str: string) {
   return str.replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
 }

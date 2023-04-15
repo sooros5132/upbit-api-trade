@@ -12,11 +12,12 @@ import {
   IUpbitSocketMessageTradeSimple,
   IUpbitTradesTicks
 } from 'src/types/upbit';
-import { upbitPadEnd } from 'src/utils/utils';
+import { satoshiVolumePad, upbitPadEnd } from 'src/utils/utils';
 import useSWR from 'swr';
 import shallow from 'zustand/shallow';
 import { IMarketTableItem } from '../market-table/MarketTable';
 import { krwRegex } from 'src/utils/regex';
+import numeral from 'numeral';
 
 export const UpbitOrderBook = memo(() => {
   const [hidden, setHidden] = useState(false);
@@ -30,6 +31,11 @@ export const UpbitOrderBook = memo(() => {
       setAmountToggle('KRW');
     }
   };
+
+  useEffect(() => {
+    const marketCode = upbitTradeMarket.replace(krwRegex, '');
+    setAmountToggle(marketCode);
+  }, [upbitTradeMarket]);
 
   return (
     <div
@@ -164,7 +170,7 @@ const OrderBook: React.FC<OrderBookProps> = ({ market, orderbook, amountToggle }
               호가(<span className='font-mono'>KRW</span>)
             </th>
             <th>
-              잔량(<span className='font-mono'>KRW</span>)
+              잔량(<span className='font-mono'>{amountToggle}</span>)
             </th>
           </tr>
         </thead>
@@ -195,7 +201,9 @@ const OrderBook: React.FC<OrderBookProps> = ({ market, orderbook, amountToggle }
                     background: `linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) ${volumeWidth}%, rgba(244,63,94,0.15) ${volumeWidth}%)`
                   }}
                 >
-                  {quantity.toLocaleString()}
+                  {amountToggle === 'KRW'
+                    ? numeral(quantity).format('0,0')
+                    : satoshiVolumePad(trade.ap, quantity)}
                 </td>
               </tr>
             );
@@ -228,7 +236,14 @@ const OrderBook: React.FC<OrderBookProps> = ({ market, orderbook, amountToggle }
                     background: `linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) ${volumeWidth}%, rgba(20,184,166,0.15) ${volumeWidth}%)`
                   }}
                 >
-                  {quantity.toLocaleString()}
+                  {
+                    amountToggle === 'KRW'
+                      ? numeral(quantity).format('0,0')
+                      : satoshiVolumePad(trade.bp, quantity)
+                    // numeral(quantity).format(
+                    //     `0,0[.][${new Array(upbitDecimalScale(quantity)).map((_) => '0').join('')}]`
+                    //   )
+                  }
                 </td>
               </tr>
             );
