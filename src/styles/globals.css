@@ -133,7 +133,7 @@
   @screen lg {
     .main-grid {
       grid-template-columns: minmax(280px, 350px) minmax(400px, 1fr) minmax(320px, 400px);
-      grid-template-rows: 50px minmax(300px, 1fr) minmax(100px, 200px);
+      grid-template-rows: 50px minmax(300px, auto) minmax(100px, 1fr);
       grid-template-areas:
         'header header market'
         'orderbook chart market'
@@ -156,8 +156,8 @@
     .main-grid.main-grid-trade.not-login {
       grid-template-columns: minmax(280px, 350px) minmax(400px, 1fr) minmax(320px, 400px);
       grid-template-rows:
-        50px minmax(65%, 1fr) minmax(auto, 300px) minmax(auto, 100px)
-        minmax(100px, 200px);
+        50px minmax(45%, 1fr) minmax(auto, 1fr) minmax(auto, 100px)
+        minmax(100px, 100px);
       grid-template-areas:
         'header header market'
         'orderbook chart market'
