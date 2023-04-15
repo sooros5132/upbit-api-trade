@@ -124,7 +124,7 @@ const UsdKrwToggle = () => {
   };
 
   return (
-    <div className='flex-center cursor-pointer text-zinc-400' onClick={handleChange}>
+    <div className='flex-center pl-1 text-xs text-zinc-400 cursor-pointer' onClick={handleChange}>
       KRW&nbsp;
       <input
         // onChange={handleChange}

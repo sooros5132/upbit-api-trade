@@ -49,7 +49,7 @@ export const TableHead = () => {
             ) : null}
           </div>
         </th>
-        <th className='w-[20%]'>
+        <th className='w-[25%]'>
           <div
             onClick={handleClickThead('tp')}
             // className=' tooltip'

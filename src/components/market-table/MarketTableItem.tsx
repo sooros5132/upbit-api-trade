@@ -246,9 +246,9 @@ const ItemInner: FC<TableItemProps> = ({ favorite, krwSymbol, upbitForex }) => {
           </div>
         </div>
       </td>
-      <td className='text-left min-w-[60px]'>
-        <div>
-          <span className='text-gray-300 whitespace-pre-wrap font-sans'>
+      <td className='text-left max-w-[60px]'>
+        <div className='text-ellipsis overflow-hidden'>
+          <span className='text-gray-300 whitespace-nowrap font-sans text-ellipsis'>
             {upbitMarket.korean_name}
           </span>
         </div>
