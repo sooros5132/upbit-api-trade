@@ -207,10 +207,12 @@ export function satoshiVolumePad(price: number, volume: number, customDecimalSca
   if (customDecimalScale) {
     return numeral(volume).format(`0,0.${customDecimalScale}`);
   }
+  if (volume < 0.000001) {
+    return volume.toFixed(8);
+  }
+
   let scale = 0;
-  if (price < 0.000001) {
-    return volume.toFixed();
-  } else if (price > 1000000) {
+  if (price > 1000000) {
     scale = 8;
   } else if (price > 100000) {
     scale = 7;
