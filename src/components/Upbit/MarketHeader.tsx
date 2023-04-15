@@ -28,16 +28,29 @@ const UpbitMarketHeaderInner: FC<{ market: IMarketTableItem }> = ({ market }) =>
   return (
     <div className='flex items-center h-full px-1 py-2 gap-x-2 whitespace-nowrap overflow-x-auto overflow-y-hidden sm:px-2 lg:py-0'>
       <div className='flex flex-wrap items-end gap-x-1 sm:flex-nowrap'>
-        <div className='shrink-0 self-auto sm:text-lg [&>*]:!w-[0.9em]'>
-          <Image
-            className='pointer-events-none object-contain rounded-full'
-            src={`/asset/upbit/logos/${marketSymbol}.png`}
-            width={24}
-            height={24}
-            quality={100}
-            loading='lazy'
-            alt={`${marketSymbol}-icon`}
-          />
+        <div className='relative shrink-0 self-auto sm:text-lg [&>*]:!w-[0.9em]'>
+          <div className='hidden supports-[filter]:block invert blur-[2px]'>
+            <Image
+              className='pointer-events-none object-contain rounded-full'
+              src={`/asset/upbit/logos/${marketSymbol}.png`}
+              width={24}
+              height={24}
+              quality={100}
+              loading='lazy'
+              alt={`${marketSymbol}-icon`}
+            />
+          </div>
+          <div className='supports-[filter]:absolute top-0 left-0'>
+            <Image
+              className='pointer-events-none object-contain rounded-full'
+              src={`/asset/upbit/logos/${marketSymbol}.png`}
+              width={24}
+              height={24}
+              quality={100}
+              loading='lazy'
+              alt={`${marketSymbol}-icon`}
+            />
+          </div>
         </div>
         <div className='sm:text-lg md:text-xl font-bold'>
           {market.korean_name}

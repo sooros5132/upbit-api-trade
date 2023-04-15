@@ -208,16 +208,29 @@ const ItemInner: FC<TableItemProps> = ({ favorite, krwSymbol, upbitForex }) => {
   return (
     <>
       <td>
-        <div className='text-center'>
-          <Image
-            className='object-contain overflow-hidden bg-white rounded-full'
-            src={`/asset/upbit/logos/${marketSymbol}.png`}
-            width={14}
-            height={14}
-            quality={100}
-            loading='lazy'
-            alt={`${upbitMarket.cd}-icon`}
-          />
+        <div className='relative text-center'>
+          <div className='hidden supports-[filter]:block invert blur-[2px]'>
+            <Image
+              className='object-contain rounded-full overflow-hidden'
+              src={`/asset/upbit/logos/${marketSymbol}.png`}
+              width={14}
+              height={14}
+              quality={100}
+              loading='lazy'
+              alt={`${upbitMarket.cd}-icon`}
+            />
+          </div>
+          <div className='supports-[filter]:absolute top-0 left-0'>
+            <Image
+              className='object-contain rounded-full overflow-hidden'
+              src={`/asset/upbit/logos/${marketSymbol}.png`}
+              width={14}
+              height={14}
+              quality={100}
+              loading='lazy'
+              alt={`${upbitMarket.cd}-icon`}
+            />
+          </div>
         </div>
         <div className='flex justify-center'>
           <div className='flex'>
