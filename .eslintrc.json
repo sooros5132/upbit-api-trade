@@ -3,5 +3,6 @@
   "rules": {
     "react/no-find-dom-node": "warn",
     "react/display-name": "warn"
-  }
+  },
+  "ignorePatterns": ["src/charting_library", "public/charting_library"]
 }
