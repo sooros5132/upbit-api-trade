@@ -92,9 +92,21 @@ const upbitDataFeed = (): ChartingLibraryWidgetOptions['datafeed'] => {
               has_daily: symbolInfo['has-daily'],
               visible_plots_set: 'ohlcv',
               type: symbolInfo.type[i],
-              supported_resolutions: symbolInfo['supported-resolutions'][
-                i
+              supported_resolutions: [
+                '1',
+                '3',
+                '5',
+                '10',
+                '15',
+                '30',
+                '60',
+                '240',
+                '1D',
+                '3D',
+                '1W',
+                '1M'
               ] as Array<ResolutionString>,
+              // (symbolInfo['supported-resolutions'][i]) as Array<ResolutionString>,
               intraday_multipliers: symbolInfo['intraday-multipliers'][i],
               data_status: 'streaming'
               // datafeedUrl: datafeedUrl
@@ -125,7 +137,7 @@ const upbitDataFeed = (): ChartingLibraryWidgetOptions['datafeed'] => {
 
           if ('no_data' === history.s) {
             meta.noData = true;
-            meta.nextTime = history.nextTime;
+            onHistoryCallback(bars, meta);
             return;
           } else {
             const historyLength = history.t.length;
