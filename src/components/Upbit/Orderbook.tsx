@@ -24,20 +24,15 @@ import { throttle } from 'lodash';
 export const UpbitOrderBook = memo(() => {
   const [hidden, setHidden] = useState(false);
   const upbitTradeMarket = useUpbitApiStore((state) => state.upbitTradeMarket, shallow);
-  const [amountToggle, setAmountToggle] = useState<string>('KRW');
+  const [currency, setAmountToggle] = useState<'krw' | 'coin'>('krw');
   const marketCode = upbitTradeMarket.replace(krwRegex, '');
   const handleChange = () => {
-    if (amountToggle === 'KRW') {
-      setAmountToggle(marketCode);
+    if (currency === 'krw') {
+      setAmountToggle('coin');
     } else {
-      setAmountToggle('KRW');
+      setAmountToggle('krw');
     }
   };
-
-  useEffect(() => {
-    const marketCode = upbitTradeMarket.replace(krwRegex, '');
-    setAmountToggle(marketCode);
-  }, [upbitTradeMarket]);
 
   return (
     <div
@@ -59,7 +54,7 @@ export const UpbitOrderBook = memo(() => {
             <input
               type='checkbox'
               className='bg-opacity-100 border-opacity-100 toggle toggle-xs rounded-full border-zinc-500 transition-all'
-              checked={amountToggle === 'KRW' ? false : true}
+              checked={currency === 'krw' ? false : true}
               readOnly
             />
             &nbsp;{marketCode}
@@ -72,18 +67,16 @@ export const UpbitOrderBook = memo(() => {
           </span>
         </div>
       </div>
-      {!hidden && (
-        <UpbitOrderBookContainer marketSymbol={upbitTradeMarket} amountToggle={amountToggle} />
-      )}
+      {!hidden && <UpbitOrderBookContainer marketSymbol={upbitTradeMarket} currency={currency} />}
     </div>
   );
 }, isEqual);
 
 UpbitOrderBook.displayName = 'UpbitOrderBook';
 
-const UpbitOrderBookContainer: React.FC<{ marketSymbol: string; amountToggle: string }> = ({
+const UpbitOrderBookContainer: React.FC<{ marketSymbol: string; currency: 'krw' | 'coin' }> = ({
   marketSymbol,
-  amountToggle
+  currency
 }) => {
   const { orderbook, market } = useExchangeStore(({ upbitOrderbook, upbitMarketDatas }) => {
     return {
@@ -127,15 +120,15 @@ const UpbitOrderBookContainer: React.FC<{ marketSymbol: string; amountToggle: st
     return <></>;
   }
 
-  return <OrderBook orderbook={orderbook ?? data} market={market} amountToggle={amountToggle} />;
+  return <OrderBook orderbook={orderbook ?? data} market={market} currency={currency} />;
 };
 interface OrderBookProps {
   orderbook: IUpbitSocketMessageOrderbookSimple;
   market: IMarketTableItem;
-  amountToggle: string;
+  currency: 'krw' | 'coin';
 }
 
-const OrderBook: React.FC<OrderBookProps> = ({ market, orderbook, amountToggle }) => {
+const OrderBook: React.FC<OrderBookProps> = ({ market, orderbook, currency }) => {
   const orderbookRef = useRef<HTMLDivElement>(null);
 
   const asks = orderbook.obu.map((o) => ({ ap: o.ap, as: o.as })).reverse();
@@ -187,7 +180,7 @@ const OrderBook: React.FC<OrderBookProps> = ({ market, orderbook, amountToggle }
               호가(<span className='font-mono'>KRW</span>)
             </th>
             <th>
-              잔량(<span className='font-mono'>{amountToggle}</span>)
+              잔량(<span className='font-mono'>{market.cd.replace(krwRegex, '')}</span>)
             </th>
           </tr>
         </thead>
@@ -195,7 +188,7 @@ const OrderBook: React.FC<OrderBookProps> = ({ market, orderbook, amountToggle }
           {asks.map((trade, i) => {
             // const [priceInt, priceFloat] = trade.ap.toString().split('.');
             // const [quantityInt, quantityFloat] = trade.as.toString().split('.');
-            const quantity = amountToggle === 'KRW' ? Math.round(trade.as * market.tp) : trade.as;
+            const quantity = currency === 'krw' ? Math.round(trade.as * market.tp) : trade.as;
             const volumeWidth = Math.round(100 - (trade.as / maxVolume) * 100);
             const changeRate = (trade.ap / market.pcp) * 100 - 100;
             return (
@@ -230,7 +223,7 @@ const OrderBook: React.FC<OrderBookProps> = ({ market, orderbook, amountToggle }
                         background: `linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) ${volumeWidth}%, rgba(244,63,94,0.15) ${volumeWidth}%)`
                       }}
                     >
-                      {amountToggle === 'KRW'
+                      {currency === 'krw'
                         ? numeral(quantity).format('0,0')
                         : satoshiVolumePad(trade.ap, quantity)}
                     </div>
@@ -243,7 +236,7 @@ const OrderBook: React.FC<OrderBookProps> = ({ market, orderbook, amountToggle }
           {bids.map((trade, i) => {
             // const [priceInt, priceFloat] = trade.bp.toString().split('.');
             // const [quantityInt, quantityFloat] = (trade.bs * market.tp).toString().split('.');
-            const quantity = amountToggle === 'KRW' ? Math.round(trade.bs * market.tp) : trade.bs;
+            const quantity = currency === 'krw' ? Math.round(trade.bs * market.tp) : trade.bs;
             const volumeWidth = Math.round(100 - (trade.bs / maxVolume) * 100);
             const changeRate = (trade.bp / market.pcp) * 100 - 100;
 
@@ -279,7 +272,7 @@ const OrderBook: React.FC<OrderBookProps> = ({ market, orderbook, amountToggle }
                         background: `linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) ${volumeWidth}%, rgba(20,184,166,0.15) ${volumeWidth}%)`
                       }}
                     >
-                      {amountToggle === 'KRW'
+                      {currency === 'krw'
                         ? numeral(quantity).format('0,0')
                         : satoshiVolumePad(trade.bp, quantity)}
                     </div>
