@@ -73,7 +73,7 @@ export const UpbitOrders = memo(() => {
             tabs === 'orders' ? 'btn-active' : null
           )}
         >
-          <span>주문 목록</span>
+          <span>주문목록</span>
         </button>
         <button
           onClick={handleClickTabBtn('ordersHistory')}
@@ -82,7 +82,7 @@ export const UpbitOrders = memo(() => {
             tabs === 'ordersHistory' ? 'btn-active ' : null
           )}
         >
-          <span>거래 내역</span>
+          <span>거래내역</span>
         </button>
         {isLogin && (
           <button
@@ -185,73 +185,79 @@ const UpbitOrdersInner: FC<UpbitOrdersInnerProps> = ({ upbitTradeMarket, orders,
   };
 
   return (
-    <div className='font-mono text-right bg-base-200 text-xs overflow-y-auto whitespace-nowrap first-of-type:[&>div]:mt-0 last-of-type:[&>div]:mb-0'>
-      {orders.map((order) => {
-        const [currency, market] = order.market.split('-') || [];
-        const volumePad = ''.padStart(order.volume.split('.')?.[1]?.length || 0, '0');
-        const unfastenedVolume = Number(order.volume) - Number(order.executed_volume);
-        const unfastenedVolumePad = ''.padStart(
-          String(unfastenedVolume).split('.')?.[1]?.length || 0,
-          '0'
-        );
+    <div className='h-full font-mono text-right bg-base-200 text-xs overflow-y-auto whitespace-nowrap first-of-type:[&>div]:mt-0 last-of-type:[&>div]:mb-0'>
+      {orders.length ? (
+        orders.map((order) => {
+          const [currency, market] = order.market.split('-') || [];
+          const volumePad = ''.padStart(order.volume.split('.')?.[1]?.length || 0, '0');
+          const unfastenedVolume = Number(order.volume) - Number(order.executed_volume);
+          const unfastenedVolumePad = ''.padStart(
+            String(unfastenedVolume).split('.')?.[1]?.length || 0,
+            '0'
+          );
 
-        return (
-          <div
-            key={order.uuid}
-            className={classNames(
-              'my-0.5 grid grid-rows-[auto_auto_auto_auto_auto] grid-cols-[auto_1fr_auto] p-2 gap-y-0.5 gap-x-1.5 text-neutral-600',
-              order.side === 'ask'
-                ? 'bg-rose-800/10 hover:bg-rose-800/20'
-                : 'bg-teal-800/10 hover:bg-teal-800/20'
-            )}
-          >
-            <div>마켓</div>
-            <div className='text-neutral-300'>
-              <b>
-                {`${currency}/${market}`}&nbsp;
-                <span className={order.side}>
-                  {order.side === 'bid' ? '매수' : order.side === 'ask' ? '매도' : order.side}
-                </span>
-              </b>
+          return (
+            <div
+              key={order.uuid}
+              className={classNames(
+                'my-0.5 grid grid-rows-[auto_auto_auto_auto_auto] grid-cols-[auto_1fr_auto] p-2 gap-y-0.5 gap-x-1.5 text-neutral-600',
+                order.side === 'ask'
+                  ? 'bg-rose-800/10 hover:bg-rose-800/20'
+                  : 'bg-teal-800/10 hover:bg-teal-800/20'
+              )}
+            >
+              <div>마켓</div>
+              <div className='text-neutral-300'>
+                <b>
+                  {`${currency}/${market}`}&nbsp;
+                  <span className={order.side}>
+                    {order.side === 'bid' ? '매수' : order.side === 'ask' ? '매도' : order.side}
+                  </span>
+                </b>
+              </div>
+              <div>주문가격</div>
+              <div className='text-neutral-300'>
+                {upbitPadEnd(Number(order.price))}&nbsp;
+                {currency}
+              </div>
+              <div>주문수량</div>
+              <div className='text-neutral-300'>
+                <span>{satoshiPad(Number(order.volume), volumePad)}</span>
+                &nbsp;{market}
+              </div>
+              <div>주문금액</div>
+              <div className='text-neutral-500'>
+                {numeral(Number(order.locked) - Number(order.remaining_fee)).format('0,0')}
+                &nbsp;{currency}
+              </div>
+              <div>미체결량</div>
+              <div className='text-neutral-300'>
+                <b>
+                  {satoshiPad(unfastenedVolume, unfastenedVolumePad || volumePad)}
+                  &nbsp;
+                  {market}
+                </b>
+              </div>
+              <div>미체결액</div>
+              <div className='text-neutral-500'>
+                {numeral(unfastenedVolume * Number(order.price)).format('0,0')}
+                &nbsp;{currency}
+              </div>
+              <div>주문시간</div>
+              <div>{format(new Date(order.created_at), 'yy-MM-dd HH:mm:ss')}</div>
+              <div className='col-start-3 col-end-3 row-start-1 row-end-[8] flex items-center'>
+                <button className='btn btn-xs w-full' onClick={handleClickCancelBtn(order.uuid)}>
+                  취소
+                </button>
+              </div>
             </div>
-            <div>주문가격</div>
-            <div className='text-neutral-300'>
-              {upbitPadEnd(Number(order.price))}&nbsp;
-              {currency}
-            </div>
-            <div>주문수량</div>
-            <div className='text-neutral-300'>
-              <span>{satoshiPad(Number(order.volume), volumePad)}</span>
-              &nbsp;{market}
-            </div>
-            <div>주문금액</div>
-            <div className='text-neutral-500'>
-              {numeral(Number(order.locked) - Number(order.remaining_fee)).format('0,0')}
-              &nbsp;{currency}
-            </div>
-            <div>미체결량</div>
-            <div className='text-neutral-300'>
-              <b>
-                {satoshiPad(unfastenedVolume, unfastenedVolumePad || volumePad)}
-                &nbsp;
-                {market}
-              </b>
-            </div>
-            <div>미체결액</div>
-            <div className='text-neutral-500'>
-              {numeral(unfastenedVolume * Number(order.price)).format('0,0')}
-              &nbsp;{currency}
-            </div>
-            <div>주문시간</div>
-            <div>{format(new Date(order.created_at), 'yy-MM-dd HH:mm:ss')}</div>
-            <div className='col-start-3 col-end-3 row-start-1 row-end-[8] flex items-center'>
-              <button className='btn btn-xs w-full' onClick={handleClickCancelBtn(order.uuid)}>
-                취소
-              </button>
-            </div>
-          </div>
-        );
-      })}
+          );
+        })
+      ) : (
+        <div className='h-full flex-center'>
+          {upbitTradeMarket.replace('-', '/')} 마켓의 주문이 없습니다.
+        </div>
+      )}
     </div>
   );
 };
@@ -307,53 +313,59 @@ const UpbitOrdersHistoryContainer = () => {
   );
 };
 
-const UpbitOrdersHistoryInner: FC<UpbitOrdersInnerProps> = ({ orders }) => {
+const UpbitOrdersHistoryInner: FC<UpbitOrdersInnerProps> = ({ upbitTradeMarket, orders }) => {
   return (
-    <div className='font-mono text-right bg-base-200 text-xs overflow-y-auto whitespace-nowrap'>
-      {orders.map((order) => {
-        if (!order.price) {
-          return <tr key={order?.uuid} />;
-        }
-        const [currency, market] = order.market.split('-') || [];
+    <div className='h-full font-mono text-right bg-base-200 text-xs overflow-y-auto whitespace-nowrap'>
+      {orders.length ? (
+        orders.map((order) => {
+          if (!order.price) {
+            return <tr key={order?.uuid} />;
+          }
+          const [currency, market] = order.market.split('-') || [];
 
-        return (
-          <div
-            key={order.uuid}
-            className={classNames(
-              'my-0.5 grid grid-rows-[auto_auto_auto_auto] grid-cols-[auto_1fr] p-2 gap-y-0.5 gap-x-1 text-zinc-600 hover:bg-base-content/5',
-              order.side === 'ask'
-                ? 'bg-rose-800/10 hover:bg-rose-800/20'
-                : 'bg-teal-800/10 hover:bg-teal-800/20'
-            )}
-          >
-            <div>마켓</div>
-            <div className='text-zinc-300'>
-              <b>
-                {`${currency}/${market}`}&nbsp;
-                <span className={order.side}>
-                  {order.side === 'bid' ? '매수' : order.side === 'ask' ? '매도' : order.side}
-                </span>
-              </b>
+          return (
+            <div
+              key={order.uuid}
+              className={classNames(
+                'my-0.5 grid grid-rows-[auto_auto_auto_auto] grid-cols-[auto_1fr] p-2 gap-y-0.5 gap-x-1 text-zinc-600 hover:bg-base-content/5',
+                order.side === 'ask'
+                  ? 'bg-rose-800/10 hover:bg-rose-800/20'
+                  : 'bg-teal-800/10 hover:bg-teal-800/20'
+              )}
+            >
+              <div>마켓</div>
+              <div className='text-zinc-300'>
+                <b>
+                  {`${currency}/${market}`}&nbsp;
+                  <span className={order.side}>
+                    {order.side === 'bid' ? '매수' : order.side === 'ask' ? '매도' : order.side}
+                  </span>
+                </b>
+              </div>
+              <div>체결가격</div>
+              <div className='text-zinc-300'>
+                {upbitPadEnd(Number(order.price))}&nbsp;
+                {currency}
+              </div>
+              <div>체결수량</div>
+              <div className='text-zinc-300'>
+                {order.volume}&nbsp;
+                {market}
+              </div>
+              <div>체결금액</div>
+              <div className='text-zinc-300'>
+                {numeral(Number(order.volume) * Number(order.price)).format('0,0')}&nbsp;{currency}
+              </div>
+              <div>체결시간</div>
+              <div>{format(new Date(order.created_at), 'yy-MM-dd HH:mm:ss')}</div>
             </div>
-            <div>체결가격</div>
-            <div className='text-zinc-300'>
-              {upbitPadEnd(Number(order.price))}&nbsp;
-              {currency}
-            </div>
-            <div>체결수량</div>
-            <div className='text-zinc-300'>
-              {order.volume}&nbsp;
-              {market}
-            </div>
-            <div>체결금액</div>
-            <div className='text-zinc-300'>
-              {numeral(Number(order.volume) * Number(order.price)).format('0,0')}&nbsp;{currency}
-            </div>
-            <div>체결시간</div>
-            <div>{format(new Date(order.created_at), 'yy-MM-dd HH:mm:ss')}</div>
-          </div>
-        );
-      })}
+          );
+        })
+      ) : (
+        <div className='h-full flex-center'>
+          {upbitTradeMarket.replace('-', '/')} 마켓의 거래내역이 없습니다.
+        </div>
+      )}
     </div>
   );
 };
