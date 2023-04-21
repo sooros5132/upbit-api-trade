@@ -93,7 +93,7 @@
         'header header header header header'
         'chart chart chart orderbook orderbook'
         'orderform orderform orderform orderform orderform'
-        'trades trades orders orders orders'
+        'orders orders orders trades trades'
         'market market market market market';
     }
 
@@ -142,28 +142,22 @@
 
     .main-grid.main-grid-trade {
       grid-template-columns: minmax(280px, 350px) minmax(400px, 1fr) minmax(320px, 400px);
-      grid-template-rows:
-        50px minmax(53%, 1fr) minmax(auto, 150px) minmax(auto, 300px)
-        minmax(100px, 200px);
+      grid-template-rows: 50px minmax(300px, auto) minmax(150px, 1fr) 300px;
       grid-template-areas:
         'header header market'
         'orderbook chart market'
         'trades chart market'
-        'trades orderform orderform'
-        'orders orders orders';
+        'orders orderform orderform';
     }
 
     .main-grid.main-grid-trade.not-login {
       grid-template-columns: minmax(280px, 350px) minmax(400px, 1fr) minmax(320px, 400px);
-      grid-template-rows:
-        50px minmax(45%, 1fr) minmax(auto, 1fr) minmax(auto, 100px)
-        minmax(100px, 100px);
+      grid-template-rows: 50px minmax(300px, auto) minmax(200px, 1fr) 100px;
       grid-template-areas:
         'header header market'
         'orderbook chart market'
         'trades chart market'
-        'trades orderform orderform'
-        'orders orders orders';
+        'orders orderform orderform';
     }
   }
 
