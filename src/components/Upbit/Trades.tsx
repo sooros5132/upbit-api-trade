@@ -25,7 +25,7 @@ const UpbitRecentTrades = memo(() => {
       )}
     >
       <div className='flex items-center justify-between pl-1 flex-auto flex-shrink-0 flex-grow-0'>
-        <span className='text-sm'>최근 거래내역</span>
+        <span className='font-bold text-xs'>최근 거래내역</span>
         <span
           className='btn btn-circle btn-ghost btn-xs cursor-pointer'
           onClick={() => setHidden((p) => !p)}
@@ -123,7 +123,7 @@ const UpbitRecentTradesInner: React.FC<UpbitRecentTradesInnerProps> = ({
   }, [market, trades]);
 
   return (
-    <div className='relative flex flex-col h-full text-right text-xs overflow-y-auto bg-base-300/50 2xl:text-sm'>
+    <div className='relative flex flex-col h-full text-right text-xs overflow-y-auto bg-base-300/50'>
       <table className='border-separate border-spacing-0 w-full text-zinc-500'>
         <colgroup>
           <col width='35%'></col>

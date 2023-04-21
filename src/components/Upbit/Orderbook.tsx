@@ -19,6 +19,7 @@ import { IMarketTableItem } from '../market-table/MarketTable';
 import { krwRegex } from 'src/utils/regex';
 import numeral from 'numeral';
 import { NumericValueType, useUpbitOrderFormStore } from 'src/store/upbitOrderForm';
+import { throttle } from 'lodash';
 
 export const UpbitOrderBook = memo(() => {
   const [hidden, setHidden] = useState(false);
@@ -46,7 +47,7 @@ export const UpbitOrderBook = memo(() => {
       )}
     >
       <div className='flex items-center justify-between pl-1 flex-auto flex-shrink-0 flex-grow-0'>
-        <span>호가</span>
+        <span className='font-bold text-xs'>호가</span>
         <div className='flex items-center'>
           &nbsp;&nbsp;
           <span
@@ -137,16 +138,6 @@ interface OrderBookProps {
 const OrderBook: React.FC<OrderBookProps> = ({ market, orderbook, amountToggle }) => {
   const orderbookRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    setTimeout(() => {
-      if (!orderbookRef.current) return;
-
-      const ref = orderbookRef.current;
-
-      ref.scrollTop = ref.scrollHeight / 2 - ref.clientHeight / 2;
-    }, 0);
-  }, []);
-
   const asks = orderbook.obu.map((o) => ({ ap: o.ap, as: o.as })).reverse();
   const bids = orderbook.obu.map((o) => ({ bp: o.bp, bs: o.bs }));
   const maxAsk = Math.max(...orderbook.obu.map((o) => o.as));
@@ -161,6 +152,22 @@ const OrderBook: React.FC<OrderBookProps> = ({ market, orderbook, amountToggle }
     useUpbitOrderFormStore.getState().changeNumericValue(key, 'ask', String(volume));
     useUpbitOrderFormStore.getState().changeNumericValue(key, 'bid', String(volume));
   };
+
+  useEffect(() => {
+    const scrollToCenter = () => {
+      if (!orderbookRef.current) return;
+
+      const ref = orderbookRef.current;
+
+      ref.scrollTop = ref.scrollHeight / 2 - ref.clientHeight / 2;
+    };
+
+    setTimeout(scrollToCenter, 0);
+    const throttleResizeEvent = throttle(scrollToCenter, 200);
+
+    window.addEventListener('resize', throttleResizeEvent);
+    return () => window.removeEventListener('resize', throttleResizeEvent);
+  }, []);
 
   return (
     <div
