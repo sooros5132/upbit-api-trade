@@ -113,6 +113,9 @@ export interface IUpbitGetOrderRquestParameters {
   order_by?: 'asc' | 'desc'; //	정렬 방식
 }
 
+export interface IUpbitGetOrderHistoryRquestParameters
+  extends Omit<IUpbitGetOrderRquestParameters, 'state' | 'states'> {}
+
 export interface IUpbitCreateOrderRquestParameters {
   market: string; //  					마켓 ID (필수)	String
   side: string; //  						주문 종류 (필수)

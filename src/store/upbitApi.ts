@@ -9,6 +9,7 @@ import {
   IUpbitDeleteOrderResponse,
   IUpbitDeleteOrderRquestParameters,
   IUpbitErrorMessage,
+  IUpbitGetOrderHistoryRquestParameters,
   IUpbitGetOrderResponse,
   IUpbitGetOrderRquestParameters,
   IUpbitOrdersChance
@@ -25,6 +26,7 @@ export interface IUpbitApiState {
   secretKey: string;
   accounts: Array<IUpbitAccount>;
   orders: Array<IUpbitGetOrderResponse>;
+  ordersHistory: Array<IUpbitGetOrderResponse>;
   ordersChance?: IUpbitOrdersChance;
   ordersChanceIsValidating: boolean;
   upbitTradeMarket: string;
@@ -36,6 +38,7 @@ const defaultState: IUpbitApiState = {
   secretKey: '',
   accounts: [],
   orders: [],
+  ordersHistory: [],
   ordersChance: undefined,
   ordersChanceIsValidating: true,
   upbitTradeMarket: 'KRW-BTC'
@@ -81,6 +84,7 @@ interface IUpbitApiStore extends IUpbitApiState {
   setUpbitTradeMarket: (code: string) => void;
   getOrdersChance: (market: string) => Promise<void>;
   getOrders: (querys: IUpbitGetOrderRquestParameters) => Promise<void>;
+  getOrdersHistory: (querys: IUpbitGetOrderHistoryRquestParameters) => Promise<void>;
   createOrder: (querys: IUpbitCreateOrderRquestParameters) => Promise<IUpbitCreateOrderResponse>;
   deleteOrder: (querys: IUpbitDeleteOrderRquestParameters) => Promise<IUpbitDeleteOrderResponse>;
 }
@@ -202,6 +206,40 @@ export const useUpbitApiStore = create(
 
         set({
           orders: result
+        });
+      },
+      async getOrdersHistory(_querys) {
+        const { accessKey, secretKey } = get();
+        if (!accessKey || !secretKey) {
+          return;
+        }
+
+        const querys: IUpbitGetOrderRquestParameters = {
+          ..._querys,
+          state: 'done',
+          states: ['done', 'cancel']
+        };
+        const serializedQueryString = queryString.stringify(querys);
+        const token = createJwtAuthorizationToken({
+          accessKey,
+          secretKey,
+          querys,
+          serializedQueryString
+        });
+
+        const result = await axios
+          .get<Array<IUpbitGetOrderResponse>>(
+            PROXY_PATH + apiUrls.upbit.path + apiUrls.upbit.orders + '?' + serializedQueryString,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`
+              }
+            }
+          )
+          .then((res) => res.data);
+
+        set({
+          ordersHistory: result
         });
       },
       async createOrder(querys) {
