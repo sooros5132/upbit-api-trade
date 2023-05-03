@@ -30,6 +30,7 @@ export interface IUpbitApiState {
   ordersChance?: IUpbitOrdersChance;
   ordersChanceIsValidating: boolean;
   upbitTradeMarket: string;
+  enableGetOrderAllMarket: boolean;
 }
 
 const defaultState: IUpbitApiState = {
@@ -41,7 +42,8 @@ const defaultState: IUpbitApiState = {
   ordersHistory: [],
   ordersChance: undefined,
   ordersChanceIsValidating: true,
-  upbitTradeMarket: 'KRW-BTC'
+  upbitTradeMarket: 'KRW-BTC',
+  enableGetOrderAllMarket: false
 };
 
 type createJwtAuthorizationTokenParam = {
@@ -87,6 +89,7 @@ interface IUpbitApiStore extends IUpbitApiState {
   getOrdersHistory: (querys: IUpbitGetOrderHistoryRquestParameters) => Promise<void>;
   createOrder: (querys: IUpbitCreateOrderRquestParameters) => Promise<IUpbitCreateOrderResponse>;
   deleteOrder: (querys: IUpbitDeleteOrderRquestParameters) => Promise<IUpbitDeleteOrderResponse>;
+  setEnableGetOrderAllMarket: (enableGetOrderAllMarket: boolean) => void;
 }
 
 export const useUpbitApiStore = create(
@@ -180,11 +183,15 @@ export const useUpbitApiStore = create(
           });
         }
       },
-      async getOrders(querys) {
-        const { accessKey, secretKey } = get();
+      async getOrders(_querys) {
+        const { accessKey, secretKey, enableGetOrderAllMarket } = get();
         if (!accessKey || !secretKey) {
           return;
         }
+        const querys = { ..._querys };
+
+        if (enableGetOrderAllMarket) querys.market = undefined;
+
         const serializedQueryString = queryString.stringify(querys);
         const token = createJwtAuthorizationToken({
           accessKey,
@@ -209,7 +216,7 @@ export const useUpbitApiStore = create(
         });
       },
       async getOrdersHistory(_querys) {
-        const { accessKey, secretKey } = get();
+        const { accessKey, secretKey, enableGetOrderAllMarket } = get();
         if (!accessKey || !secretKey) {
           return;
         }
@@ -219,6 +226,9 @@ export const useUpbitApiStore = create(
           state: 'done',
           states: ['done', 'cancel']
         };
+
+        if (enableGetOrderAllMarket) querys.market = undefined;
+
         const serializedQueryString = queryString.stringify(querys);
         const token = createJwtAuthorizationToken({
           accessKey,
@@ -287,6 +297,9 @@ export const useUpbitApiStore = create(
           .then((res) => res.data);
 
         return result;
+      },
+      setEnableGetOrderAllMarket(enableGetOrderAllMarket) {
+        set({ enableGetOrderAllMarket });
       }
     }),
     {
@@ -296,7 +309,7 @@ export const useUpbitApiStore = create(
       partialize: (state) =>
         Object.fromEntries(
           Object.entries(state).filter(([key]) =>
-            ['accessKey', 'secretKey', 'upbitTradeMarket'].includes(key)
+            ['accessKey', 'secretKey', 'upbitTradeMarket', 'enableGetOrderAllMarket'].includes(key)
           )
         ) as IUpbitApiStore,
       getStorage: () => localStorage, // (optional) by default, 'localStorage' is used

@@ -58,9 +58,11 @@ const Home: NextPage = () => {
               <UpbitOrderform />
             </div>
           )}
-          <div data-grid-area='orders' className='max-h-40 sm:max-h-[initial]'>
-            <UpbitOrders />
-          </div>
+          {hydrated && (
+            <div data-grid-area='orders' className='max-h-40 sm:max-h-[initial]'>
+              <UpbitOrders />
+            </div>
+          )}
         </>
       )}
       <div data-grid-area='trades' className='max-h-28 sm:max-h-[initial]'>

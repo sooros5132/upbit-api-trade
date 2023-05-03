@@ -11,9 +11,11 @@ import { toast } from 'react-toastify';
 import { apiUrls } from 'src/lib/apiUrls';
 import { useUpbitApiStore } from 'src/store/upbitApi';
 import { IUpbitGetOrderResponse } from 'src/types/upbit';
+import { krwRegex } from 'src/utils/regex';
 import { satoshiPad, upbitPadEnd } from 'src/utils/utils';
 import useSWR from 'swr';
 import shallow from 'zustand/shallow';
+import Image from 'next/image';
 
 // const OrderStateRecord = {
 //   wait: '체결 대기',
@@ -23,11 +25,20 @@ import shallow from 'zustand/shallow';
 // };
 
 export const UpbitOrders = memo(() => {
-  const isLogin = useUpbitApiStore((state) => state.isLogin, shallow);
+  const { isLogin, upbitTradeMarket, enableGetOrderAllMarket, setEnableGetOrderAllMarket } =
+    useUpbitApiStore(
+      (state) => ({
+        isLogin: state.isLogin,
+        upbitTradeMarket: state.upbitTradeMarket,
+        enableGetOrderAllMarket: state.enableGetOrderAllMarket,
+        setEnableGetOrderAllMarket: state.setEnableGetOrderAllMarket
+      }),
+      shallow
+    );
   const [hidden, setHidden] = useState(false);
   const [isPending, setPending] = useState(false);
   const [tabs, setTabs] = useState<'orders' | 'ordersHistory'>('orders');
-
+  const marketCode = upbitTradeMarket.replace(krwRegex, '');
   const handleClickRefreshButton = async () => {
     if (isPending) {
       toast.info('다시 불러오는 중 입니다.');
@@ -58,6 +69,11 @@ export const UpbitOrders = memo(() => {
     setTabs(tab);
   };
 
+  const handleChange = async () => {
+    setEnableGetOrderAllMarket(!enableGetOrderAllMarket);
+    await handleClickRefreshButton();
+  };
+
   return (
     <div
       className={classNames(
@@ -84,6 +100,23 @@ export const UpbitOrders = memo(() => {
         >
           <span>거래내역</span>
         </button>
+        <div className='flex items-center'>
+          &nbsp;
+          <span
+            className='tooltip tooltip-bottom flex-center cursor-pointer text-zinc-500 text-xs'
+            onClick={handleChange}
+            data-tip='불러올 마켓 변경'
+          >
+            ALL&nbsp;
+            <input
+              type='checkbox'
+              className='bg-opacity-100 border-opacity-100 toggle toggle-xs rounded-full border-zinc-500 transition-all'
+              checked={!enableGetOrderAllMarket}
+              readOnly
+            />
+            &nbsp;{marketCode}
+          </span>
+        </div>
         {isLogin && (
           <button
             className={classNames(
@@ -185,7 +218,7 @@ const UpbitOrdersInner: FC<UpbitOrdersInnerProps> = ({ upbitTradeMarket, orders,
   };
 
   return (
-    <div className='h-full font-mono text-right bg-base-200 text-xs overflow-y-auto whitespace-nowrap first-of-type:[&>div]:mt-0 last-of-type:[&>div]:mb-0'>
+    <div className='h-full min-h-12 font-mono text-right bg-base-200 text-xs overflow-y-auto whitespace-nowrap first-of-type:[&>div]:mt-0 last-of-type:[&>div]:mb-0'>
       {orders.length ? (
         orders.map((order) => {
           const [currency, market] = order.market.split('-') || [];
@@ -210,6 +243,18 @@ const UpbitOrdersInner: FC<UpbitOrdersInnerProps> = ({ upbitTradeMarket, orders,
               <div className='text-neutral-300'>
                 <b>
                   {`${currency}/${market}`}&nbsp;
+                  <span className='[&>*]:!align-text-top'>
+                    <Image
+                      className='object-contain rounded-full overflow-hidden'
+                      src={`/asset/upbit/logos/${market}.png`}
+                      width={14}
+                      height={14}
+                      quality={100}
+                      loading='lazy'
+                      alt={`${currency}/${market}-icon`}
+                    />
+                  </span>
+                  &nbsp;
                   <span className={order.side}>
                     {order.side === 'bid' ? '매수' : order.side === 'ask' ? '매도' : order.side}
                   </span>
@@ -317,9 +362,9 @@ const UpbitOrdersHistoryInner: FC<UpbitOrdersInnerProps> = ({ upbitTradeMarket, 
   return (
     <div className='h-full font-mono text-right bg-base-200 text-xs overflow-y-auto whitespace-nowrap'>
       {orders.length ? (
-        orders.map((order) => {
+        orders.map((order, i) => {
           if (!order.price) {
-            return <tr key={order?.uuid} />;
+            console.log(i, order);
           }
           const [currency, market] = order.market.split('-') || [];
 
@@ -337,7 +382,24 @@ const UpbitOrdersHistoryInner: FC<UpbitOrdersInnerProps> = ({ upbitTradeMarket, 
               <div className='text-zinc-300'>
                 <b>
                   {`${currency}/${market}`}&nbsp;
+                  <span className='[&>*]:!align-text-top'>
+                    <Image
+                      className='object-contain rounded-full overflow-hidden'
+                      src={`/asset/upbit/logos/${market}.png`}
+                      width={14}
+                      height={14}
+                      quality={100}
+                      loading='lazy'
+                      alt={`${currency}/${market}-icon`}
+                    />
+                  </span>
+                  &nbsp;
                   <span className={order.side}>
+                    {order.ord_type === 'market'
+                      ? '시장가 '
+                      : order.ord_type === 'limit'
+                      ? '지정가 '
+                      : order.ord_type}
                     {order.side === 'bid' ? '매수' : order.side === 'ask' ? '매도' : order.side}
                   </span>
                 </b>
