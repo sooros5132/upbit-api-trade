@@ -28,7 +28,7 @@ export const UpbitOrders = memo(() => {
   const [isPending, setPending] = useState(false);
   const [tabs, setTabs] = useState<'orders' | 'ordersHistory'>('orders');
 
-  const handleClickRefreshButton = throttle(async () => {
+  const handleClickRefreshButton = async () => {
     if (isPending) {
       toast.info('다시 불러오는 중 입니다.');
       return;
@@ -51,8 +51,8 @@ export const UpbitOrders = memo(() => {
     }
     setTimeout(() => {
       setPending(false);
-    }, 1000);
-  }, 500);
+    }, 500);
+  };
 
   const handleClickTabBtn = (tab: typeof tabs) => async () => {
     setTabs(tab);
@@ -93,7 +93,7 @@ export const UpbitOrders = memo(() => {
             data-tip='새로고침'
             onClick={handleClickRefreshButton}
           >
-            <IoMdRefresh className='w-full' />
+            <IoMdRefresh className={classNames('w-full', isPending && 'animate-spin')} />
           </button>
         )}
         <button className='btn btn-circle btn-ghost btn-xs' onClick={() => setHidden((p) => !p)}>

@@ -28,7 +28,7 @@ export const UpbitOrderform = memo(() => {
   const isLogin = useUpbitApiStore((state) => state.isLogin, shallow);
   const [isPending, setPending] = useState(false);
 
-  const handleClickRefreshButton = throttle(async () => {
+  const handleClickRefreshButton = async () => {
     if (isPending) {
       toast.info('다시 불러오는 중 입니다.');
       return;
@@ -41,9 +41,9 @@ export const UpbitOrderform = memo(() => {
     ]).finally(() => {
       setTimeout(() => {
         setPending(false);
-      }, 1000);
+      }, 500);
     });
-  }, 500);
+  };
 
   const [hidden, setHidden] = useState(false);
   const { orderType, changeOrderType } = useUpbitOrderFormStore(
@@ -120,7 +120,7 @@ export const UpbitOrderform = memo(() => {
               )}
               data-tip='잔고를 다시 불러옵니다.'
             >
-              <IoMdRefresh />
+              <IoMdRefresh className={isPending ? 'animate-spin' : ''} />
             </button>
           )}
           <button
