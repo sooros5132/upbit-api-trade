@@ -34,11 +34,8 @@ export const UpbitOrderform = memo(() => {
       return;
     }
     setPending(true);
-    const { upbitTradeMarket, getOrders, getOrdersChance } = useUpbitApiStore.getState();
-    await Promise.all([
-      getOrdersChance(upbitTradeMarket),
-      getOrders({ market: upbitTradeMarket })
-    ]).finally(() => {
+    const { revalidateOrders, revalidateOrdersChance } = useUpbitApiStore.getState();
+    await Promise.all([revalidateOrdersChance(), revalidateOrders()]).finally(() => {
       setTimeout(() => {
         setPending(false);
       }, 500);
@@ -223,7 +220,12 @@ const TradeContainer: React.FC = () => {
   const { error } = useSWR(
     `${apiUrls.upbit.path}${apiUrls.upbit.ordersChance}?market=${upbitTradeMarket}`,
     async () => {
-      await useUpbitApiStore.getState().getOrdersChance(upbitTradeMarket);
+      const { getOrdersChance } = useUpbitApiStore.getState();
+      const ordersChance = await getOrdersChance(upbitTradeMarket);
+
+      useUpbitApiStore.setState({
+        ordersChance
+      });
     },
     {
       refreshInterval: 60 * 1000
@@ -232,10 +234,8 @@ const TradeContainer: React.FC = () => {
 
   if (error) {
     return (
-      <div className='bg-base-200 flex-center p-5 text-center'>
-        <div>
-          <div>마켓 정보를 가져오는 중 에러가 발생했습니다.</div>
-        </div>
+      <div className='flex-center p-5 text-center'>
+        <div>마켓 정보를 가져오는 중 에러가 발생했습니다.</div>
       </div>
     );
   }

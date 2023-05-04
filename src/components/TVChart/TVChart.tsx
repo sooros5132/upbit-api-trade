@@ -250,12 +250,9 @@ export const TVChartInner: React.FC<TVChartProps> = React.memo<TVChartProps>(
                         })
                         .then(async () => {
                           toast.success('주문이 취소되었습니다.');
-                          const { upbitTradeMarket, getOrders, getOrdersChance } =
+                          const { revalidateOrders, revalidateOrdersChance } =
                             useUpbitApiStore.getState();
-                          Promise.all([
-                            getOrdersChance(upbitTradeMarket),
-                            getOrders({ market: upbitTradeMarket })
-                          ]);
+                          await Promise.all([revalidateOrdersChance(), revalidateOrders()]);
                         })
                         .catch(() => {
                           toast.error('주문을 취소하지 못 했습니다.');

@@ -301,8 +301,13 @@ export const useUpbitOrderFormStore = create<UpbitOrderFormStore>((set, get) => 
     });
   },
   async createOrder(side: OrderSideType) {
-    const { ordersChance, upbitTradeMarket, getOrdersChance, getOrders, createOrder } =
-      useUpbitApiStore.getState();
+    const {
+      ordersChance,
+      upbitTradeMarket,
+      revalidateOrders,
+      revalidateOrdersChance,
+      createOrder
+    } = useUpbitApiStore.getState();
 
     if (!ordersChance) {
       return;
@@ -333,10 +338,7 @@ export const useUpbitOrderFormStore = create<UpbitOrderFormStore>((set, get) => 
                 Number(res.volume)
               ).format(`0,0[.][00000000]`)}만큼 주문을 넣었습니다.`
             );
-            await Promise.all([
-              getOrdersChance(upbitTradeMarket),
-              getOrders({ market: upbitTradeMarket })
-            ]);
+            await Promise.all([revalidateOrdersChance(), revalidateOrders()]);
           })
           .catch((err) => {
             toast.error(err?.error?.message ?? '주문에 실패했습니다.');
@@ -371,10 +373,7 @@ export const useUpbitOrderFormStore = create<UpbitOrderFormStore>((set, get) => 
                 Number(createResult.volume)
               ).format(`0,0[.][00000000]`)}만큼 시장가매수 주문을 넣었습니다.`
             );
-            await Promise.all([
-              getOrdersChance(upbitTradeMarket),
-              getOrders({ market: upbitTradeMarket })
-            ]);
+            await Promise.all([revalidateOrdersChance(), revalidateOrders()]);
             break;
           }
           case 'ask': {
@@ -401,10 +400,7 @@ export const useUpbitOrderFormStore = create<UpbitOrderFormStore>((set, get) => 
                 Number(createResult.volume)
               ).format(`0,0[.][00000000]`)}만큼 시장가매도 주문을 넣었습니다.`
             );
-            await Promise.all([
-              getOrdersChance(upbitTradeMarket),
-              getOrders({ market: upbitTradeMarket })
-            ]);
+            await Promise.all([revalidateOrdersChance(), revalidateOrders()]);
             break;
           }
         }

@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import { format } from 'date-fns-tz';
 import numeral from 'numeral';
-import { FC, memo, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import isEqual from 'react-fast-compare';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { IoMdRefresh } from 'react-icons/io';
@@ -12,9 +12,10 @@ import { useUpbitApiStore } from 'src/store/upbitApi';
 import { IUpbitGetOrderResponse } from 'src/types/upbit';
 import { krwRegex } from 'src/utils/regex';
 import { satoshiPad, upbitPadEnd } from 'src/utils/utils';
-import useSWR from 'swr';
 import shallow from 'zustand/shallow';
 import Image from 'next/image';
+import useSWRInfinite from 'swr/infinite';
+import queryString from 'query-string';
 
 // const OrderStateRecord = {
 //   wait: '체결 대기',
@@ -22,6 +23,8 @@ import Image from 'next/image';
 //   done: '체결 완료',
 //   cancel: '주문 취소'
 // };
+
+const PAGE_SIZE = 100;
 
 export const UpbitOrders = memo(() => {
   const { isLogin, upbitTradeMarket, enableGetOrderAllMarket, setEnableGetOrderAllMarket } =
@@ -44,18 +47,14 @@ export const UpbitOrders = memo(() => {
       return;
     }
     setPending(true);
-    const { upbitTradeMarket, getOrders, getOrdersChance, getOrdersHistory } =
-      useUpbitApiStore.getState();
+    const { ordersSWRMutate, ordersHistorySWRMutate } = useUpbitApiStore.getState();
     switch (tabs) {
       case 'orders': {
-        await Promise.all([
-          getOrdersChance(upbitTradeMarket),
-          getOrders({ market: upbitTradeMarket })
-        ]);
+        await ordersSWRMutate?.();
         break;
       }
       case 'ordersHistory': {
-        await getOrdersHistory({ market: upbitTradeMarket });
+        await ordersHistorySWRMutate?.();
         break;
       }
     }
@@ -69,6 +68,10 @@ export const UpbitOrders = memo(() => {
   };
 
   const handleChange = async () => {
+    if (isPending) {
+      toast.info('다시 불러오는 중 입니다.');
+      return;
+    }
     setEnableGetOrderAllMarket(!enableGetOrderAllMarket);
     await handleClickRefreshButton();
   };
@@ -111,6 +114,7 @@ export const UpbitOrders = memo(() => {
               type='checkbox'
               className='bg-opacity-100 border-opacity-100 toggle toggle-xs rounded-full border-zinc-500 transition-all'
               checked={!enableGetOrderAllMarket}
+              disabled={isPending}
               readOnly
             />
             &nbsp;{marketCode}
@@ -140,9 +144,9 @@ export const UpbitOrders = memo(() => {
             </div>
           </div>
         ) : tabs === 'orders' ? (
-          <UpbitOrdersContainer />
+          <OrdersContainer />
         ) : (
-          <UpbitOrdersHistoryContainer />
+          <OrdersHistoryContainer />
         )
       ) : null}
     </div>
@@ -150,24 +154,46 @@ export const UpbitOrders = memo(() => {
 }, isEqual);
 UpbitOrders.displayName = 'UpbitOrders';
 
-const UpbitOrdersContainer = () => {
-  const { upbitTradeMarket, orders } = useUpbitApiStore(
-    ({ upbitTradeMarket, orders }) => ({
+const OrdersContainer = memo(() => {
+  const { upbitTradeMarket, enableGetOrderAllMarket } = useUpbitApiStore(
+    ({ upbitTradeMarket, enableGetOrderAllMarket }) => ({
       upbitTradeMarket,
-      orders
+      enableGetOrderAllMarket
     }),
     shallow
   );
 
-  const { error } = useSWR(
-    `${apiUrls.upbit.path}${apiUrls.upbit.orders}/${upbitTradeMarket}`,
-    async () => {
-      await useUpbitApiStore.getState().getOrders({ market: upbitTradeMarket });
+  const { data, error, isValidating, size, setSize, mutate } = useSWRInfinite(
+    (index, prevData) => {
+      if (prevData && !prevData.length) return null;
+      return `${apiUrls.upbit.path}${apiUrls.upbit.orders}/${upbitTradeMarket}?page=${index}&enableGetOrderAllMarket=${enableGetOrderAllMarket}`;
+    },
+    async (key) => {
+      const { page: _page } = queryString.parse(key.split('?')[1]) as {
+        page: string;
+        enableGetOrderAllMarket: string;
+      };
+      const page = Number(_page) + 1;
+      return await useUpbitApiStore
+        .getState()
+        .getOrders({ market: upbitTradeMarket, page, limit: PAGE_SIZE });
     },
     {
-      refreshInterval: 2 * 60 * 1000
+      refreshInterval: 2 * 60 * 1000,
+      revalidateFirstPage: true
     }
   );
+
+  const currentPage = size + 1;
+  const isEmpty = data?.[0]?.length === 0;
+  const isReachingEnd = isEmpty || (data && data[data.length - 1]?.length < PAGE_SIZE);
+
+  useEffect(() => {
+    useUpbitApiStore.setState({
+      orders: data?.flat() || [],
+      ordersSWRMutate: mutate
+    });
+  }, [data, currentPage, mutate]);
 
   if (error) {
     return (
@@ -179,7 +205,7 @@ const UpbitOrdersContainer = () => {
     );
   }
 
-  if (!orders) {
+  if (!data) {
     return (
       <div className='h-full flex-center flex-col px-5 py-10 gap-2 text-center bg-base-200 animate-pulse'>
         <div className='animate-spin text-3xl'>
@@ -192,112 +218,30 @@ const UpbitOrdersContainer = () => {
     );
   }
 
-  return <UpbitOrdersInner upbitTradeMarket={upbitTradeMarket} orders={orders} />;
-};
-
-interface OrderHistoryProps {
-  upbitTradeMarket: string;
-  orders: Array<IUpbitGetOrderResponse>;
-}
-
-const UpbitOrdersInner: FC<OrderHistoryProps> = ({ upbitTradeMarket, orders }) => {
-  const handleClickCancelBtn = (uuid: string) => async () => {
-    const deleteOrder = useUpbitApiStore.getState().deleteOrder;
-
-    await deleteOrder({ uuid })
-      .then(async () => {
-        toast.success('주문이 취소되었습니다.');
-        const { getOrdersChance, getOrders } = useUpbitApiStore.getState();
-
-        await getOrdersChance(upbitTradeMarket);
-        await getOrders({ market: upbitTradeMarket });
-      })
-      .catch((e) => {
-        toast.error(e?.error?.message || '주문을 취소하지 못했습니다.');
-      });
+  const handleClickMoreButton = () => {
+    if (isReachingEnd || isValidating) {
+      toast.info('정보를 가져오는 중 입니다.');
+      return;
+    }
+    setSize(size + 1);
   };
 
   return (
-    <div className='h-full min-h-12 font-mono text-right bg-base-200 text-xs overflow-y-auto whitespace-nowrap first-of-type:[&>div]:mt-0 last-of-type:[&>div]:mb-0'>
-      {orders.length ? (
-        orders.map((order) => {
-          const [currency, market] = order.market.split('-') || [];
-          const volumePad = ''.padStart(order.volume.split('.')?.[1]?.length || 0, '0');
-          const unfastenedVolume = Number(order.volume) - Number(order.executed_volume);
-          const unfastenedVolumePad = ''.padStart(
-            String(unfastenedVolume).split('.')?.[1]?.length || 0,
-            '0'
-          );
-
-          return (
-            <div
-              key={order.uuid}
-              className={classNames(
-                'my-0.5 grid grid-rows-[auto_auto_auto_auto_auto] grid-cols-[auto_1fr_auto] p-2 gap-y-0.5 gap-x-1.5 text-neutral-600',
-                order.side === 'ask'
-                  ? 'bg-rose-800/10 hover:bg-rose-800/20'
-                  : 'bg-teal-800/10 hover:bg-teal-800/20'
-              )}
-            >
-              <div>마켓</div>
-              <div className='text-neutral-300'>
-                <b>
-                  {`${currency}/${market}`}&nbsp;
-                  <span className='[&>*]:!align-text-top'>
-                    <Image
-                      className='object-contain rounded-full overflow-hidden'
-                      src={`/asset/upbit/logos/${market}.png`}
-                      width={14}
-                      height={14}
-                      quality={100}
-                      loading='lazy'
-                      alt={`${currency}/${market}-icon`}
-                    />
-                  </span>
-                  &nbsp;
-                  <span className={order.side}>
-                    {order.side === 'bid' ? '매수' : order.side === 'ask' ? '매도' : order.side}
-                  </span>
-                </b>
-              </div>
-              <div>주문가격</div>
-              <div className='text-neutral-300'>
-                {upbitPadEnd(Number(order.price))}&nbsp;
-                {currency}
-              </div>
-              <div>주문수량</div>
-              <div className='text-neutral-300'>
-                <span>{satoshiPad(Number(order.volume), volumePad)}</span>
-                &nbsp;{market}
-              </div>
-              <div>주문금액</div>
-              <div className='text-neutral-500'>
-                {numeral(Number(order.locked) - Number(order.remaining_fee)).format('0,0')}
-                &nbsp;{currency}
-              </div>
-              <div>미체결량</div>
-              <div className='text-neutral-300'>
-                <b>
-                  {satoshiPad(unfastenedVolume, unfastenedVolumePad || volumePad)}
-                  &nbsp;
-                  {market}
-                </b>
-              </div>
-              <div>미체결액</div>
-              <div className='text-neutral-500'>
-                {numeral(unfastenedVolume * Number(order.price)).format('0,0')}
-                &nbsp;{currency}
-              </div>
-              <div>주문시간</div>
-              <div>{format(new Date(order.created_at), 'yy-MM-dd HH:mm:ss')}</div>
-              <div className='col-start-3 col-end-3 row-start-1 row-end-[8] flex items-center'>
-                <button className='btn btn-xs w-full' onClick={handleClickCancelBtn(order.uuid)}>
-                  취소
-                </button>
-              </div>
-            </div>
-          );
-        })
+    <div className='h-full min-h-12 font-mono text-xs text-right bg-base-200 overflow-y-auto whitespace-nowrap first-of-type:[&>div]:mt-0 last-of-type:[&>div]:mb-0'>
+      {!isEmpty &&
+        data?.map((orders) =>
+          orders?.map((order) => <OrdersInner key={order.uuid} order={order} />)
+        )}
+      {!isEmpty ? (
+        <div className='flex items-center justify-center py-4'>
+          <button
+            className='btn btn-sm btn-outline'
+            onClick={handleClickMoreButton}
+            disabled={isReachingEnd || isValidating}
+          >
+            {isReachingEnd ? '마지막 입니다' : '더 불러오기'}
+          </button>
+        </div>
       ) : (
         <div className='h-full flex-center'>
           {upbitTradeMarket.replace('-', '/')} 마켓의 주문이 없습니다.
@@ -305,26 +249,168 @@ const UpbitOrdersInner: FC<OrderHistoryProps> = ({ upbitTradeMarket, orders }) =
       )}
     </div>
   );
+}, isEqual);
+
+OrdersContainer.displayName = 'OrdersContainer';
+
+interface OrderHistoryProps {
+  orders: Array<IUpbitGetOrderResponse>;
+}
+
+// const Orders: FC<OrderHistoryProps> = memo(({ orders }) => {
+//   return (
+//     <>
+//       {orders?.map((order) => (
+//         <OrdersInner key={order.uuid} order={order} />
+//       ))}
+//     </>
+//   );
+// }, isEqual);
+
+// Orders.displayName = 'Orders';
+
+type OrdersInnerProps = {
+  order: IUpbitGetOrderResponse;
 };
 
-const UpbitOrdersHistoryContainer = () => {
-  const { upbitTradeMarket, ordersHistory } = useUpbitApiStore(
-    ({ upbitTradeMarket, ordersHistory }) => ({
+const OrdersInner = memo(({ order }: OrdersInnerProps) => {
+  const handleClickCancelBtn = (uuid: string) => async () => {
+    const deleteOrder = useUpbitApiStore.getState().deleteOrder;
+
+    await deleteOrder({ uuid })
+      .then(async () => {
+        toast.success('주문이 취소되었습니다.');
+        const { revalidateOrders, revalidateOrdersChance } = useUpbitApiStore.getState();
+        await Promise.all([revalidateOrdersChance(), revalidateOrders()]);
+      })
+      .catch((e) => {
+        toast.error(e?.error?.message || '주문을 취소하지 못했습니다.');
+      });
+  };
+
+  const [currency, market] = order.market.split('-') || [];
+  const volumePad = ''.padStart(order.volume.split('.')?.[1]?.length || 0, '0');
+  const unfastenedVolume = Number(order.volume) - Number(order.executed_volume);
+  const unfastenedVolumePad = ''.padStart(
+    String(unfastenedVolume).split('.')?.[1]?.length || 0,
+    '0'
+  );
+
+  return (
+    <div
+      key={order.uuid}
+      className={classNames(
+        'my-0.5 grid grid-rows-[auto_auto_auto_auto_auto] grid-cols-[auto_1fr_auto] p-2 gap-y-0.5 gap-x-1.5 text-neutral-600',
+        order.side === 'ask'
+          ? 'bg-rose-800/10 hover:bg-rose-800/20'
+          : 'bg-teal-800/10 hover:bg-teal-800/20'
+      )}
+    >
+      <div>마켓</div>
+      <div className='text-neutral-300'>
+        <b>
+          {`${currency}/${market}`}&nbsp;
+          <span className='[&>*]:!align-text-top'>
+            <Image
+              className='object-contain rounded-full overflow-hidden'
+              src={`/asset/upbit/logos/${market}.png`}
+              width={14}
+              height={14}
+              quality={100}
+              loading='lazy'
+              alt={`${currency}/${market}-icon`}
+            />
+          </span>
+          &nbsp;
+          <span className={order.side}>
+            {order.side === 'bid' ? '매수' : order.side === 'ask' ? '매도' : order.side}
+          </span>
+        </b>
+      </div>
+      <div>주문가격</div>
+      <div className='text-neutral-300'>
+        {upbitPadEnd(Number(order.price))}&nbsp;
+        {currency}
+      </div>
+      <div>주문수량</div>
+      <div className='text-neutral-300'>
+        <span>{satoshiPad(Number(order.volume), volumePad)}</span>
+        &nbsp;{market}
+      </div>
+      <div>주문금액</div>
+      <div className='text-neutral-500'>
+        {numeral(Number(order.locked) - Number(order.remaining_fee)).format('0,0')}
+        &nbsp;{currency}
+      </div>
+      <div>미체결량</div>
+      <div className='text-neutral-300'>
+        <b>
+          {satoshiPad(unfastenedVolume, unfastenedVolumePad || volumePad)}
+          &nbsp;
+          {market}
+        </b>
+      </div>
+      <div>미체결액</div>
+      <div className='text-neutral-500'>
+        {numeral(unfastenedVolume * Number(order.price)).format('0,0')}
+        &nbsp;{currency}
+      </div>
+      <div>주문시간</div>
+      <div>{format(new Date(order.created_at), 'yy-MM-dd HH:mm:ss')}</div>
+      <div className='col-start-3 col-end-3 row-start-1 row-end-[8] flex items-center'>
+        <button className='btn btn-xs w-full' onClick={handleClickCancelBtn(order.uuid)}>
+          취소
+        </button>
+      </div>
+    </div>
+  );
+}, isEqual);
+OrdersInner.displayName = 'OrdersInner';
+
+const OrdersHistoryContainer = memo(() => {
+  const { upbitTradeMarket, enableGetOrderAllMarket, orderFee } = useUpbitApiStore(
+    ({ upbitTradeMarket, enableGetOrderAllMarket, ordersChance }) => ({
       upbitTradeMarket,
-      ordersHistory
+      enableGetOrderAllMarket,
+      orderFee: {
+        bid_fee: ordersChance?.bid_fee,
+        ask_fee: ordersChance?.ask_fee
+      }
     }),
     shallow
   );
 
-  const { error } = useSWR(
-    `${apiUrls.upbit.path}${apiUrls.upbit.orders}/history/${upbitTradeMarket}`,
-    async () => {
-      await useUpbitApiStore.getState().getOrdersHistory({ market: upbitTradeMarket });
+  const { data, error, isValidating, size, setSize, mutate } = useSWRInfinite(
+    (index, prevData) => {
+      if (prevData && !prevData.length) return null;
+      return `${apiUrls.upbit.path}${apiUrls.upbit.orders}/history/${upbitTradeMarket}?page=${index}&enableGetOrderAllMarket=${enableGetOrderAllMarket}`;
+    },
+    async (key) => {
+      const { page: _page } = queryString.parse(key.split('?')[1]) as {
+        page: string;
+        enableGetOrderAllMarket: string;
+      };
+      const page = Number(_page) + 1;
+      return await useUpbitApiStore
+        .getState()
+        .getOrdersHistory({ market: upbitTradeMarket, page, limit: PAGE_SIZE });
     },
     {
-      refreshInterval: 5 * 60 * 1000
+      refreshInterval: 5 * 60 * 1000,
+      revalidateFirstPage: true
     }
   );
+
+  const currentPage = size + 1;
+  const isEmpty = data?.[0]?.length === 0;
+  const isReachingEnd = isEmpty || (data && data[data.length - 1]?.length < PAGE_SIZE);
+
+  useEffect(() => {
+    useUpbitApiStore.setState({
+      ordersHistory: data?.flat() || [],
+      ordersHistorySWRMutate: mutate
+    });
+  }, [data, currentPage, mutate]);
 
   if (error) {
     return (
@@ -336,7 +422,7 @@ const UpbitOrdersHistoryContainer = () => {
     );
   }
 
-  if (!ordersHistory) {
+  if (!data) {
     return (
       <div className='h-full flex-center flex-col px-5 py-10 gap-2 text-center bg-base-200 animate-pulse'>
         <div className='animate-spin text-3xl'>
@@ -349,24 +435,32 @@ const UpbitOrdersHistoryContainer = () => {
     );
   }
 
-  return <OrderHistory upbitTradeMarket={upbitTradeMarket} orders={ordersHistory} />;
-};
-
-const OrderHistory: FC<OrderHistoryProps> = memo(({ upbitTradeMarket, orders }) => {
-  const orderFee = useUpbitApiStore(
-    (state) => ({
-      bid_fee: state.ordersChance?.bid_fee,
-      ask_fee: state.ordersChance?.ask_fee
-    }),
-    shallow
-  );
+  const handleClickMoreButton = () => {
+    if (isReachingEnd || isValidating) {
+      toast.info('정보를 가져오는 중 입니다.');
+      return;
+    }
+    setSize(size + 1);
+  };
 
   return (
-    <div className='h-full font-mono text-right bg-base-200 text-xs overflow-y-auto whitespace-nowrap'>
-      {orders.length ? (
-        orders.map((order) => {
-          return <OrderHistoryInner key={order.uuid} order={order} orderFee={orderFee} />;
-        })
+    <div className='h-full min-h-12 font-mono text-xs text-right bg-base-200 overflow-y-auto whitespace-nowrap first-of-type:[&>div]:mt-0 last-of-type:[&>div]:mb-0'>
+      {!isEmpty &&
+        data?.map((orders) =>
+          orders?.map((order) => (
+            <OrderHistoryInner key={order.uuid} order={order} orderFee={orderFee} />
+          ))
+        )}
+      {!isEmpty ? (
+        <div className='flex items-center justify-center py-4'>
+          <button
+            className='btn btn-sm btn-outline'
+            onClick={handleClickMoreButton}
+            disabled={isReachingEnd || isValidating}
+          >
+            {isReachingEnd ? '마지막 입니다' : '더 불러오기'}
+          </button>
+        </div>
       ) : (
         <div className='h-full flex-center'>
           {upbitTradeMarket.replace('-', '/')} 마켓의 거래내역이 없습니다.
@@ -376,7 +470,19 @@ const OrderHistory: FC<OrderHistoryProps> = memo(({ upbitTradeMarket, orders }) 
   );
 }, isEqual);
 
-OrderHistory.displayName = 'OrderHistory';
+OrdersHistoryContainer.displayName = 'OrdersHistoryContainer';
+
+// const OrderHistory: FC<OrderHistoryProps> = memo(({ orders }) => {
+//   return (
+//     <>
+//       {orders.map((order) => {
+//         return <OrderHistoryInner key={order.uuid} order={order} orderFee={orderFee} />;
+//       })}
+//     </>
+//   );
+// }, isEqual);
+
+// OrderHistory.displayName = 'OrderHistory';
 
 type OrderHistoryInnerProps = {
   order: IUpbitGetOrderResponse;

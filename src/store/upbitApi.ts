@@ -19,6 +19,7 @@ import crypto from 'crypto';
 import axios from 'axios';
 import { useExchangeStore } from './exchangeSockets';
 import { signJWT } from 'src/utils/utils';
+import { KeyedMutator } from 'swr/_internal';
 
 export interface IUpbitApiState {
   isLogin: boolean;
@@ -26,9 +27,10 @@ export interface IUpbitApiState {
   secretKey: string;
   accounts: Array<IUpbitAccount>;
   orders: Array<IUpbitGetOrderResponse>;
+  ordersSWRMutate?: KeyedMutator<IUpbitGetOrderResponse[][]>;
   ordersHistory: Array<IUpbitGetOrderResponse>;
+  ordersHistorySWRMutate?: KeyedMutator<IUpbitGetOrderResponse[][]>;
   ordersChance?: IUpbitOrdersChance;
-  ordersChanceIsValidating: boolean;
   upbitTradeMarket: string;
   enableGetOrderAllMarket: boolean;
 }
@@ -41,7 +43,6 @@ const defaultState: IUpbitApiState = {
   orders: [],
   ordersHistory: [],
   ordersChance: undefined,
-  ordersChanceIsValidating: true,
   upbitTradeMarket: 'KRW-BTC',
   enableGetOrderAllMarket: false
 };
@@ -84,10 +85,14 @@ interface IUpbitApiStore extends IUpbitApiState {
   revalidateKeys: () => Promise<void>;
   resetAll: () => void;
   setUpbitTradeMarket: (code: string) => void;
-  getOrdersChance: (market: string) => Promise<void>;
-  getOrder: (query: { uuid?: string; identifier?: string }) => Promise<void>;
-  getOrders: (querys: IUpbitGetOrderRquestParameters) => Promise<void>;
-  getOrdersHistory: (querys: IUpbitGetOrderHistoryRquestParameters) => Promise<void>;
+  getOrdersChance: (market: string) => Promise<IUpbitOrdersChance>;
+  getOrder: (query: { uuid?: string; identifier?: string }) => Promise<IUpbitGetOrderResponse[]>;
+  getOrders: (querys: IUpbitGetOrderRquestParameters) => Promise<IUpbitGetOrderResponse[]>;
+  revalidateOrdersChance: () => Promise<void>;
+  revalidateOrders: () => Promise<void>;
+  getOrdersHistory: (
+    querys: IUpbitGetOrderHistoryRquestParameters
+  ) => Promise<IUpbitGetOrderResponse[]>;
   createOrder: (querys: IUpbitCreateOrderRquestParameters) => Promise<IUpbitCreateOrderResponse>;
   deleteOrder: (querys: IUpbitDeleteOrderRquestParameters) => Promise<IUpbitDeleteOrderResponse>;
   setEnableGetOrderAllMarket: (enableGetOrderAllMarket: boolean) => void;
@@ -153,7 +158,7 @@ export const useUpbitApiStore = create(
       async getOrdersChance(market: string) {
         const { accessKey, secretKey } = get();
         if (!accessKey || !secretKey) {
-          return;
+          throw 'Unauthorized';
         }
         const token = createJwtAuthorizationToken({
           accessKey,
@@ -161,9 +166,6 @@ export const useUpbitApiStore = create(
           querys: { market }
         });
 
-        set({
-          ordersChanceIsValidating: true
-        });
         const result = await axios
           .get<IUpbitOrdersChance>(PROXY_PATH + apiUrls.upbit.path + apiUrls.upbit.ordersChance, {
             params: {
@@ -174,9 +176,30 @@ export const useUpbitApiStore = create(
             }
           })
           .then((res) => res.data);
-        set({
-          ordersChanceIsValidating: false
+
+        return result;
+      },
+      async revalidateOrdersChance() {
+        const { accessKey, secretKey, upbitTradeMarket } = get();
+        if (!accessKey || !secretKey) {
+          throw 'Unauthorized';
+        }
+        const token = createJwtAuthorizationToken({
+          accessKey,
+          secretKey,
+          querys: { market: upbitTradeMarket }
         });
+
+        const result = await axios
+          .get<IUpbitOrdersChance>(PROXY_PATH + apiUrls.upbit.path + apiUrls.upbit.ordersChance, {
+            params: {
+              market: upbitTradeMarket
+            },
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          })
+          .then((res) => res.data);
 
         if (result.market.id === get().upbitTradeMarket) {
           set({
@@ -184,10 +207,11 @@ export const useUpbitApiStore = create(
           });
         }
       },
+
       async getOrder(querys) {
         const { accessKey, secretKey } = get();
         if (!accessKey || !secretKey) {
-          return;
+          throw 'Unauthorized';
         }
 
         const serializedQueryString = queryString.stringify(querys);
@@ -209,14 +233,12 @@ export const useUpbitApiStore = create(
           )
           .then((res) => res.data);
 
-        set({
-          orders: result
-        });
+        return result;
       },
       async getOrders(_querys) {
         const { accessKey, secretKey, enableGetOrderAllMarket } = get();
         if (!accessKey || !secretKey) {
-          return;
+          throw 'Unauthorized';
         }
         const querys = { ..._querys };
 
@@ -241,14 +263,59 @@ export const useUpbitApiStore = create(
           )
           .then((res) => res.data);
 
-        set({
-          orders: result
-        });
+        return result;
+      },
+      async revalidateOrders() {
+        const { accessKey, secretKey, ordersSWRMutate } = get();
+        if (!accessKey || !secretKey) {
+          throw 'Unauthorized';
+        }
+        await ordersSWRMutate?.();
+        // const {
+        //   accessKey,
+        //   secretKey,
+        //   ordersSWRMutate,
+        //   getOrders,
+        //   upbitTradeMarket,
+        //   ordersCurrentPage,
+        //   ordersLimit
+        // } = get();
+        // if (!accessKey || !secretKey) {
+        //   throw 'Unauthorized';
+        // }
+        // const datas: Array<Array<IUpbitGetOrderResponse>> = [];
+        // let i = 0;
+        // while (i < ordersCurrentPage) {
+        //   const currentPage = i + 1;
+        //   const orders = await getOrders({
+        //     market: upbitTradeMarket,
+        //     page: currentPage,
+        //     limit: ordersLimit
+        //   });
+        //   if (orders.length === 0) {
+        //     if (currentPage < ordersCurrentPage) {
+        //       set({ ordersCurrentPage: currentPage });
+        //     }
+        //     break;
+        //   }
+        //   datas.push(orders);
+        //   i++;
+        // }
+
+        // await Promise.all(datas);
+
+        // console.log(datas);
+
+        // set({
+        //   orders: datas.flat()
+        // });
+
+        // await ordersSWRMutate?.();
       },
       async getOrdersHistory(_querys) {
         const { accessKey, secretKey, enableGetOrderAllMarket } = get();
         if (!accessKey || !secretKey) {
-          return;
+          throw 'Unauthorized';
         }
 
         const querys: IUpbitGetOrderRquestParameters = {
@@ -278,9 +345,7 @@ export const useUpbitApiStore = create(
           )
           .then((res) => res.data);
 
-        set({
-          ordersHistory: result
-        });
+        return result;
       },
       async createOrder(querys) {
         const { accessKey, secretKey } = get();
