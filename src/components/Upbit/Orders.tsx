@@ -1,6 +1,5 @@
 import classNames from 'classnames';
 import { format } from 'date-fns-tz';
-import { throttle } from 'lodash';
 import numeral from 'numeral';
 import { FC, memo, useState } from 'react';
 import isEqual from 'react-fast-compare';
@@ -160,7 +159,7 @@ const UpbitOrdersContainer = () => {
     shallow
   );
 
-  const { error, mutate } = useSWR(
+  const { error } = useSWR(
     `${apiUrls.upbit.path}${apiUrls.upbit.orders}/${upbitTradeMarket}`,
     async () => {
       await useUpbitApiStore.getState().getOrders({ market: upbitTradeMarket });
@@ -193,27 +192,28 @@ const UpbitOrdersContainer = () => {
     );
   }
 
-  return <UpbitOrdersInner upbitTradeMarket={upbitTradeMarket} orders={orders} mutate={mutate} />;
+  return <UpbitOrdersInner upbitTradeMarket={upbitTradeMarket} orders={orders} />;
 };
 
 interface UpbitOrdersInnerProps {
   upbitTradeMarket: string;
   orders: Array<IUpbitGetOrderResponse>;
-  mutate: () => void;
 }
 
-const UpbitOrdersInner: FC<UpbitOrdersInnerProps> = ({ upbitTradeMarket, orders, mutate }) => {
+const UpbitOrdersInner: FC<UpbitOrdersInnerProps> = ({ upbitTradeMarket, orders }) => {
   const handleClickCancelBtn = (uuid: string) => async () => {
-    await useUpbitApiStore
-      .getState()
-      .deleteOrder({ uuid })
+    const deleteOrder = useUpbitApiStore.getState().deleteOrder;
+
+    await deleteOrder({ uuid })
       .then(async () => {
         toast.success('주문이 취소되었습니다.');
-        mutate();
-        await useUpbitApiStore.getState().getOrdersChance(upbitTradeMarket);
+        const { getOrdersChance, getOrders } = useUpbitApiStore.getState();
+
+        await getOrdersChance(upbitTradeMarket);
+        await getOrders({ market: upbitTradeMarket });
       })
-      .catch(() => {
-        toast.error('주문을 취소하지 못 했습니다.');
+      .catch((e) => {
+        toast.error(e?.error?.message || '주문을 취소하지 못했습니다.');
       });
   };
 
@@ -349,13 +349,7 @@ const UpbitOrdersHistoryContainer = () => {
     );
   }
 
-  return (
-    <UpbitOrdersHistoryInner
-      upbitTradeMarket={upbitTradeMarket}
-      orders={ordersHistory}
-      mutate={mutate}
-    />
-  );
+  return <UpbitOrdersHistoryInner upbitTradeMarket={upbitTradeMarket} orders={ordersHistory} />;
 };
 
 const UpbitOrdersHistoryInner: FC<UpbitOrdersInnerProps> = ({ upbitTradeMarket, orders }) => {

@@ -328,7 +328,7 @@ export const useUpbitOrderFormStore = create<UpbitOrderFormStore>((set, get) => 
         } as const;
         await createOrder(params)
           .then(async (res) => {
-            toast.info(
+            toast.success(
               `${numeral(Number(res.price)).format(`0,0[.][0000]`)}가격에 ${numeral(
                 Number(res.volume)
               ).format(`0,0[.][00000000]`)}만큼 주문을 넣었습니다.`
@@ -339,7 +339,7 @@ export const useUpbitOrderFormStore = create<UpbitOrderFormStore>((set, get) => 
             ]);
           })
           .catch((err) => {
-            toast.error(err?.response?.data?.error?.message ?? '주문에 실패했습니다.');
+            toast.error(err?.error?.message ?? '주문에 실패했습니다.');
           });
         break;
       }
@@ -361,12 +361,12 @@ export const useUpbitOrderFormStore = create<UpbitOrderFormStore>((set, get) => 
             } as const;
 
             const createResult = await createOrder(params).catch((err) => {
-              toast.error(err?.response?.data?.error?.message ?? '시장가 매도주문을 실패했습니다.');
+              toast.error(err?.error?.message ?? '시장가 매도주문을 실패했습니다.');
             });
             if (!createResult) {
               return;
             }
-            toast.info(
+            toast.success(
               `${numeral(Number(createResult.price)).format(`0,0[.][0000]`)}가격에 ${numeral(
                 Number(createResult.volume)
               ).format(`0,0[.][00000000]`)}만큼 시장가매수 주문을 넣었습니다.`
@@ -391,12 +391,12 @@ export const useUpbitOrderFormStore = create<UpbitOrderFormStore>((set, get) => 
             } as const;
 
             const createResult = await createOrder(params).catch((err) => {
-              toast.error(err?.response?.data?.error?.message ?? '시장가 매수주문을 실패했습니다.');
+              toast.error(err?.error?.message ?? '시장가 매수주문을 실패했습니다.');
             });
             if (!createResult) {
               return;
             }
-            toast.info(
+            toast.success(
               `${numeral(Number(createResult.price)).format(`0,0[.][0000]`)}가격에 ${numeral(
                 Number(createResult.volume)
               ).format(`0,0[.][00000000]`)}만큼 시장가매도 주문을 넣었습니다.`

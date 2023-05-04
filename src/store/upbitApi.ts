@@ -272,7 +272,10 @@ export const useUpbitApiStore = create(
               }
             }
           )
-          .then((res) => res.data);
+          .then((res) => res.data)
+          .catch((res) => {
+            throw res?.response?.data;
+          });
 
         return result;
       },
@@ -294,7 +297,10 @@ export const useUpbitApiStore = create(
               }
             }
           )
-          .then((res) => res.data);
+          .then((res) => res.data)
+          .catch((res) => {
+            throw res?.response?.data;
+          });
 
         return result;
       },
