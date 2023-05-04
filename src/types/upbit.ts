@@ -86,7 +86,7 @@ export type IUpbitOrderType = 'limit' | 'price' | 'market';
 
 interface IUpbitOrderResponse {
   uuid: string; //							주문의 고유 아이디
-  side: string; //							주문 종류
+  side: 'ask' | 'bid'; //							주문 종류
   ord_type: string; //					주문 방식
   price: string; //							주문 당시 화폐 가격
   state: string; //							주문 상태

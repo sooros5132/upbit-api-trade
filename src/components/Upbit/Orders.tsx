@@ -195,12 +195,12 @@ const UpbitOrdersContainer = () => {
   return <UpbitOrdersInner upbitTradeMarket={upbitTradeMarket} orders={orders} />;
 };
 
-interface UpbitOrdersInnerProps {
+interface OrderHistoryProps {
   upbitTradeMarket: string;
   orders: Array<IUpbitGetOrderResponse>;
 }
 
-const UpbitOrdersInner: FC<UpbitOrdersInnerProps> = ({ upbitTradeMarket, orders }) => {
+const UpbitOrdersInner: FC<OrderHistoryProps> = ({ upbitTradeMarket, orders }) => {
   const handleClickCancelBtn = (uuid: string) => async () => {
     const deleteOrder = useUpbitApiStore.getState().deleteOrder;
 
@@ -316,7 +316,7 @@ const UpbitOrdersHistoryContainer = () => {
     shallow
   );
 
-  const { error, mutate } = useSWR(
+  const { error } = useSWR(
     `${apiUrls.upbit.path}${apiUrls.upbit.orders}/history/${upbitTradeMarket}`,
     async () => {
       await useUpbitApiStore.getState().getOrdersHistory({ market: upbitTradeMarket });
@@ -349,73 +349,23 @@ const UpbitOrdersHistoryContainer = () => {
     );
   }
 
-  return <UpbitOrdersHistoryInner upbitTradeMarket={upbitTradeMarket} orders={ordersHistory} />;
+  return <OrderHistory upbitTradeMarket={upbitTradeMarket} orders={ordersHistory} />;
 };
 
-const UpbitOrdersHistoryInner: FC<UpbitOrdersInnerProps> = ({ upbitTradeMarket, orders }) => {
+const OrderHistory: FC<OrderHistoryProps> = memo(({ upbitTradeMarket, orders }) => {
+  const orderFee = useUpbitApiStore(
+    (state) => ({
+      bid_fee: state.ordersChance?.bid_fee,
+      ask_fee: state.ordersChance?.ask_fee
+    }),
+    shallow
+  );
+
   return (
     <div className='h-full font-mono text-right bg-base-200 text-xs overflow-y-auto whitespace-nowrap'>
       {orders.length ? (
-        orders.map((order, i) => {
-          if (!order.price) {
-            console.log(i, order);
-          }
-          const [currency, market] = order.market.split('-') || [];
-
-          return (
-            <div
-              key={order.uuid}
-              className={classNames(
-                'my-0.5 grid grid-rows-[auto_auto_auto_auto] grid-cols-[auto_1fr] p-2 gap-y-0.5 gap-x-1 text-zinc-600 hover:bg-base-content/5',
-                order.side === 'ask'
-                  ? 'bg-rose-800/10 hover:bg-rose-800/20'
-                  : 'bg-teal-800/10 hover:bg-teal-800/20'
-              )}
-            >
-              <div>마켓</div>
-              <div className='text-zinc-300'>
-                <b>
-                  {`${currency}/${market}`}&nbsp;
-                  <span className='[&>*]:!align-text-top'>
-                    <Image
-                      className='object-contain rounded-full overflow-hidden'
-                      src={`/asset/upbit/logos/${market}.png`}
-                      width={14}
-                      height={14}
-                      quality={100}
-                      loading='lazy'
-                      alt={`${currency}/${market}-icon`}
-                    />
-                  </span>
-                  &nbsp;
-                  <span className={order.side}>
-                    {order.ord_type === 'market'
-                      ? '시장가 '
-                      : order.ord_type === 'limit'
-                      ? '지정가 '
-                      : order.ord_type}
-                    {order.side === 'bid' ? '매수' : order.side === 'ask' ? '매도' : order.side}
-                  </span>
-                </b>
-              </div>
-              <div>체결가격</div>
-              <div className='text-zinc-300'>
-                {upbitPadEnd(Number(order.price))}&nbsp;
-                {currency}
-              </div>
-              <div>체결수량</div>
-              <div className='text-zinc-300'>
-                {order.volume}&nbsp;
-                {market}
-              </div>
-              <div>체결금액</div>
-              <div className='text-zinc-300'>
-                {numeral(Number(order.volume) * Number(order.price)).format('0,0')}&nbsp;{currency}
-              </div>
-              <div>체결시간</div>
-              <div>{format(new Date(order.created_at), 'yy-MM-dd HH:mm:ss')}</div>
-            </div>
-          );
+        orders.map((order) => {
+          return <OrderHistoryInner key={order.uuid} order={order} orderFee={orderFee} />;
         })
       ) : (
         <div className='h-full flex-center'>
@@ -424,4 +374,88 @@ const UpbitOrdersHistoryInner: FC<UpbitOrdersInnerProps> = ({ upbitTradeMarket, 
       )}
     </div>
   );
+}, isEqual);
+
+OrderHistory.displayName = 'OrderHistory';
+
+type OrderHistoryInnerProps = {
+  order: IUpbitGetOrderResponse;
+  orderFee: {
+    bid_fee?: string;
+    ask_fee?: string;
+  };
 };
+
+const OrderHistoryInner = memo(({ order, orderFee }: OrderHistoryInnerProps) => {
+  const fee = Number(orderFee[(order.side + '_fee') as keyof typeof orderFee]);
+
+  // 시장가 계산
+  const marketKrwVolume =
+    !order.price && ['ask', 'bid'].includes(order.side) && fee && Number(order.paid_fee)
+      ? Number(order.paid_fee) / fee
+      : null;
+  const marketAveragePrice =
+    marketKrwVolume && Number(order.volume) ? marketKrwVolume / Number(order.volume) : null;
+  // 시장가 계산
+
+  const [currency, market] = order.market.split('-') || [];
+
+  return (
+    <div
+      className={classNames(
+        'my-0.5 grid grid-rows-[auto_auto_auto_auto] grid-cols-[auto_1fr] p-2 gap-y-0.5 gap-x-1 text-zinc-600 hover:bg-base-content/5',
+        order.side === 'ask'
+          ? 'bg-rose-800/10 hover:bg-rose-800/20'
+          : 'bg-teal-800/10 hover:bg-teal-800/20'
+      )}
+    >
+      <div>마켓</div>
+      <div className='text-zinc-300'>
+        <b>
+          {`${currency}/${market}`}&nbsp;
+          <span className='[&>*]:!align-text-top'>
+            <Image
+              className='object-contain rounded-full overflow-hidden'
+              src={`/asset/upbit/logos/${market}.png`}
+              width={14}
+              height={14}
+              quality={100}
+              loading='lazy'
+              alt={`${currency}/${market}-icon`}
+            />
+          </span>
+          &nbsp;
+          <span className={order.side}>
+            {order.ord_type === 'market'
+              ? '시장가 '
+              : order.ord_type === 'limit'
+              ? '지정가 '
+              : order.ord_type}
+            {order.side === 'bid' ? '매수' : order.side === 'ask' ? '매도' : order.side}
+          </span>
+        </b>
+      </div>
+      <div>{marketAveragePrice ? '평균가격' : '체결가격'}</div>
+      <div className='text-zinc-300'>
+        {upbitPadEnd(marketAveragePrice ? marketAveragePrice : Number(order.price))}&nbsp;
+        {currency}
+      </div>
+      <div>체결수량</div>
+      <div className='text-zinc-300'>
+        {order.volume}&nbsp;
+        {market}
+      </div>
+      <div>체결금액</div>
+      <div className='text-zinc-300'>
+        {numeral(
+          marketKrwVolume ? marketKrwVolume : Number(order.volume) * Number(order.price)
+        ).format('0,0')}
+        &nbsp;{currency}
+      </div>
+      <div>체결시간</div>
+      <div>{format(new Date(order.created_at), 'yy-MM-dd HH:mm:ss')}</div>
+    </div>
+  );
+}, isEqual);
+
+OrderHistoryInner.displayName = 'OrderHistoryInner';
