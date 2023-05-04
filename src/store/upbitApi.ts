@@ -85,6 +85,7 @@ interface IUpbitApiStore extends IUpbitApiState {
   resetAll: () => void;
   setUpbitTradeMarket: (code: string) => void;
   getOrdersChance: (market: string) => Promise<void>;
+  getOrder: (query: { uuid?: string; identifier?: string }) => Promise<void>;
   getOrders: (querys: IUpbitGetOrderRquestParameters) => Promise<void>;
   getOrdersHistory: (querys: IUpbitGetOrderHistoryRquestParameters) => Promise<void>;
   createOrder: (querys: IUpbitCreateOrderRquestParameters) => Promise<IUpbitCreateOrderResponse>;
@@ -182,6 +183,35 @@ export const useUpbitApiStore = create(
             ordersChance: result
           });
         }
+      },
+      async getOrder(querys) {
+        const { accessKey, secretKey } = get();
+        if (!accessKey || !secretKey) {
+          return;
+        }
+
+        const serializedQueryString = queryString.stringify(querys);
+        const token = createJwtAuthorizationToken({
+          accessKey,
+          secretKey,
+          querys,
+          serializedQueryString
+        });
+
+        const result = await axios
+          .get<Array<IUpbitGetOrderResponse>>(
+            PROXY_PATH + apiUrls.upbit.path + apiUrls.upbit.orders + '?' + serializedQueryString,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`
+              }
+            }
+          )
+          .then((res) => res.data);
+
+        set({
+          orders: result
+        });
       },
       async getOrders(_querys) {
         const { accessKey, secretKey, enableGetOrderAllMarket } = get();
