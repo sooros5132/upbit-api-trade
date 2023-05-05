@@ -18,6 +18,7 @@ import { widget, ChartingLibraryWidgetOptions, LanguageCode } from '../../charti
 import { cloneDeep } from 'lodash';
 import { krwRegex } from 'src/utils/regex';
 import { toast } from 'react-toastify';
+import { delay } from 'src/utils/utils';
 
 function getLanguageFromURL(): LanguageCode | null {
   const regex = new RegExp('[\\?&]lang=([^&#]*)');
@@ -252,6 +253,7 @@ export const TVChartInner: React.FC<TVChartProps> = React.memo<TVChartProps>(
                           toast.success('주문이 취소되었습니다.');
                           const { revalidateOrders, revalidateOrdersChance } =
                             useUpbitApiStore.getState();
+                          await delay(50);
                           await Promise.all([revalidateOrdersChance(), revalidateOrders()]);
                         })
                         .catch(() => {

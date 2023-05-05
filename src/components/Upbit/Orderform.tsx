@@ -6,7 +6,7 @@ import { useExchangeStore } from 'src/store/exchangeSockets';
 import { useUpbitApiStore } from 'src/store/upbitApi';
 import { IUpbitOrdersChance } from 'src/types/upbit';
 import { krwRegex } from 'src/utils/regex';
-import { satoshiPad, upbitDecimalScale, upbitPadEnd } from 'src/utils/utils';
+import { delay, satoshiPad, upbitDecimalScale, upbitPadEnd } from 'src/utils/utils';
 import useSWR from 'swr';
 import shallow from 'zustand/shallow';
 import { toast } from 'react-toastify';
@@ -35,6 +35,7 @@ export const UpbitOrderform = memo(() => {
     }
     setPending(true);
     const { revalidateOrders, revalidateOrdersChance } = useUpbitApiStore.getState();
+    await delay(50);
     await Promise.all([revalidateOrdersChance(), revalidateOrders()]).finally(() => {
       setTimeout(() => {
         setPending(false);

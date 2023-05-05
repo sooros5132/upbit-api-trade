@@ -259,3 +259,11 @@ export function signJWT(payload: any, secretKey: string) {
 
   return `${encodedHeader}.${encodedPayload}.${signature}`;
 }
+
+export async function delay(millisecond: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve();
+    }, millisecond);
+  });
+}

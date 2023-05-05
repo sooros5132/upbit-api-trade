@@ -11,7 +11,7 @@ import { apiUrls } from 'src/lib/apiUrls';
 import { useUpbitApiStore } from 'src/store/upbitApi';
 import { IUpbitGetOrderResponse } from 'src/types/upbit';
 import { krwRegex } from 'src/utils/regex';
-import { satoshiPad, upbitPadEnd } from 'src/utils/utils';
+import { delay, satoshiPad, upbitPadEnd } from 'src/utils/utils';
 import shallow from 'zustand/shallow';
 import Image from 'next/image';
 import useSWRInfinite from 'swr/infinite';
@@ -281,6 +281,8 @@ const OrdersInner = memo(({ order }: OrdersInnerProps) => {
       .then(async () => {
         toast.success('주문이 취소되었습니다.');
         const { revalidateOrders, revalidateOrdersChance } = useUpbitApiStore.getState();
+        // 속도가 너무 빨라 제대로 가져오지 못 함. 50ms 딜레이 적용
+        await delay(50);
         await Promise.all([revalidateOrdersChance(), revalidateOrders()]);
       })
       .catch((e) => {

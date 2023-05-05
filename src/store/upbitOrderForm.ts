@@ -1,7 +1,7 @@
 import create from 'zustand';
 import { useExchangeStore } from './exchangeSockets';
 import { cloneDeep } from 'lodash';
-import { upbitDecimalScale, upbitOrderPriceCorrection } from 'src/utils/utils';
+import { delay, upbitDecimalScale, upbitOrderPriceCorrection } from 'src/utils/utils';
 import numeral from 'numeral';
 import { useUpbitApiStore } from './upbitApi';
 import { toast } from 'react-toastify';
@@ -338,6 +338,7 @@ export const useUpbitOrderFormStore = create<UpbitOrderFormStore>((set, get) => 
                 Number(res.volume)
               ).format(`0,0[.][00000000]`)}만큼 주문을 넣었습니다.`
             );
+            await delay(50);
             await Promise.all([revalidateOrdersChance(), revalidateOrders()]);
           })
           .catch((err) => {
@@ -373,6 +374,7 @@ export const useUpbitOrderFormStore = create<UpbitOrderFormStore>((set, get) => 
                 Number(createResult.volume)
               ).format(`0,0[.][00000000]`)}만큼 시장가매수 주문을 넣었습니다.`
             );
+            await delay(50);
             await Promise.all([revalidateOrdersChance(), revalidateOrders()]);
             break;
           }
@@ -400,6 +402,7 @@ export const useUpbitOrderFormStore = create<UpbitOrderFormStore>((set, get) => 
                 Number(createResult.volume)
               ).format(`0,0[.][00000000]`)}만큼 시장가매도 주문을 넣었습니다.`
             );
+            await delay(50);
             await Promise.all([revalidateOrdersChance(), revalidateOrders()]);
             break;
           }
