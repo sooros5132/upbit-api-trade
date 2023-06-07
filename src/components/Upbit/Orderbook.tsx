@@ -295,7 +295,7 @@ const MarketInfo: React.FC = memo(() => {
   const [change, setChange] = useState<'RISE' | 'EVEN' | 'FALL'>('EVEN');
 
   const MAX_TRADE = 1;
-  const { data } = useSWR(
+  const { data } = useSWR<IUpbitSocketMessageTradeSimple | null>(
     `${PROXY_PATH}${apiUrls.upbit.path}${apiUrls.upbit.trades.ticks}?market=${upbitTradeMarket}&count=${MAX_TRADE}`,
     async (url: string) => {
       return await axios
@@ -325,7 +325,7 @@ const MarketInfo: React.FC = memo(() => {
 
           return datas[length - 1];
         })
-        .catch(() => [] as Array<IUpbitSocketMessageTradeSimple>);
+        .catch(() => null);
     },
     {
       revalidateOnFocus: false,
@@ -334,7 +334,11 @@ const MarketInfo: React.FC = memo(() => {
   );
 
   useEffect(() => {
-    let prevMessage: IUpbitSocketMessageTradeSimple | null = null;
+    let prevMessage = data || null;
+    if (prevMessage) {
+      setChange('EVEN');
+      setTrade(prevMessage);
+    }
     const unsubscribe = useExchangeStore.subscribe(({ upbitTradeMessages }) => {
       const len = upbitTradeMessages.length;
 
@@ -373,7 +377,7 @@ const MarketInfo: React.FC = memo(() => {
     return () => {
       unsubscribe();
     };
-  }, [upbitTradeMarket]);
+  }, [data, upbitTradeMarket]);
 
   return <MarketInfoInner trade={trade || data} change={change} />;
 }, isEqual);

@@ -83,7 +83,7 @@ const UpbitRecentTradesContainer = () => {
   );
 
   useEffect(() => {
-    mutate(undefined);
+    mutate();
   }, [mutate, upbitTradeMarket]);
 
   if (!data) {
@@ -100,27 +100,28 @@ interface UpbitRecentTradesInnerProps {
 
 const UpbitRecentTradesInner: React.FC<UpbitRecentTradesInnerProps> = ({
   market,
-  trades: tradesProp
+  trades: _trades
 }) => {
-  const [trades, setTrades] = useState<Array<IUpbitSocketMessageTradeSimple>>(tradesProp);
+  const [trades, setTrades] = useState<Array<IUpbitSocketMessageTradeSimple>>(_trades);
   const highlight = useSiteSettingStore(({ highlight }) => highlight, shallow);
+
   useEffect(() => {
+    setTrades(_trades);
     const unsubscribe = subscribeOnUpbitStream((message: IUpbitSocketMessageTradeSimple) => {
       if (message?.ty !== 'trade' || market !== message?.cd) {
         return;
       }
-      const newTrade = [...trades];
-      newTrade.unshift(message);
-      // newTrade.push(message)
-      // newTrade.slice(-200);
-
-      setTrades(newTrade.slice(0, MAX_TRADE));
+      setTrades((prevTrades) => {
+        const newTrade = [...prevTrades];
+        newTrade.unshift(message);
+        return newTrade.slice(0, MAX_TRADE);
+      });
     });
 
     return () => {
       unsubscribe();
     };
-  }, [market, trades]);
+  }, [market, _trades]);
 
   return (
     <div className='relative flex flex-col h-full text-right text-xs overflow-y-auto bg-base-300/50'>
