@@ -274,6 +274,13 @@ export interface IUpbitSocketMessageTradeSimple {
   st: 'SNAPSHOT' | 'REALTIME'; //	스트림 타입 - SNAPSHOT : 스냅샷, REALTIME 실시간
 }
 
+export type IUpbitSocketMessageTradeSimpleAndFixedSidIsString = Omit<
+  IUpbitSocketMessageTradeSimple,
+  'sid'
+> & {
+  sid: string; //									체결 번호 (Unique)
+};
+
 export interface IUpbitTradesTicks {
   market: string; //							마켓 구분 코드	String
   trade_date_utc: string; //			체결 일자(UTC 기준) 포맷: yyyy-MM-dd	String

@@ -8,11 +8,15 @@ import { apiUrls, PROXY_PATH } from 'src/lib/apiUrls';
 import { subscribeOnUpbitStream } from 'src/store/exchangeSockets';
 import { useSiteSettingStore } from 'src/store/siteSetting';
 import { useUpbitApiStore } from 'src/store/upbitApi';
-import { IUpbitSocketMessageTradeSimple, IUpbitTradesTicks } from 'src/types/upbit';
+import {
+  IUpbitSocketMessageTradeSimpleAndFixedSidIsString,
+  IUpbitTradesTicks
+} from 'src/types/upbit';
 import { useIntersectionObserver } from 'src/utils/useIntersectionObserver';
 import { upbitPadEnd } from 'src/utils/utils';
 import useSWR from 'swr';
 import shallow from 'zustand/shallow';
+import JSONbig from 'json-bigint';
 
 const UpbitRecentTrades = memo(() => {
   const [hidden, setHidden] = useState(false);
@@ -52,29 +56,31 @@ const UpbitRecentTradesContainer = () => {
     `${PROXY_PATH}${apiUrls.upbit.path}${apiUrls.upbit.trades.ticks}?market=${upbitTradeMarket}&count=${MAX_TRADE}`,
     async (url: string) => {
       return await axios
-        .get<Array<IUpbitTradesTicks>>(url)
-        .then((res) =>
-          res.data.map(
-            (t) =>
-              ({
-                ty: 'trade', //								타입
-                cd: t.market, //							마켓 코드 (ex. KRW-BTC)
-                tp: t.trade_price, //					체결 가격
-                tv: t.trade_volume, //				체결량
-                ab: t.ask_bid, //							매수/매도 구분 ASK: 매도, BID: 매수
-                pcp: t.prev_closing_price, //	전일 종가
-                c: 'EVEN', //									전일 대비 - RISE: 상승, EVEN: 보합, FALL: 하락
-                cp: t.change_price, //				부호 없는 전일 대비 값
-                td: t.trade_date_utc, //			체결 일자(UTC 기준) yyyy-MM-dd
-                ttm: t.trade_time_utc, //			체결 시각(UTC 기준) HH:mm:ss
-                ttms: t.timestamp, //					체결 타임스탬프 (millisecond)
-                tms: 0, //										타임스탬프 (millisecond)
-                sid: t.sequential_id, //			체결 번호 (Unique)
-                st: 'SNAPSHOT' //							스트림 타입 - SNAPSHOT : 스냅샷, REALTIME 실시간
-              } as IUpbitSocketMessageTradeSimple)
-          )
-        )
-        .catch(() => []);
+        .get(url, {
+          transformResponse: [(data) => data]
+        })
+        .then((res) => {
+          const json = JSON.parse(res.data) as Array<IUpbitTradesTicks>;
+          const jsonBigint = JSONbig.parse(res.data) as Array<IUpbitTradesTicks>;
+
+          return json.map((t, i) => ({
+            ty: 'trade', //								타입
+            cd: t.market, //							마켓 코드 (ex. KRW-BTC)
+            tp: t.trade_price, //					체결 가격
+            tv: t.trade_volume, //				체결량
+            ab: t.ask_bid, //							매수/매도 구분 ASK: 매도, BID: 매수
+            pcp: t.prev_closing_price, //	전일 종가
+            c: 'EVEN', //									전일 대비 - RISE: 상승, EVEN: 보합, FALL: 하락
+            cp: t.change_price, //				부호 없는 전일 대비 값
+            td: t.trade_date_utc, //			체결 일자(UTC 기준) yyyy-MM-dd
+            ttm: t.trade_time_utc, //			체결 시각(UTC 기준) HH:mm:ss
+            ttms: t.timestamp, //					체결 타임스탬프 (millisecond)
+            tms: 0, //										타임스탬프 (millisecond)
+            sid: String(jsonBigint?.[i]?.sequential_id || ''), //			체결 번호 (Unique)
+            st: 'SNAPSHOT' //							스트림 타입 - SNAPSHOT : 스냅샷, REALTIME 실시간
+          })) as Array<IUpbitSocketMessageTradeSimpleAndFixedSidIsString>;
+        })
+        .catch(() => [] as Array<IUpbitSocketMessageTradeSimpleAndFixedSidIsString>);
     },
     {
       revalidateOnFocus: false,
@@ -95,33 +101,35 @@ const UpbitRecentTradesContainer = () => {
 
 interface UpbitRecentTradesInnerProps {
   market: string;
-  trades: Array<IUpbitSocketMessageTradeSimple>;
+  trades: Array<IUpbitSocketMessageTradeSimpleAndFixedSidIsString>;
 }
 
 const UpbitRecentTradesInner: React.FC<UpbitRecentTradesInnerProps> = ({
   market,
   trades: _trades
 }) => {
-  const [trades, setTrades] = useState<Array<IUpbitSocketMessageTradeSimple>>(_trades);
+  const [trades, setTrades] =
+    useState<Array<IUpbitSocketMessageTradeSimpleAndFixedSidIsString>>(_trades);
   const highlight = useSiteSettingStore(({ highlight }) => highlight, shallow);
 
   useEffect(() => {
-    setTrades(_trades);
-    const unsubscribe = subscribeOnUpbitStream((message: IUpbitSocketMessageTradeSimple) => {
-      if (message?.ty !== 'trade' || market !== message?.cd) {
-        return;
+    const unsubscribe = subscribeOnUpbitStream(
+      (message: IUpbitSocketMessageTradeSimpleAndFixedSidIsString) => {
+        if (message?.ty !== 'trade' || market !== message?.cd) {
+          return;
+        }
+        setTrades((prevTrades) => {
+          const newTrade = [...prevTrades];
+          newTrade.unshift(message);
+          return newTrade.slice(0, MAX_TRADE);
+        });
       }
-      setTrades((prevTrades) => {
-        const newTrade = [...prevTrades];
-        newTrade.unshift(message);
-        return newTrade.slice(0, MAX_TRADE);
-      });
-    });
+    );
 
     return () => {
       unsubscribe();
     };
-  }, [market, _trades]);
+  }, [market]);
 
   return (
     <div className='relative flex flex-col h-full text-right text-xs overflow-y-auto bg-base-300/50'>
@@ -154,7 +162,7 @@ const UpbitRecentTradesInner: React.FC<UpbitRecentTradesInnerProps> = ({
 
 type TableRowProps = {
   highlight: boolean;
-  trade: IUpbitSocketMessageTradeSimple;
+  trade: IUpbitSocketMessageTradeSimpleAndFixedSidIsString;
 };
 
 const TableRow: React.FC<TableRowProps> = memo(({ highlight, trade }) => {

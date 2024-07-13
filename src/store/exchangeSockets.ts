@@ -5,7 +5,7 @@ import {
   IUpbitMarket,
   IUpbitSocketMessageOrderbookSimple,
   IUpbitSocketMessageTickerSimple,
-  IUpbitSocketMessageTradeSimple
+  IUpbitSocketMessageTradeSimpleAndFixedSidIsString
 } from 'src/types/upbit';
 import { apiUrls } from 'src/lib/apiUrls';
 import { v4 as uuidv4 } from 'uuid';
@@ -15,6 +15,7 @@ import { krwRegex } from 'src/utils/regex';
 import { useMarketTableSettingStore } from './marketTableSetting';
 import { useSiteSettingStore } from './siteSetting';
 import { useUpbitApiStore } from './upbitApi';
+import JSONbig from 'json-bigint';
 
 type SocketMessage = string;
 interface IExchangeState {
@@ -30,7 +31,7 @@ interface IExchangeState {
   lastUpdatedAt: Date;
   socketTimeout: number;
   throttleDelay: number;
-  upbitTradeMessages: Array<IUpbitSocketMessageTradeSimple>;
+  upbitTradeMessages: Array<IUpbitSocketMessageTradeSimpleAndFixedSidIsString>;
   upbitOrderbook?: IUpbitSocketMessageOrderbookSimple;
   upbitTickerCodes: Array<string>;
   upbitTradeCodes: Array<string>;
@@ -251,14 +252,11 @@ const useExchangeStore = create<IExchangeStore>(
 
         const handleMessage: WebSocket['onmessage'] = async function (evt) {
           lastActivity = Date.now();
-          const message = JSON.parse(await evt.data.text()) as
+          const text = await evt.data.text();
+          let message = JSON.parse(text) as
             | IUpbitSocketMessageTickerSimple
-            | IUpbitSocketMessageTradeSimple
+            | IUpbitSocketMessageTradeSimpleAndFixedSidIsString
             | IUpbitSocketMessageOrderbookSimple;
-
-          for (const listener of upbitChannelToSubscription.values()) {
-            listener(message);
-          }
 
           switch (message?.ty) {
             case 'ticker': {
@@ -289,6 +287,8 @@ const useExchangeStore = create<IExchangeStore>(
               break;
             }
             case 'trade': {
+              const jsonBigint = JSONbig.parse(text);
+              message = { ...message, sid: String(jsonBigint?.sid || '') };
               tradeMessageBuffer.push(message);
               break;
             }
@@ -296,6 +296,10 @@ const useExchangeStore = create<IExchangeStore>(
               orderbookBuffer = message;
               break;
             }
+          }
+
+          for (const listener of upbitChannelToSubscription.values()) {
+            listener(message);
           }
         };
         let timer: NodeJS.Timer | undefined;

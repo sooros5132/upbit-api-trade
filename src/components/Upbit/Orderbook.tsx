@@ -9,7 +9,7 @@ import { useUpbitApiStore } from 'src/store/upbitApi';
 import {
   IUpbitOrderbooks,
   IUpbitSocketMessageOrderbookSimple,
-  IUpbitSocketMessageTradeSimple,
+  IUpbitSocketMessageTradeSimpleAndFixedSidIsString,
   IUpbitTradesTicks
 } from 'src/types/upbit';
 import { satoshiVolumePad, upbitPadEnd } from 'src/utils/utils';
@@ -20,6 +20,7 @@ import { krwRegex } from 'src/utils/regex';
 import numeral from 'numeral';
 import { NumericValueType, useUpbitOrderFormStore } from 'src/store/upbitOrderForm';
 import { throttle } from 'lodash';
+import JSONbig from 'json-bigint';
 
 export const UpbitOrderBook = memo(() => {
   const [hidden, setHidden] = useState(false);
@@ -291,37 +292,38 @@ const MarketInfo: React.FC = memo(() => {
   const upbitTradeMarket = useUpbitApiStore((state) => state.upbitTradeMarket, shallow);
   const upbitTradeMessages = useExchangeStore.getState().upbitTradeMessages;
   const lastMessage = upbitTradeMessages[upbitTradeMessages?.length - 1];
-  const [trade, setTrade] = useState<IUpbitSocketMessageTradeSimple>(lastMessage);
+  const [trade, setTrade] =
+    useState<IUpbitSocketMessageTradeSimpleAndFixedSidIsString>(lastMessage);
   const [change, setChange] = useState<'RISE' | 'EVEN' | 'FALL'>('EVEN');
 
   const MAX_TRADE = 1;
-  const { data } = useSWR<IUpbitSocketMessageTradeSimple | null>(
+  const { data } = useSWR<IUpbitSocketMessageTradeSimpleAndFixedSidIsString | null>(
     `${PROXY_PATH}${apiUrls.upbit.path}${apiUrls.upbit.trades.ticks}?market=${upbitTradeMarket}&count=${MAX_TRADE}`,
     async (url: string) => {
       return await axios
-        .get<Array<IUpbitTradesTicks>>(url)
+        .get(url, {
+          transformResponse: [(data) => data]
+        })
         .then((res) => {
-          const length = res.data.length || 0;
+          const json = JSON.parse(res.data) as Array<IUpbitTradesTicks>;
+          const jsonBigint = JSONbig.parse(res.data) as Array<IUpbitTradesTicks>;
 
-          const datas = res.data.map(
-            (t) =>
-              ({
-                ty: 'trade', //								타입
-                cd: t.market, //							마켓 코드 (ex. KRW-BTC)
-                tp: t.trade_price, //					체결 가격
-                tv: t.trade_volume, //				체결량
-                ab: t.ask_bid, //							매수/매도 구분 ASK: 매도, BID: 매수
-                pcp: t.prev_closing_price, //	전일 종가
-                c: 'EVEN', //									전일 대비 - RISE: 상승, EVEN: 보합, FALL: 하락
-                cp: t.change_price, //				부호 없는 전일 대비 값
-                td: t.trade_date_utc, //			체결 일자(UTC 기준) yyyy-MM-dd
-                ttm: t.trade_time_utc, //			체결 시각(UTC 기준) HH:mm:ss
-                ttms: t.timestamp, //					체결 타임스탬프 (millisecond)
-                tms: 0, //										타임스탬프 (millisecond)
-                sid: t.sequential_id, //			체결 번호 (Unique)
-                st: 'SNAPSHOT' //							스트림 타입 - SNAPSHOT : 스냅샷, REALTIME 실시간
-              } as IUpbitSocketMessageTradeSimple)
-          );
+          const datas = json.map((t, i) => ({
+            ty: 'trade', //								타입
+            cd: t.market, //							마켓 코드 (ex. KRW-BTC)
+            tp: t.trade_price, //					체결 가격
+            tv: t.trade_volume, //				체결량
+            ab: t.ask_bid, //							매수/매도 구분 ASK: 매도, BID: 매수
+            pcp: t.prev_closing_price, //	전일 종가
+            c: 'EVEN', //									전일 대비 - RISE: 상승, EVEN: 보합, FALL: 하락
+            cp: t.change_price, //				부호 없는 전일 대비 값
+            td: t.trade_date_utc, //			체결 일자(UTC 기준) yyyy-MM-dd
+            ttm: t.trade_time_utc, //			체결 시각(UTC 기준) HH:mm:ss
+            ttms: t.timestamp, //					체결 타임스탬프 (millisecond)
+            tms: 0, //										타임스탬프 (millisecond)
+            sid: String(jsonBigint?.[i]?.sequential_id || ''), //			체결 번호 (Unique)
+            st: 'SNAPSHOT' //							스트림 타입 - SNAPSHOT : 스냅샷, REALTIME 실시간
+          })) as Array<IUpbitSocketMessageTradeSimpleAndFixedSidIsString>;
 
           return datas[length - 1];
         })
@@ -386,7 +388,7 @@ MarketInfo.displayName = 'MarketInfo';
 
 const MarketInfoInner: React.FC<{
   change: 'RISE' | 'EVEN' | 'FALL';
-  trade?: IUpbitSocketMessageTradeSimple;
+  trade?: IUpbitSocketMessageTradeSimpleAndFixedSidIsString;
 }> = ({ trade, change }) => {
   return (
     <tr className='text-[1.2em] h-[1.25em]'>
