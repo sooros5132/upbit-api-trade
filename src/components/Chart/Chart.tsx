@@ -9,6 +9,7 @@ import { useExchangeStore } from 'src/store/exchangeSockets';
 import { defaultSubscribeChartCodes, useSiteSettingStore } from 'src/store/siteSetting';
 import { krwRegex, usdtRegex } from 'src/utils/regex';
 import { TVChart } from '../TVChart';
+import Link from 'next/link';
 
 export interface ChartProps {
   chart: {
@@ -122,6 +123,36 @@ export const Chart = memo(() => {
         {subscribeChartCodes.map((chart) => (
           <ChartInner key={`${chart?.exchange}@${chart?.code}`} chart={chart} />
         ))}
+      </div>
+      <div className='border-t bg-base-200 border-base-300 text-xs text-center overflow-hidden'>
+        차트 솔루션은 글로벌 커뮤니티를 위한 차트 플랫폼인{' '}
+        <Link
+          className='underline font-bold'
+          href='http://tradingview.com/'
+          rel='noreferrer'
+          target='_blank'
+        >
+          트레이딩뷰
+        </Link>
+        에서 제공합니다.
+        <Link
+          className='underline font-bold'
+          href='https://kr.tradingview.com/economic-calendar/'
+          rel='noreferrer'
+          target='_blank'
+        >
+          이코노믹 캘린더
+        </Link>{' '}
+        또는{' '}
+        <Link
+          className='underline font-bold'
+          href='https://kr.tradingview.com/screener/'
+          rel='noreferrer'
+          target='_blank'
+        >
+          스탁 스크리너
+        </Link>
+        와 같은 고급 분석 도구를 통해 종합적인 시장 분석에 기반한 거래를 할 수 있습니다.
       </div>
     </div>
   );
