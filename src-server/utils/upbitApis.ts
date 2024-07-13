@@ -1,5 +1,5 @@
 export const upbitApis = {
-  forexRecent: 'https://quotation-api-cdn.dunamu.com/v1/forex/recent',
+  forexRecent: 'https://crix-api-cdn.upbit.com/v1/forex/recent',
   marketAll: 'https://api.upbit.com/v1/market/all',
   ticker: 'https://api.upbit.com/v1/ticker',
   accounts: 'https://api.upbit.com/v1/accounts',

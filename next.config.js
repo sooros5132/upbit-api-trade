@@ -14,7 +14,7 @@ module.exports = withBundleAnalyzer({
       },
       {
         source: '/api/upbit/forex/recent',
-        destination: 'https://quotation-api-cdn.dunamu.com/v1/forex/recent'
+        destination: 'https://crix-api-cdn.upbit.com/v1/forex/recent'
       },
       {
         source: '/api/upbit/:path*',
