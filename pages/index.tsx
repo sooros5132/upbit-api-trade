@@ -126,7 +126,7 @@ const ExchangeMarket: React.FC = () => {
         const upbitMarketAllRecord: Record<string, IUpbitMarket> = {};
         const upbitMarketAll = await axios
           .get<Array<IUpbitMarket>>(
-            apiUrls.upbit.origin + apiUrls.upbit.market.all + '?isDetails=false'
+            apiUrls.upbit.rewriteUrl + apiUrls.upbit.market.all + '?isDetails=false'
           )
           .then((res) => {
             const list = sortBy(
@@ -153,12 +153,14 @@ const ExchangeMarket: React.FC = () => {
         const [upbitMarketSnapshot, binanceMarketSnapshot] = await Promise.all([
           axios
             .get<Array<IUpbitApiTicker>>(
-              apiUrls.upbit.origin + apiUrls.upbit.ticker + '?markets=' + upbitSymbols
+              apiUrls.upbit.rewriteUrl + apiUrls.upbit.ticker + '?markets=' + upbitSymbols
             )
             .then((res) => res.data),
           // fetch(`${binanceApis.tickerPrice}?symbols=${binanceSymbols}`).then((res) => res.json())
           axios
-            .get<Array<IBinanceTickerPrice>>(apiUrls.binance.origin + apiUrls.binance.ticker.price)
+            .get<Array<IBinanceTickerPrice>>(
+              apiUrls.binance.rewriteUrl + apiUrls.binance.ticker.price
+            )
             .then((res) => res.data)
         ]);
 
