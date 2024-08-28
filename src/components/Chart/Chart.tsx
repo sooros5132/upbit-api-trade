@@ -124,33 +124,18 @@ export const Chart = memo(() => {
           <ChartInner key={`${chart?.exchange}@${chart?.code}`} chart={chart} />
         ))}
       </div>
-      <div className='border-t bg-base-200 border-base-300 text-xs text-center overflow-hidden'>
+      <div className='py-1 border-t bg-base-200 border-base-300 text-zinc-400 text-xs text-center overflow-hidden'>
         차트 솔루션은 글로벌 커뮤니티를 위한 차트 플랫폼인{' '}
-        <Link
-          className='underline font-bold'
-          href='http://tradingview.com/'
-          rel='noreferrer'
-          target='_blank'
-        >
-          트레이딩뷰
+        <Link href='http://tradingview.com/' rel='noreferrer' target='_blank'>
+          <span className='underline text-primary-content'>트레이딩뷰</span>
         </Link>
-        에서 제공합니다.
-        <Link
-          className='underline font-bold'
-          href='https://kr.tradingview.com/economic-calendar/'
-          rel='noreferrer'
-          target='_blank'
-        >
-          이코노믹 캘린더
+        에서 제공합니다.{' '}
+        <Link href='https://kr.tradingview.com/economic-calendar/' rel='noreferrer' target='_blank'>
+          <span className='underline text-primary-content'>이코노믹 캘린더</span>
         </Link>{' '}
         또는{' '}
-        <Link
-          className='underline font-bold'
-          href='https://kr.tradingview.com/screener/'
-          rel='noreferrer'
-          target='_blank'
-        >
-          스탁 스크리너
+        <Link href='https://kr.tradingview.com/screener/' rel='noreferrer' target='_blank'>
+          <span className='underline text-primary-content'>스탁 스크리너</span>
         </Link>
         와 같은 고급 분석 도구를 통해 종합적인 시장 분석에 기반한 거래를 할 수 있습니다.
       </div>
