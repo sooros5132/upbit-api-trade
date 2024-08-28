@@ -26,7 +26,7 @@ const UpbitMarketHeaderInner: FC<{ market: IMarketTableItem }> = ({ market }) =>
   const marketSymbol = market.cd.replace(krwRegex, '');
 
   return (
-    <div className='flex items-center h-full px-1 py-2 gap-x-2 whitespace-nowrap overflow-x-auto overflow-y-hidden sm:px-2 lg:py-0'>
+    <div className='flex flex-wrap items-center h-full px-1 py-2 gap-x-2 whitespace-nowrap overflow-x-auto overflow-y-hidden sm:px-2 lg:py-0'>
       <div className='flex flex-wrap items-end gap-x-1 sm:flex-nowrap'>
         <div className='relative shrink-0 self-auto sm:text-lg [&>*]:!w-[0.9em]'>
           <div className='hidden supports-[filter]:block invert blur-[2px]'>
@@ -104,19 +104,21 @@ const UpbitMarketHeaderInner: FC<{ market: IMarketTableItem }> = ({ market }) =>
           </div>
         )}
       </div>
-      <div className='hidden md:block ml-auto pl-2 text-xs'>
-        <div className='text-center opacity-60'>
-          24h 거래량&nbsp;
-          <span className='text-[0.75em]'>({marketSymbol})</span>
+      <div className='flex items-center justify-end gap-x-2 basis-full sm:basis-auto ml-auto'>
+        <div className='pl-2 text-xs'>
+          <div className='text-center opacity-60'>
+            24h 거래량&nbsp;
+            <span className='text-[0.75em]'>({marketSymbol})</span>
+          </div>
+          <div className='text-center'>{market.atv24h.toLocaleString()}</div>
         </div>
-        <div className='text-center'>{market.atv24h.toLocaleString()}</div>
-      </div>
-      <div className='hidden md:block text-xs'>
-        <div className='text-center opacity-60'>
-          24h 거래량&nbsp;
-          <span className='text-[0.75em]'>({'KRW'})</span>
+        <div className='text-xs'>
+          <div className='text-center opacity-60'>
+            24h 거래량&nbsp;
+            <span className='text-[0.75em]'>({'KRW'})</span>
+          </div>
+          <div className='text-center'>{numeral(market.atp24h).format('0,0')}</div>
         </div>
-        <div className='text-center'>{numeral(market.atp24h).format('0,0')}</div>
       </div>
     </div>
   );
